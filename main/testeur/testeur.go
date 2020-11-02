@@ -1,10 +1,10 @@
 package testeur
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
-	"runtime"
 )
 
 func Test() string {
@@ -14,10 +14,12 @@ func Test() string {
 	}
 
 	cmd := exec.Command("/bin/sh", "script.sh")
+	cmd.Dir = "./main/testeur/"
 	stdout, err := cmd.CombinedOutput()
 
+	fmt.Print(string(stdout))
 	if err != nil {
-		log.Fatalf("cmd.Run() failed with %s\n", err)
+		fmt.Print("cmd.Run() de Test() failed with \n", err, "\n")
 		return err.Error()
 	}
 
@@ -25,17 +27,9 @@ func Test() string {
 }
 
 func MakeFileExecutable() bool {
-	cmd := exec.Command("ls", "-la")
-	if runtime.GOOS == "windows" {
-		cmd = exec.Command("tasklist")
-	}
-	out, err := cmd.CombinedOutput()
-	if out == nil && err == nil {
-	}
-
-	err2 := os.Chmod("script.sh", 0755)
-	if err2 != nil {
-		log.Fatalf("cmd.Run() failed with \n", err2)
+	err := os.Chmod("main/testeur/script.sh", 0755)
+	if err != nil {
+		log.Fatalf("chmod failed with \n", err)
 		return false
 	}
 	return true
