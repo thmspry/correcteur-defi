@@ -1,13 +1,15 @@
 package main
 
-//Ce document regroupe les commandes de programmation basique relatif au language go.
+//Ce document regroupe quelques elements importants de language.
 
-//on import les paquets.
+//------------------------------------------------------IMPORT----------------------------------------------------------
 import (
 	"fmt"
 	"math/cmplx"
+	"time"
 )
 
+//-----------------------------------------------ECRITURE DE FONCTION---------------------------------------------------
 //exemple d'une fonction.
 func add(x int, y int) int {
 	return x + y
@@ -44,20 +46,20 @@ func main() {
 	fmt.Println(swap("za", "ae"))
 	fmt.Println(split(17))
 
-	//pour declarer des variables.
-	var declarationt_type = 10
-	fmt.Println("variable typee", declarationt_type)
+	//-----------------------------------------------------------VARIABLE-----------------------------------------------
+	var declarationtType = 10
+	fmt.Println("variable typee", declarationtType)
 	var a, b, d = "vive", "le", "confinement"
 	fmt.Println(a, b, d)
 
-	//typage dynamique (typage automatique)
+	//-------------------------------------------------TYPAGEDINAMIQUE--------------------------------------------------
 	typage_dynamique := 10.5
 	fmt.Println("typage dinamique", typage_dynamique)
 
 	c, python, java := 2.2, false, "ouch"
 	fmt.Println(c, python, java)
 
-	// on peut choisir de regrouper ses declarations dans un bloc.
+	//--------------------------------------------------REGROUPER LES TYPAGES-------------------------------------------
 	var (
 		ToBe          = false
 		MaxInt uint64 = 1<<64 - 1
@@ -67,12 +69,12 @@ func main() {
 	fmt.Printf("Type: %T Value: %v\n", MaxInt, MaxInt)
 	fmt.Printf("Type: %T Value: %v\n", z, z)
 
-	//conversions de type
+	//---------------------------------------------------Conversions de type--------------------------------------------
 	var f = 12.2
 	var j = uint(f)
 	fmt.Print(j)
 
-	// constante ( on ne peut la declarer avec la syntaxe :=)
+	//---------------------------------------------------CONSTANTE------------------------------------------------------
 	const world = "le monde va bien"
 
 	//exemple de constantes numeriques ( je detaille pas c'est assez explicite)
@@ -88,4 +90,71 @@ func main() {
 	fmt.Println(needFloat(Big))
 	//fmt.Println(needInt(Big)) ca marche pas ce truc, normal.
 
+	//--------------------------------------------------FOR-------------------------------------------------------------
+
+	//on ecrit une boucle for ainsi :
+	sum := 0
+	for i := 0; i < 10; i++ {
+		sum += i
+	}
+
+	//--------------------------------------------------WHILE-----------------------------------------------------------
+
+	// en Go le while s'ecrit avec un for.
+	var masomme int = 0
+	for masomme < 1000 {
+		masomme = masomme + 250
+	}
+	fmt.Println(masomme)
+	//---------------------------------------------------IF et ELSE-----------------------------------------------------
+	variable := 22
+	if variable < 0 {
+		//action ici
+	}
+
+	// on peut aussi faire quelque actions avant le if, attention la variable v est donc locale.
+	/*
+		if v := math.Pow(x, n); v < lim {
+			return v
+		}
+
+		if v := math.Pow(x, n); v < lim {
+			return v
+		} else {
+			fmt.Printf("%g >= %g\n", v, lim)
+		}
+	*/
+
+	//---------------------------------------------------SWITCH---------------------------------------------------------
+	fmt.Println("When's Saturday?")
+	today := time.Now().Weekday()
+	fmt.Println(today)
+	switch time.Saturday {
+	case today + 0:
+		fmt.Println("Today.")
+	case today + 1:
+		fmt.Println("Tomorrow.")
+	case today + 2:
+		fmt.Println("In two days.")
+	default:
+		fmt.Println("Too far away.")
+	}
+
+	// ou bien :
+	t := time.Now()
+	switch {
+	case t.Hour() < 12:
+		fmt.Println("Good morning!")
+	case t.Hour() < 17:
+		fmt.Println("Good afternoon.")
+	default:
+		fmt.Println("Good evening.")
+	}
+
+	//
+	//---------------------------------------------------DEFER----------------------------------------------------------
+
+	// ça peut servir, qui sait.
+	defer fmt.Println("world")
+	fmt.Println("hello")
 }
