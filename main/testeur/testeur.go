@@ -2,7 +2,6 @@ package testeur
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 )
@@ -10,7 +9,7 @@ import (
 func Test() string {
 
 	if !MakeFileExecutable() {
-		return "Fichier non trouvé"
+		return "chmod failed"
 	}
 
 	cmd := exec.Command("/bin/sh", "script.sh")
@@ -29,7 +28,6 @@ func Test() string {
 func MakeFileExecutable() bool {
 	err := os.Chmod("main/testeur/script.sh", 0755)
 	if err != nil {
-		log.Fatalf("chmod failed with \n", err)
 		return false
 	}
 	return true

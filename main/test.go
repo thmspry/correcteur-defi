@@ -1,10 +1,11 @@
 package main
 
-import "fmt"
 import (
 	testeur "./testeur"
+	"fmt"
 )
 
 func main() {
 	fmt.Println("testeur retourne : ", testeur.Test())
+
 }
