@@ -7,12 +7,15 @@ import (
 )
 
 func Test() string {
-
-	if !MakeFileExecutable() {
+	/*
+	* Sauvegarder le layout avant execution du script
+	* executer le script dans un dossier sans pouvoir revenir plus haut et faire cd fait venir dans ce dossier
+	 */
+	if !MakeFileExecutable("script_EXXX.sh") {
 		return "chmod failed"
 	}
 
-	cmd := exec.Command("/bin/sh", "script.sh")
+	cmd := exec.Command("/bin/sh", "script_EXXX.sh")
 	cmd.Dir = "./main/testeur/"
 	stdout, err := cmd.CombinedOutput()
 
@@ -25,8 +28,8 @@ func Test() string {
 	return string(stdout)
 }
 
-func MakeFileExecutable() bool {
-	err := os.Chmod("main/testeur/script.sh", 0755)
+func MakeFileExecutable(script string) bool {
+	err := os.Chmod("main/testeur/"+script, 0755)
 	if err != nil {
 		return false
 	}
