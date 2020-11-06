@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	fmt.Println("testeur retourne : ", testeur.Test())
+	fmt.Println("testeur retourne : ", testeur.Test("EXXX"))
 	/*db,_ := sql.Open("sqlite3", "./projS3.db")
 	//stmt,_ := db.Prepare("CREATE TABLE etudiant (id INTEGER PRIMARY KEY, firstname TEXT)")
 	//stmt.Exec()
