@@ -1,9 +1,9 @@
-package main
+package projS3
 
 import (
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
-	"projS3/main/testeur"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/testeur"
 )
 
 func main() {

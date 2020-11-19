@@ -1,4 +1,4 @@
-package main
+package projS3
 
 //Ce document regroupe quelques elements importants de language.
 
@@ -39,7 +39,7 @@ func needFloat(x float64) float64 {
 	return x * 0.1
 }
 
-func main() {
+func lang() {
 	//affichage des fonctions.
 	fmt.Println("hello, World")
 	fmt.Println("afficage fonction aadd", add(1, 2))
