@@ -1,13 +1,13 @@
-package projS3
+package main
 
 import (
-	"fmt"
 	_ "github.com/mattn/go-sqlite3"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/testeur"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
 )
 
 func main() {
-	fmt.Println("testeur retourne : ", testeur.Test("EXXX"))
+	//fmt.Println("testeur retourne : ", testeur.Test("EXXX"))
+	web.Connexion()
 	/*db,_ := sql.Open("sqlite3", "./projS3.db")
 	//stmt,_ := db.Prepare("CREATE TABLE etudiant (id INTEGER PRIMARY KEY, firstname TEXT)")
 	//stmt.Exec()

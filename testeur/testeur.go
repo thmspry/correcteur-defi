@@ -12,15 +12,15 @@ func Test(etudiant string) string {
 	* executer le script dans un dossier sans pouvoir revenir plus haut et faire cd fait venir dans ce dossier
 	 */
 	script_etu := "script_" + etudiant + ".sh"
-	path_dir_test := "./main/testeur/dir_test/"
+	path_dir_test := "./testeur/dir_test/"
 	defi := "defi_X.sh"
 
-	if !MakeFileExecutable("./main/script_etudiants/" + script_etu) {
+	if !MakeFileExecutable("./script_etudiants/" + script_etu) {
 		return "chmod failed"
 	}
 
-	deplacer("./main/defis/"+defi, path_dir_test)
-	deplacer("./main/script_etudiants/"+script_etu, path_dir_test)
+	deplacer("./defis/"+defi, path_dir_test)
+	deplacer("./script_etudiants/"+script_etu, path_dir_test)
 
 	cmd := exec.Command("/bin/sh", script_etu)
 	cmd.Dir = path_dir_test
@@ -35,8 +35,8 @@ func Test(etudiant string) string {
 		return defi + err.Error()
 	}
 
-	deplacer(path_dir_test+defi, "./main/defis/")
-	deplacer(path_dir_test+script_etu, "./main/script_etudiants/")
+	deplacer(path_dir_test+defi, "./defis/")
+	deplacer(path_dir_test+script_etu, "./script_etudiants/")
 
 	fmt.Printf(string(stdout_etu) + string(stdout_defi))
 	if string(stdout_defi) == string(stdout_etu) {

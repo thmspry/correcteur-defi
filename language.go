@@ -1,4 +1,4 @@
-package projS3
+package main
 
 //Ce document regroupe quelques elements importants de language.
 
