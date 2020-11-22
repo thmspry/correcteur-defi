@@ -2,21 +2,26 @@ package web
 
 import (
 	"fmt"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"html/template"
 	"log"
 	"net/http"
 )
 
-type PageEtudiantstruct struct {
-	Login    string
-	Password string
+type Etudiant struct {
+	Login      string
+	Password   string
+	Prenom     string
+	Nom        string
+	Mail       string
+	DefiSucess int
 }
 
-func Connexion() {
+func InitWeb() {
 
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/pageEtudiant", pageEtudiant)
-	err := http.ListenAndServe(":8080", nil) // setting listening port
+	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
@@ -28,7 +33,8 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 
 		login := r.FormValue("login")
 		password := r.FormValue("password")
-		etu := PageEtudiantstruct{login, password}
+
+		etu := BDD.LoginCorrect(login, password)
 		fmt.Println(etu)
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
 
