@@ -3,8 +3,6 @@ package BDD
 import (
 	"database/sql"
 	"fmt"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
-	_ "gitlab.univ-nantes.fr/E192543L/projet-s3/web"
 )
 
 var db, _ = sql.Open("sqlite3", "./BDD/projS3.db")
@@ -15,9 +13,8 @@ func InitBDD() {
 		"password TEXT NOT NULL, " +
 		"prenom TEXT NOT NULL," +
 		"nom TEXT NOT NULL," +
-		"mail TEXT NOT NULL" +
-		"defiSucess INTEGER" +
-		"" +
+		"mail TEXT NOT NULL," +
+		"defiSucess INTEGER NOT NULL" +
 		");")
 	if err != nil {
 		fmt.Println("prblm table Etudiant" + err.Error())
@@ -25,9 +22,9 @@ func InitBDD() {
 	stmt.Exec()
 
 	stmt, err = db.Prepare("CREATE TABLE IF NOT EXISTS Defs (" +
-		"login TEXT," +
-		"defi INTEGER," +
-		"etat TEXT" +
+		"login TEXT NOT NULL," +
+		"defi INTEGER NOT NULL," +
+		"etat TEXT NOT NULL," +
 		"FOREIGN KEY (login) REFERENCES Etudiant(login)" +
 		")")
 	if err != nil {
@@ -49,7 +46,7 @@ func Register() {
 	fmt.Printf(string(id))
 }
 
-func LoginCorrect(id string, password string) web.Etudiant {
+func LoginCorrect(id string, password string) bool {
 	stmt, err := db.Prepare("SELECT * FROM Etudiant WHERE login = ? AND password = ?")
 	if err != nil {
 		fmt.Println(err)
@@ -60,9 +57,9 @@ func LoginCorrect(id string, password string) web.Etudiant {
 		fmt.Println(err)
 	}
 	fmt.Println(res.RowsAffected())
-	etu := web.Etudiant{id, password, "", "", "", 0}
+	//etu := web.Etudiant{id, password, "", "", "", 0}
 	if res != nil {
-		return etu
+		return true
 	}
-	return etu
+	return false
 }

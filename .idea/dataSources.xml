@@ -7,5 +7,11 @@
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
       <jdbc-url>jdbc:sqlite:identifier.sqlite</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="projS3" uuid="81e81f8a-9e5c-4dfd-afcc-b37f258b4354">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:A:\travail\programmation\proj s3\BDD\projS3.db</jdbc-url>
+    </data-source>
   </component>
 </project>
