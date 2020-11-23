@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "github.com/mattn/go-sqlite3"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 )
 
 type Etudiant struct {
@@ -15,7 +14,6 @@ type Etudiant struct {
 func main() {
 	//fmt.Println("testeur retourne : ", testeur.Test("EXXX"))
 	//web.InitWeb()
-	BDD.InitBDD()
 
 	/*
 		rows, _ := db.Query("SELECT id, firstname FROM etudiant")

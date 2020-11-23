@@ -8,18 +8,9 @@ import (
 	"net/http"
 )
 
-type Etudiant struct {
-	Login      string
-	Password   string
-	Prenom     string
-	Nom        string
-	Mail       string
-	DefiSucess int
-}
-
 func InitWeb() {
 
-	http.HandleFunc("/login", login)
+	http.HandleFunc("/login", accueil)
 	http.HandleFunc("/pageEtudiant", pageEtudiant)
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
@@ -44,7 +35,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
-func login(w http.ResponseWriter, r *http.Request) {
+func accueil(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method:", r.Method)
 	if r.Method == "GET" {
 		t, err := template.ParseFiles("./web/html/accueil.html")
@@ -58,4 +49,8 @@ func login(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("oui")
 
 	}
+
+}
+func upload() {
+
 }

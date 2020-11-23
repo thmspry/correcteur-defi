@@ -5,6 +5,15 @@ import (
 	"fmt"
 )
 
+type Etudiant struct {
+	Login      string
+	Password   string
+	Prenom     string
+	Nom        string
+	Mail       string
+	DefiSucess int
+}
+
 var db, _ = sql.Open("sqlite3", "./BDD/projS3.db")
 
 func InitBDD() {
@@ -21,7 +30,7 @@ func InitBDD() {
 	}
 	stmt.Exec()
 
-	stmt, err = db.Prepare("CREATE TABLE IF NOT EXISTS Defs (" +
+	stmt, err = db.Prepare("CREATE TABLE IF NOT EXISTS Defis (" +
 		"login TEXT NOT NULL," +
 		"defi INTEGER NOT NULL," +
 		"etat TEXT NOT NULL," +
@@ -46,7 +55,7 @@ func Register() {
 	fmt.Printf(string(id))
 }
 
-func LoginCorrect(id string, password string) bool {
+func LoginCorrect(id string, password string) Etudiant {
 	stmt, err := db.Prepare("SELECT * FROM Etudiant WHERE login = ? AND password = ?")
 	if err != nil {
 		fmt.Println(err)
@@ -57,9 +66,9 @@ func LoginCorrect(id string, password string) bool {
 		fmt.Println(err)
 	}
 	fmt.Println(res.RowsAffected())
-	//etu := web.Etudiant{id, password, "", "", "", 0}
+	etu := Etudiant{id, password, "", "", "", 0}
 	if res != nil {
-		return true
+		return etu
 	}
-	return false
+	return etu
 }
