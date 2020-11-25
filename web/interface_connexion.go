@@ -8,11 +8,13 @@ import (
 	"net/http"
 )
 
+var etudiantCo BDD.Etudiant
+
 func InitWeb() {
 
-	http.HandleFunc("/login", accueil)
-	http.HandleFunc("/pageEtudiant", pageEtudiant)
-	err := http.ListenAndServe(":8080", nil)
+	http.HandleFunc("/login", accueil)             // Page d'acceuil : http://localhost:8080/login
+	http.HandleFunc("/pageEtudiant", pageEtudiant) // Page étudiant : http://localhost:8080/pageEtudiant
+	err := http.ListenAndServe(":8080", nil)       // port utilisé
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
@@ -22,16 +24,11 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method de pageEtudiant :", r.Method)
 	//Check la méthode utilisé par le formulaire
 	if r.Method == "GET" {
-		//Récupère ID et password VIDE !!!
-		login := r.FormValue("login")
-		password := r.FormValue("password")
 
-		etu := BDD.GetInfo(login, password)
-
-		fmt.Println(etu)
+		fmt.Println(etudiantCo)
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
 
-		err := t.Execute(w, etu)
+		err := t.Execute(w, etudiantCo)
 		if err != nil {
 			log.Printf("error exec template : ", err)
 		}
@@ -55,8 +52,9 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 		existe := BDD.LoginCorrect(login, password)
 
 		if existe {
-
-			http.Redirect(w, r, "/pageEtudiant", http.StatusSeeOther)
+			etudiantCo = BDD.GetInfo(login, password)
+			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
+			return
 		} else {
 			fmt.Println("login incorrecte")
 		}
