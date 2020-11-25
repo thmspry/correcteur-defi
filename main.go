@@ -2,18 +2,21 @@ package main
 
 import (
 	_ "github.com/mattn/go-sqlite3"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
 )
-
-type Etudiant struct {
-	Login    string
-	Password string
-	Prenom   string
-	Nom      string
-}
 
 func main() {
 	//fmt.Println("testeur retourne : ", testeur.Test("EXXX"))
-	//web.InitWeb()
+	web.InitWeb()
+	//BDD.InitBDD()
+	/*etu := BDD.Etudiant{
+		Login:      "E1045",
+		Password:   "3n6Z",
+		Prenom:     "Paul",
+		Nom:        "Vernin",
+		Mail:       "paul.vernin@gmail.com",
+		DefiSucess: 0,
+	}*/
 
 	/*
 		rows, _ := db.Query("SELECT id, firstname FROM etudiant")

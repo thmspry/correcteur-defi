@@ -19,13 +19,15 @@ func InitWeb() {
 }
 
 func pageEtudiant(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("method:", r.Method)
-	if r.Method == "POST" {
-
+	fmt.Println("method de pageEtudiant :", r.Method)
+	//Check la méthode utilisé par le formulaire
+	if r.Method == "GET" {
+		//Récupère ID et password VIDE !!!
 		login := r.FormValue("login")
 		password := r.FormValue("password")
 
-		etu := BDD.LoginCorrect(login, password)
+		etu := BDD.GetInfo(login, password)
+
 		fmt.Println(etu)
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
 
@@ -35,19 +37,29 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+
 func accueil(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("method:", r.Method)
+	fmt.Println("method de accueil :", r.Method)
+
 	if r.Method == "GET" {
 		t, err := template.ParseFiles("./web/html/accueil.html")
 		if err != nil {
 			fmt.Print("erreur chargement accueil.html")
 		}
 		t.Execute(w, nil)
-	} else {
-		r.ParseForm()
-		// logic part of log in
-		fmt.Println("oui")
+	} else if r.Method == "POST" {
 
+		login := r.FormValue("login")
+		password := r.FormValue("password")
+		fmt.Println("tentative de co avec :", login, " ", password)
+		existe := BDD.LoginCorrect(login, password)
+
+		if existe {
+
+			http.Redirect(w, r, "/pageEtudiant", http.StatusSeeOther)
+		} else {
+			fmt.Println("login incorrecte")
+		}
 	}
 
 }

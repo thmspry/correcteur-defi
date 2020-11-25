@@ -42,33 +42,62 @@ func InitBDD() {
 	stmt.Exec()
 }
 
-func Register() {
-	stmt, err := db.Prepare(" INTO Etudiant values(?,?,?,?,?,?)")
+//testé
+func Register(etu Etudiant) bool {
+	stmt, err := db.Prepare("INSERT INTO Etudiant values(?,?,?,?,?,?)")
 	if err != nil {
 		fmt.Println(err)
 	}
-	res, err := stmt.Exec("", "", "", "", "", 0)
+
+	res, err := stmt.Exec(etu.Login, etu.Password, etu.Prenom, etu.Nom, etu.Mail, etu.DefiSucess)
 	if err != nil {
 		fmt.Println(err)
+		return false
 	}
 	id, err := res.LastInsertId()
-	fmt.Printf(string(id))
+	fmt.Printf("Register fonctionnelle : " + string(id) + "\n")
+	return true
 }
 
-func LoginCorrect(id string, password string) Etudiant {
-	stmt, err := db.Prepare("SELECT * FROM Etudiant WHERE login = ? AND password = ?")
+//testé
+func LoginCorrect(id string, password string) bool {
+	stmt := "SELECT * FROM Etudiant WHERE login = ? AND password = ?"
+	row, _ := db.Query(stmt, id, password)
+	if row.Next() {
+		return true
+	}
+	return false
+}
+
+//testé
+func GetInfo(id string, mdp string) Etudiant {
+	fmt.Println("fonc GetInfo : ")
+	var (
+		login      string
+		password   string
+		prenom     string
+		nom        string
+		mail       string
+		defiSucess int
+	)
+
+	row := db.QueryRow("SELECT * FROM Etudiant WHERE login = $1 AND password = $2", id, mdp)
+	err := row.Scan(&login, &password, &prenom, &nom, &mail, &defiSucess)
+
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("problme row scan \n", err)
+	} else {
+		fmt.Println("etu : ", login, password, prenom, nom, mail, defiSucess)
+	}
+	etu := Etudiant{
+		Login:      login,
+		Password:   password,
+		Prenom:     prenom,
+		Nom:        nom,
+		Mail:       mail,
+		DefiSucess: defiSucess,
 	}
 
-	res, err := stmt.Exec(id, password)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(res.RowsAffected())
-	etu := Etudiant{id, password, "", "", "", 0}
-	if res != nil {
-		return etu
-	}
+	fmt.Println("/ fonc GetInfo")
 	return etu
 }
