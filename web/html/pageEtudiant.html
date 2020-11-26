@@ -13,12 +13,11 @@ prénom : {{.Prenom}}  nom : {{.Nom}}
 <br>
 mail : {{.Mail}}  défis réussis : {{.DefiSucess}}
 
-<form   enctype="multipart/form-data"  action="http://localhost:8080/login" method="post">
+<form   enctype="multipart/form-data"  action="/pageEtudiant?uploadFile" method="post">
     <input type="file" name="uploadfile"/>
     <input type="hidden" name="token" value="{{.}}" />
     <input type="submit" value="upload"/>
-
-
 </form>
+
 </body>
 </html>

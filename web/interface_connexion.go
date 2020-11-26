@@ -32,6 +32,12 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Printf("error exec template : ", err)
 		}
+	} else if r.Method == "POST" {
+		if r.URL.String() == "/pageEtudiant?uploadFile" {
+			// TODO récupération du fichier (qui se trouve dans r.FormValue["uploadfile"]
+
+			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
+		}
 	}
 }
 
@@ -47,6 +53,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "POST" {
 
 		if r.URL.String() == "/login?login" {
+			// request provient du formulaire pour se connecter
 			login := r.FormValue("login")
 			password := r.FormValue("password")
 			fmt.Println("tentative de co avec :", login, " ", password)
@@ -61,6 +68,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				http.Redirect(w, r, "/login", http.StatusFound)
 			}
 		} else if r.URL.String() == "/login?register" {
+			// request provient du formulaire pour s'enregistrer
 			// pas de vérification de champs implémenter pour l'instant
 			etudiantCo = BDD.Etudiant{
 				Login:      r.FormValue("login"),

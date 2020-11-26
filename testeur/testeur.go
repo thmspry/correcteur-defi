@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/user"
 )
 
 func Test(etudiant string) string {
@@ -44,6 +45,7 @@ func Test(etudiant string) string {
 	} else {
 		return "On obtient pas la même chose"
 	}
+
 }
 
 func deplacer(path_in string, path_out string) bool {
@@ -61,4 +63,16 @@ func MakeFileExecutable(script string) bool {
 		return false
 	}
 	return true
+}
+
+func TestUser() {
+	fmt.Println(user.Current())
+}
+
+func InitUser() {
+	//crée l'user
+	//crée le groupe
+	// ajouter l'user au groupe
+	//empeche la modification de fichier à partir de la racine au groupe
+	//donne le droit de modif à un dossier spécifique sur le serveur au groupe
 }
