@@ -24,7 +24,8 @@ func Test(etudiant string) string {
 	deplacer("./script_etudiants/"+script_etu, path_dir_test)
 
 	cmd := exec.Command("/bin/sh", script_etu)
-	cmd.Dir = path_dir_test
+	//cmd.SysProcAttr = &syscall.
+	//cmd.Dir = path_dir_test
 	stdout_etu, err := cmd.CombinedOutput()
 	if err != nil {
 		return script_etu + err.Error()
@@ -69,10 +70,17 @@ func TestUser() {
 	fmt.Println(user.Current())
 }
 
+// Non testé
 func InitUser() {
 	//crée l'user
+	exec.Command("useradd", "testeur")
 	//crée le groupe
+	exec.Command("groupadd", "grpTest")
 	// ajouter l'user au groupe
+	exec.Command("usermod", "-a", "-G", "grpTest", "testeur")
 	//empeche la modification de fichier à partir de la racine au groupe
+	os.Chmod("./", 750)
 	//donne le droit de modif à un dossier spécifique sur le serveur au groupe
+	// ou chmod 770 ./testeur/dir_test
+	exec.Command("chown", "-R", "testeur:grpTest", "testeur/dir_test")
 }

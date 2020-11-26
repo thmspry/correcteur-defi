@@ -41,6 +41,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("sdxlkhbfsdlkjgh")
 		if r.URL.String() == "/pageEtudiant?uploadFile" {
 			// TODO récupération du fichier (qui se trouve dans r.FormValue["uploadfile"]
+			fmt.Println(r.FormValue("uploadfile"))
 			_ = r.ParseMultipartForm(32 << 20)
 			file, handler, err := r.FormFile("uploadfile")
 			if err != nil {
