@@ -12,7 +12,8 @@ var etudiantCo BDD.Etudiant
 
 func InitWeb() {
 
-	http.HandleFunc("/login", accueil)             // Page d'acceuil : http://localhost:8080/login
+	http.HandleFunc("/login", accueil) // Page d'acceuil : http://localhost:8080/login
+
 	http.HandleFunc("/pageEtudiant", pageEtudiant) // Page étudiant : http://localhost:8080/pageEtudiant
 	err := http.ListenAndServe(":8080", nil)       // port utilisé
 	if err != nil {
@@ -25,7 +26,6 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	//Check la méthode utilisé par le formulaire
 	if r.Method == "GET" {
 
-		fmt.Println(etudiantCo)
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
 
 		err := t.Execute(w, etudiantCo)
@@ -46,21 +46,36 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 		t.Execute(w, nil)
 	} else if r.Method == "POST" {
 
-		login := r.FormValue("login")
-		password := r.FormValue("password")
-		fmt.Println("tentative de co avec :", login, " ", password)
-		existe := BDD.LoginCorrect(login, password)
+		if r.URL.String() == "/login?login" {
+			login := r.FormValue("login")
+			password := r.FormValue("password")
+			fmt.Println("tentative de co avec :", login, " ", password)
+			existe := BDD.LoginCorrect(login, password)
 
-		if existe {
-			etudiantCo = BDD.GetInfo(login, password)
+			if existe {
+				etudiantCo = BDD.GetInfo(login, password)
+				http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
+				return
+			} else {
+				fmt.Println("login incorrecte")
+				http.Redirect(w, r, "/login", http.StatusFound)
+			}
+		} else if r.URL.String() == "/login?register" {
+			// pas de vérification de champs implémenter pour l'instant
+			etudiantCo = BDD.Etudiant{
+				Login:      r.FormValue("login"),
+				Password:   r.FormValue("password"),
+				Prenom:     r.FormValue("prenom"),
+				Nom:        r.FormValue("nom"),
+				Mail:       r.FormValue("mail"),
+				DefiSucess: 0,
+			}
+			BDD.Register(etudiantCo)
 			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
-			return
-		} else {
-			fmt.Println("login incorrecte")
 		}
 	}
-
 }
+
 func upload() {
 
 }

@@ -49,13 +49,12 @@ func Register(etu Etudiant) bool {
 		fmt.Println(err)
 	}
 
-	res, err := stmt.Exec(etu.Login, etu.Password, etu.Prenom, etu.Nom, etu.Mail, etu.DefiSucess)
+	_, err = stmt.Exec(etu.Login, etu.Password, etu.Prenom, etu.Nom, etu.Mail, etu.DefiSucess)
 	if err != nil {
 		fmt.Println(err)
 		return false
 	}
-	id, err := res.LastInsertId()
-	fmt.Printf("Register fonctionnelle : " + string(id) + "\n")
+	fmt.Println("l'étudiant de login : " + string(etu.Login) + " a été enregistré dans la bdd\n")
 	return true
 }
 
