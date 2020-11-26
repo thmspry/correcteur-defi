@@ -1,11 +1,16 @@
 package web
 
 import (
+	"bytes"
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"html/template"
+	"io"
+	"io/ioutil"
 	"log"
+	"mime/multipart"
 	"net/http"
+	"os"
 )
 
 var etudiantCo BDD.Etudiant
@@ -33,9 +38,24 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			log.Printf("error exec template : ", err)
 		}
 	} else if r.Method == "POST" {
+		fmt.Printf("sdxlkhbfsdlkjgh")
 		if r.URL.String() == "/pageEtudiant?uploadFile" {
 			// TODO récupération du fichier (qui se trouve dans r.FormValue["uploadfile"]
-
+			_ = r.ParseMultipartForm(32 << 20)
+			file, handler, err := r.FormFile("uploadfile")
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			defer file.Close()
+			_, _ = fmt.Fprintf(w, "%v", handler.Header)
+			f, err := os.OpenFile("./test/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			defer f.Close()
+			_, _ = io.Copy(f, file)
 			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 		}
 	}
@@ -49,7 +69,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Print("erreur chargement accueil.html")
 		}
-		t.Execute(w, nil)
+		_ = t.Execute(w, nil)
 	} else if r.Method == "POST" {
 
 		if r.URL.String() == "/login?login" {
@@ -84,6 +104,51 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func upload() {
+func upload(filename string, targetUrl string) error {
+	bodyBuf := &bytes.Buffer{}
+	bodyWriter := multipart.NewWriter(bodyBuf)
 
+	// this step is very important
+	fileWriter, err := bodyWriter.CreateFormFile("uploadfile", filename)
+	if err != nil {
+		fmt.Println("error writing to buffer")
+		return err
+	}
+
+	// open file handle
+	fh, err := os.Open(filename)
+	if err != nil {
+		fmt.Println("error opening file")
+		return err
+	}
+	defer fh.Close()
+
+	//iocopy
+	_, err = io.Copy(fileWriter, fh)
+	if err != nil {
+		return err
+	}
+
+	contentType := bodyWriter.FormDataContentType()
+	_ = bodyWriter.Close()
+
+	resp, err := http.Post(targetUrl, contentType, bodyBuf)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	resp_body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	fmt.Println(resp.Status)
+	fmt.Println(string(resp_body))
+	return nil
+}
+
+// sample usage
+func main() {
+	target_url := "http://localhost:8080/pageEtudiant?uploadFile"
+	filename := "./a.txt"
+	_ = upload(filename, target_url)
 }
