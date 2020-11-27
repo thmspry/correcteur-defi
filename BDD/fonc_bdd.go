@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// Structure a réutiliser un peu partout
 type Etudiant struct {
 	Login      string
 	Password   string
@@ -33,7 +34,7 @@ func InitBDD() {
 	stmt, err = db.Prepare("CREATE TABLE IF NOT EXISTS Defis (" +
 		"login TEXT NOT NULL," +
 		"defi INTEGER NOT NULL," +
-		"etat TEXT NOT NULL," +
+		"etat TEXT NOT NULL," + // 3 états : R (réussi), T (tenté), N (non tenté):om
 		"FOREIGN KEY (login) REFERENCES Etudiant(login)" +
 		")")
 	if err != nil {
@@ -69,7 +70,7 @@ func LoginCorrect(id string, password string) bool {
 }
 
 //testé
-func GetInfo(id string, mdp string) Etudiant {
+func GetInfo(id string) Etudiant {
 	fmt.Println("fonc GetInfo : ")
 	var (
 		login      string
@@ -80,7 +81,7 @@ func GetInfo(id string, mdp string) Etudiant {
 		defiSucess int
 	)
 
-	row := db.QueryRow("SELECT * FROM Etudiant WHERE login = $1 AND password = $2", id, mdp)
+	row := db.QueryRow("SELECT * FROM Etudiant WHERE login = $1", id)
 	err := row.Scan(&login, &password, &prenom, &nom, &mail, &defiSucess)
 
 	if err != nil {

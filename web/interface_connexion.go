@@ -81,7 +81,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			existe := BDD.LoginCorrect(login, password)
 
 			if existe {
-				etudiantCo = BDD.GetInfo(login, password)
+				etudiantCo = BDD.GetInfo(login)
 				http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 				return
 			} else {
