@@ -13,5 +13,11 @@
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
       <jdbc-url>jdbc:sqlite:A:\travail\programmation\proj s3\BDD\projS3.db</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="projS3 [2]" uuid="abf3a9ff-6850-431b-be57-1d4b811ce978">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/BDD/projS3.db</jdbc-url>
+    </data-source>
   </component>
 </project>

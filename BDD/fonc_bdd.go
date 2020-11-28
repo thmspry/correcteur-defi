@@ -41,6 +41,17 @@ func InitBDD() {
 		fmt.Println("prblm table Defis" + err.Error())
 	}
 	stmt.Exec()
+
+	stmt, err = db.Prepare("CREATE TABLE IF NOT EXISTS Requete(" +
+		"Id TEXT NOT NULL" +
+		"Token TEXT +" +
+		"FOREIGN KEY(Id) REFERENCES Etudiant(login)" +
+		")")
+	if err != nil {
+		fmt.Println("Erreur dans la table Requete" + err.Error())
+		stmt.Exec()
+	}
+
 }
 
 //testé
