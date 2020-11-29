@@ -2,7 +2,7 @@ package main
 
 import (
 	_ "github.com/mattn/go-sqlite3"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/testeur"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
 )
 
 func main() {
@@ -14,8 +14,8 @@ func main() {
 
 
 	*/
-	testeur.TestUser()
-	//web.InitWeb()
+	//testeur.TestUser()
+	web.InitWeb()
 	//BDD.InitBDD()
 
 }

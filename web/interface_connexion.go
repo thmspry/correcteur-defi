@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
+	//"github.com/gomodule/redigo/redis" pas sur de ce truc.
 	"html/template"
 	"io"
 	"io/ioutil"
@@ -17,10 +18,10 @@ var etudiantCo BDD.Etudiant
 
 func InitWeb() {
 
-	http.HandleFunc("/login", accueil) // Page d'acceuil : http://localhost:8080/login
-
+	http.HandleFunc("/login", accueil)             // Page d'acceuil : http://localhost:8080/login
 	http.HandleFunc("/pageEtudiant", pageEtudiant) // Page étudiant : http://localhost:8080/pageEtudiant
-	err := http.ListenAndServe(":8080", nil)       // port utilisé
+
+	err := http.ListenAndServe(":8080", nil) // port utilisé
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
@@ -104,6 +105,8 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+
+//
 
 func upload(filename string, targetUrl string) error {
 	bodyBuf := &bytes.Buffer{}
