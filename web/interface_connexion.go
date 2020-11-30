@@ -1,7 +1,6 @@
 package web
 
 import (
-	"bytes"
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"io/ioutil"
@@ -12,12 +11,8 @@ import (
 	"crypto/rand"
 	//"github.com/gomodule/redigo/redis" pas sur de ce truc.
 	"html/template"
-	"io"
-	"io/ioutil"
 	"log"
-	"mime/multipart"
 	"net/http"
-	"os"
 )
 
 var etudiantCo BDD.Etudiant
@@ -153,58 +148,8 @@ func HashPassword(password string) (string, error) {
 func setupRoutes() {
 	http.HandleFunc("/pageEtudiant", pageEtudiant)
 	http.ListenAndServe(":8080", nil)
-func upload(filename string, targetUrl string) error {
-	bodyBuf := &bytes.Buffer{}
-	bodyWriter := multipart.NewWriter(bodyBuf)
-
-	// this step is very important
-	fileWriter, err := bodyWriter.CreateFormFile("uploadfile", filename)
-	if err != nil {
-		fmt.Println("error writing to buffer")
-		return err
-	}
-
-	// open file handle
-	fh, err := os.Open(filename)
-	if err != nil {
-		fmt.Println("error opening file")
-		return err
-	}
-	defer fh.Close()
-
-	//iocopy
-	_, err = io.Copy(fileWriter, fh)
-	if err != nil {
-		return err
-	}
-
-	contentType := bodyWriter.FormDataContentType()
-	_ = bodyWriter.Close()
-
-	resp, err := http.Post(targetUrl, contentType, bodyBuf)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	resp_body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	fmt.Println(resp.Status)
-	fmt.Println(string(resp_body))
-	return nil
 }
 
 func password() {
 	fmt.Print()
-}
-
-// sample usage
-func main() {
-	target_url := "http://localhost:8080/pageEtudiant?uploadFile"
-	filename := "./a.txt"
-	_ = upload(filename, target_url)
-	motdepasse := "test"
-	fmt.Println(HashPassword(motdepasse))
-	fmt.Println("test")
 }
