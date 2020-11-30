@@ -42,9 +42,9 @@ func InitBDD() {
 	}
 	stmt.Exec()
 
-	stmt, err = db.Prepare("CREATE TABLE IF NOT EXISTS Requete(" +
-		"login TEXT NOT NULL," +
-		"token TEXT +," +
+	stmt, err = db.Prepare("CREATE TABLE IF NOT EXISTS Token (" +
+		"login TEXT UNIQUE NOT NULL," +
+		"token TEXT NOT NULL," +
 		"FOREIGN KEY(login) REFERENCES Etudiant(login)," +
 		")")
 	if err != nil {

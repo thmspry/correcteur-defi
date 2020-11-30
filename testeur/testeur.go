@@ -2,17 +2,24 @@ package testeur
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
-	"os/user"
+	"strconv"
+	"strings"
+	"syscall"
 )
 
 var (
-	path_defis      = "./defis/"
-	path_script_etu = "./script_etudiants"
-	path_dir_test   = "./dir_test/"
+	path_defis        = "./ressource/defis/"
+	path_script_etu   = "./ressource/script_etudiants/"
+	path_dir_test     = "./dir_test/"
+	path_jeu_de_tests = "./ressource/jeu_de_test/"
 )
+
+type defi struct {
+	nom  string
+	etat int
+}
 
 func Test(etudiant string) string {
 	/*
@@ -20,43 +27,58 @@ func Test(etudiant string) string {
 	* executer le script dans un dossier sans pouvoir revenir plus haut et faire cd fait venir dans ce dossier
 	 */
 
-	//Sauvegarder l'arborescence du projet
-	cmd := exec.Command("find", "*")
-	out, err := cmd.CombinedOutput()
-	if err := ioutil.WriteFile("./arboSave.txt", out, 0644); err != nil {
-		fmt.Println("err d'écriture d'arboSave.txt\n", err, "\n")
-	}
+	num, defi := Defi_actuel()
+	script_etu := "script_" + etudiant + "_" + num + ".sh"
+	path_jeu_de_tests = path_jeu_de_tests + "test_defi_" + num + "/"
 
-	script_etu := "script_" + etudiant + ".sh"
-	defi := "defi_X.sh"
+	i, _ := strconv.Atoi(num)
+	var resTest = make([]int, i) // 1 : réussi, 0 : échoué, -1 : error
+	fmt.Println(resTest)
 
-	if !MakeFileExecutable("./script_etudiants/" + script_etu) {
+	if !MakeFileExecutable(path_script_etu + script_etu) {
 		return "chmod failed"
 	}
 
 	deplacer(path_defis+defi, path_dir_test)
 	deplacer(path_script_etu+script_etu, path_dir_test)
 
-	cmd = exec.Command("/bin/sh", script_etu)
-	cmd.Dir = path_dir_test
-	cmd.Env = append(os.Environ(), "USER=testeur") //ligne qui devrait permettre de faire le test en tant que UID "testeur"
+	// Début du test
+	tests, _ := exec.Command("find", path_jeu_de_tests, "-type", "f").CombinedOutput()
+	nbJeuDeTest := len(strings.Split(string(tests), "\n")) - 1
 
+	for i := 0; i < nbJeuDeTest; i++ {
+		test := "test_" + string(i)
+		deplacer(path_jeu_de_tests+test, path_dir_test)
+
+		//test...
+		//Recup le résultat du defi du prof
+
+		deplacer(path_dir_test+test, path_jeu_de_tests)
+	}
+
+	cmd := exec.Command("./" + script_etu)
+	cmd.Dir = path_dir_test
+	cmd.SysProcAttr = &syscall.SysProcAttr{}
+	cmd.SysProcAttr.Credential = &syscall.Credential{Uid: 501, Gid: 20}
+	//ça passe jusqu'ici
 	stdout_etu, err := cmd.CombinedOutput()
 	if err != nil {
-		return "execution de " + script_etu + " failed\n" + err.Error()
+		fmt.Println("execution de "+script_etu+" failed\n", err)
 	}
 	cmd = exec.Command("/bin/sh", defi)
 	cmd.Dir = path_dir_test
-	cmd.Env = append(os.Environ(), "USER=testeur")
+	//fmt.Print("cred du new cmd : ", cmd.SysProcAttr.Credential)
 	stdout_defi, err := cmd.CombinedOutput()
 	if err != nil {
-		return "execution de " + defi + " failed\n" + err.Error()
+		fmt.Println("execution de "+defi+" failed\n", err)
 	}
 
 	deplacer(path_dir_test+defi, path_defis)
 	deplacer(path_dir_test+script_etu, path_script_etu)
 
-	fmt.Printf(string(stdout_etu) + string(stdout_defi))
+	clear(path_dir_test)
+
+	fmt.Printf("\nstdout_etu : " + string(stdout_etu) + "stdout_defi : " + string(stdout_defi))
 	if string(stdout_defi) == string(stdout_etu) {
 		return "On obtient la même chose"
 	} else {
@@ -84,7 +106,12 @@ func MakeFileExecutable(script string) bool {
 }
 
 func TestUser() {
-	fmt.Println(user.Current())
+	/*
+		usr, _ := user.Lookup("Paul")
+		fmt.Print(usr.Uid)
+		fmt.Println(usr.Gid)
+		fmt.Println(usr)
+	*/
 }
 
 // testé à la main mais pas avec go sur le serveur
