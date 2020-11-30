@@ -1,14 +1,23 @@
 package web
 
 import (
+	"bytes"
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"io/ioutil"
 
+	"golang.org/x/crypto/bcrypt"
+
+	//"golang.org/x/crypto/bcrypt"
+	"crypto/rand"
 	//"github.com/gomodule/redigo/redis" pas sur de ce truc.
 	"html/template"
+	"io"
+	"io/ioutil"
 	"log"
+	"mime/multipart"
 	"net/http"
+	"os"
 )
 
 var etudiantCo BDD.Etudiant
@@ -101,6 +110,8 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 
 			if existe {
 				etudiantCo = BDD.GetInfo(login)
+				// crée un go routine qui envoie le token, voir si on peut faire ça en même temps que la redirection.
+
 				http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 				return
 			} else {
@@ -118,10 +129,23 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				Mail:       r.FormValue("mail"),
 				DefiSucess: 0,
 			}
-			BDD.Register(etudiantCo)
-			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 		}
+		BDD.Register(etudiantCo) // ajouter l'etudiant dans la base de données.
+		http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 	}
+}
+
+//On genere un token.
+func tokenGenerator() string {
+	b := make([]byte, 4)
+	rand.Read(b)
+	return fmt.Sprint("%x", b)
+}
+
+//Pour plus tard, essayer de hasher le motdepasse pour ne pas le stocker en clair.
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
 }
 
 //
@@ -129,4 +153,58 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 func setupRoutes() {
 	http.HandleFunc("/pageEtudiant", pageEtudiant)
 	http.ListenAndServe(":8080", nil)
+func upload(filename string, targetUrl string) error {
+	bodyBuf := &bytes.Buffer{}
+	bodyWriter := multipart.NewWriter(bodyBuf)
+
+	// this step is very important
+	fileWriter, err := bodyWriter.CreateFormFile("uploadfile", filename)
+	if err != nil {
+		fmt.Println("error writing to buffer")
+		return err
+	}
+
+	// open file handle
+	fh, err := os.Open(filename)
+	if err != nil {
+		fmt.Println("error opening file")
+		return err
+	}
+	defer fh.Close()
+
+	//iocopy
+	_, err = io.Copy(fileWriter, fh)
+	if err != nil {
+		return err
+	}
+
+	contentType := bodyWriter.FormDataContentType()
+	_ = bodyWriter.Close()
+
+	resp, err := http.Post(targetUrl, contentType, bodyBuf)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	resp_body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	fmt.Println(resp.Status)
+	fmt.Println(string(resp_body))
+	return nil
+}
+
+func password() {
+	fmt.Print()
+}
+
+// sample usage
+func main() {
+	target_url := "http://localhost:8080/pageEtudiant?uploadFile"
+	filename := "./a.txt"
+	_ = upload(filename, target_url)
+	motdepasse := "test"
+	fmt.Println(HashPassword(motdepasse))
+	fmt.Println("test")
 }
