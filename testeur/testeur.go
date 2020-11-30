@@ -16,11 +16,6 @@ var (
 	passTout          bool
 )
 
-type defi struct {
-	nom  string
-	etat int
-}
-
 func Test(etudiant string) string {
 	/*
 	* Sauvegarder le layout avant execution du script
@@ -35,7 +30,7 @@ func Test(etudiant string) string {
 	var resTest = make([]int, i) // 1 : réussi, 0 : échoué, -1 : error
 	fmt.Println(resTest)
 
-	if !MakeFileExecutable(path_script_etu + script_etu) {
+	if !makeFileExecutable(path_script_etu + script_etu) {
 		return "chmod failed"
 	}
 
@@ -47,10 +42,10 @@ func Test(etudiant string) string {
 	nbJeuDeTest := len(strings.Split(string(tests), "\n")) - 1
 
 	for i := 0; i < nbJeuDeTest; i++ {
-		test := "test_" + string(i)
+		test := "test_" + strconv.Itoa(i)
 		deplacer(path_jeu_de_tests+test, path_dir_test)
 
-		resTest[i] = TesteurUnique(defi, script_etu)
+		resTest[i] = testeurUnique(defi, script_etu)
 		if resTest[i] == 0 || resTest[i] == -1 {
 			passTout = false
 		}
@@ -66,28 +61,74 @@ func Test(etudiant string) string {
 	if passTout {
 		//mettre dans la table "defis" de la BDD num etu, num defis et "réussi"
 	}
+	res := ""
+	for test := range resTest {
+		switch test {
+		case 1:
+			res = res + "Test N°" + strconv.Itoa(test) + " : réussi\n"
+		case 0:
+			res = res + "Test N°" + strconv.Itoa(test) + " : échoué\n"
+		case -1:
+			res = res + "Test N°" + strconv.Itoa(test) + " : error\n"
+		}
 
-	return ""
+	}
+	return res
 }
 
-func TesteurUnique(defi string, script_user string) int {
+func testeurUnique(defi string, script_user string) int {
 
 	//cmd.SysProcAttr = &syscall.SysProcAttr{}
 	//cmd.SysProcAttr.Credential = &syscall.Credential{Uid: 501, Gid: 20}
 
-	arboAvant := getArbo(path_dir_test)
+	arboAvant := getFiles(path_dir_test)
+
 	cmd := exec.Command("/bin/sh", defi)
 	cmd.Dir = path_dir_test
 	stdout_defi, err := cmd.CombinedOutput()
 	if err != nil {
-		fmt.Println(err, stdout_defi)
+		fmt.Println("erreur execution script défis : ", err)
 		return -1
 	}
 
-	if arboAvant != getArbo(path_dir_test) {
+	arboApres := getFiles(path_dir_test)
+	if len(arboAvant) != len(arboApres) {
 		//modif dans un new fichier
 		//trouver le fichier / nom du fichier modifié
-		return 0
+		diff := difference(arboAvant, arboApres)
+		fmt.Println(diff)
+		mapDefi := make(map[string]string)
+		mapEtu := make(map[string]string)
+		for _, name := range diff {
+			f, err := exec.Command("cat", path_dir_test+name).CombinedOutput()
+			if err != nil {
+				fmt.Println("erreur execution cat : ", path_dir_test+name, "\n", err)
+			}
+			mapDefi[name] = string(f)
+		}
+
+		//execution script étudiant
+		cmd := exec.Command("/bin/sh", script_user)
+		cmd.Dir = path_dir_test
+		_, err := cmd.CombinedOutput()
+		if err != nil {
+			fmt.Println("erreur execution script étudiant : ", err)
+			return -1
+		}
+		//Récup les fichiers
+		for _, name := range diff {
+			f, err := exec.Command("cat", path_dir_test+name).CombinedOutput()
+			if err != nil {
+				fmt.Println("erreur execution cat : ", path_dir_test+name, "\n", err)
+				return -1
+			}
+			mapEtu[name] = string(f)
+
+			if mapEtu[name] != mapDefi[name] {
+				return 0
+			}
+		}
+		return 1
 	} else {
 		cmd = exec.Command("/bin/sh", script_user)
 		cmd.Dir = path_dir_test
@@ -105,24 +146,6 @@ func TesteurUnique(defi string, script_user string) int {
 	}
 }
 
-// fonction qui rend le fichier executable
-func MakeFileExecutable(script string) bool {
-	if err := os.Chmod(script, 0755); err != nil {
-		fmt.Print("chmod on ", script, " failed")
-		return false
-	}
-	return true
-}
-
-func TestUser() {
-	/*
-		usr, _ := user.Lookup("Paul")
-		fmt.Print(usr.Uid)
-		fmt.Println(usr.Gid)
-		fmt.Println(usr)
-	*/
-}
-
 // testé à la main mais pas avec go sur le serveur
 func InitUser() {
 	//crée l'user
@@ -138,4 +161,31 @@ func InitUser() {
 	//donne le droit de modif à un dossier spécifique sur le serveur au groupe
 	os.Chmod("./dir_test", 777)
 	// ou chmod 770 ./testeur/dir_test
+}
+
+func difference(slice1 []string, slice2 []string) []string {
+	var diff []string
+
+	// Loop two times, first to find slice1 strings not in slice2,
+	// second loop to find slice2 strings not in slice1
+	for i := 0; i < 2; i++ {
+		for _, s1 := range slice1 {
+			found := false
+			for _, s2 := range slice2 {
+				if s1 == s2 {
+					found = true
+					break
+				}
+			}
+			// String not found. We add it to return slice
+			if !found {
+				diff = append(diff, s1)
+			}
+		}
+		// Swap the slices, only if it was the first loop
+		if i == 0 {
+			slice1, slice2 = slice2, slice1
+		}
+	}
+	return diff
 }

@@ -2,6 +2,8 @@ package testeur
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -48,8 +50,30 @@ func deplacer(file string, path_out string) bool {
 }
 
 //testé
-func getArbo(path string) string {
+func getFiles(path string) []string {
 
-	out, _ := exec.Command("find", path, "-type", "f").CombinedOutput()
-	return string(out)
+	//out, _ := exec.Command("find", path, "-type", "f").CombinedOutput()
+	//return string(out)
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		t := len(files)
+		var Files = make([]string, t)
+		for i := 0; i < t; i++ {
+			Files[i] = files[i].Name()
+		}
+		return Files
+	}
+
+	return nil
+}
+
+// fonction qui rend le fichier executable
+func makeFileExecutable(script string) bool {
+	if err := os.Chmod(script, 0755); err != nil {
+		fmt.Print("chmod on ", script, " failed")
+		return false
+	}
+	return true
 }
