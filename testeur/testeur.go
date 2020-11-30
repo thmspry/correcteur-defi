@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-	"syscall"
 )
 
 var (
@@ -14,6 +13,7 @@ var (
 	path_script_etu   = "./ressource/script_etudiants/"
 	path_dir_test     = "./dir_test/"
 	path_jeu_de_tests = "./ressource/jeu_de_test/"
+	passTout          bool
 )
 
 type defi struct {
@@ -50,27 +50,12 @@ func Test(etudiant string) string {
 		test := "test_" + string(i)
 		deplacer(path_jeu_de_tests+test, path_dir_test)
 
-		//test...
-		//Recup le résultat du defi du prof
-
+		resTest[i] = TesteurUnique(defi, script_etu)
+		if resTest[i] == 0 || resTest[i] == -1 {
+			passTout = false
+		}
 		deplacer(path_dir_test+test, path_jeu_de_tests)
-	}
-
-	cmd := exec.Command("./" + script_etu)
-	cmd.Dir = path_dir_test
-	cmd.SysProcAttr = &syscall.SysProcAttr{}
-	cmd.SysProcAttr.Credential = &syscall.Credential{Uid: 501, Gid: 20}
-	//ça passe jusqu'ici
-	stdout_etu, err := cmd.CombinedOutput()
-	if err != nil {
-		fmt.Println("execution de "+script_etu+" failed\n", err)
-	}
-	cmd = exec.Command("/bin/sh", defi)
-	cmd.Dir = path_dir_test
-	//fmt.Print("cred du new cmd : ", cmd.SysProcAttr.Credential)
-	stdout_defi, err := cmd.CombinedOutput()
-	if err != nil {
-		fmt.Println("execution de "+defi+" failed\n", err)
+		clear(path_dir_test)
 	}
 
 	deplacer(path_dir_test+defi, path_defis)
@@ -78,22 +63,46 @@ func Test(etudiant string) string {
 
 	clear(path_dir_test)
 
-	fmt.Printf("\nstdout_etu : " + string(stdout_etu) + "stdout_defi : " + string(stdout_defi))
-	if string(stdout_defi) == string(stdout_etu) {
-		return "On obtient la même chose"
-	} else {
-		return "On obtient pas la même chose"
+	if passTout {
+		//mettre dans la table "defis" de la BDD num etu, num defis et "réussi"
 	}
 
+	return ""
 }
 
-// fonction qui déplace un fichier (en ayant précisé son chemin pour le trouver) dans un nouveau dossier
-func deplacer(file string, path_out string) bool {
-	if _, err := exec.Command("mv", file, path_out).CombinedOutput(); err != nil {
-		fmt.Println(file, " not found")
-		return false
+func TesteurUnique(defi string, script_user string) int {
+
+	//cmd.SysProcAttr = &syscall.SysProcAttr{}
+	//cmd.SysProcAttr.Credential = &syscall.Credential{Uid: 501, Gid: 20}
+
+	arboAvant := getArbo(path_dir_test)
+	cmd := exec.Command("/bin/sh", defi)
+	cmd.Dir = path_dir_test
+	stdout_defi, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(err, stdout_defi)
+		return -1
 	}
-	return true
+
+	if arboAvant != getArbo(path_dir_test) {
+		//modif dans un new fichier
+		//trouver le fichier / nom du fichier modifié
+		return 0
+	} else {
+		cmd = exec.Command("/bin/sh", script_user)
+		cmd.Dir = path_dir_test
+		stdout_etu, err := cmd.CombinedOutput()
+		if err != nil {
+			fmt.Println(err, stdout_etu)
+			return -1
+		}
+
+		if string(stdout_defi) == string(stdout_etu) {
+			return 1
+		} else {
+			return 0
+		}
+	}
 }
 
 // fonction qui rend le fichier executable

@@ -7,7 +7,6 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	//"golang.org/x/crypto/bcrypt"
 	"crypto/rand"
 	//"github.com/gomodule/redigo/redis" pas sur de ce truc.
 	"html/template"
@@ -142,8 +141,6 @@ func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
 }
-
-//
 
 func setupRoutes() {
 	http.HandleFunc("/pageEtudiant", pageEtudiant)

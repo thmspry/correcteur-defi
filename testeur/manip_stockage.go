@@ -37,3 +37,19 @@ func clear(path string) bool {
 	}
 	return true
 }
+
+// fonction qui déplace un fichier (en ayant précisé son chemin pour le trouver) dans un nouveau dossier
+func deplacer(file string, path_out string) bool {
+	if _, err := exec.Command("mv", file, path_out).CombinedOutput(); err != nil {
+		fmt.Println(file, " not found")
+		return false
+	}
+	return true
+}
+
+//testé
+func getArbo(path string) string {
+
+	out, _ := exec.Command("find", path, "-type", "f").CombinedOutput()
+	return string(out)
+}
