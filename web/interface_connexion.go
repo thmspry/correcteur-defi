@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
+	"golang.org/x/crypto/bcrypt"
+
+	//"golang.org/x/crypto/bcrypt"
+	"crypto/rand"
 	//"github.com/gomodule/redigo/redis" pas sur de ce truc.
 	"html/template"
 	"io"
@@ -21,7 +25,7 @@ func InitWeb() {
 	http.HandleFunc("/login", accueil)             // Page d'acceuil : http://localhost:8080/login
 	http.HandleFunc("/pageEtudiant", pageEtudiant) // Page étudiant : http://localhost:8080/pageEtudiant
 
-	err := http.ListenAndServe(":8080", nil) // port utilisé
+	err := http.ListenAndServe(":8090", nil) // port utilisé
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
@@ -83,6 +87,8 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 
 			if existe {
 				etudiantCo = BDD.GetInfo(login)
+				// crée un go routine qui envoie le token, voir si on peut faire ça en même temps que la redirection.
+
 				http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 				return
 			} else {
@@ -100,10 +106,23 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				Mail:       r.FormValue("mail"),
 				DefiSucess: 0,
 			}
-			BDD.Register(etudiantCo)
-			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 		}
+		BDD.Register(etudiantCo) // ajouter l'etudiant dans la base de données.
+		http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 	}
+}
+
+//On genere un token.
+func tokenGenerator() string {
+	b := make([]byte, 4)
+	rand.Read(b)
+	return fmt.Sprint("%x", b)
+}
+
+//Pour plus tard, essayer de hasher le motdepasse pour ne pas le stocker en clair.
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
 }
 
 //
@@ -150,9 +169,16 @@ func upload(filename string, targetUrl string) error {
 	return nil
 }
 
+func password() {
+	fmt.Print()
+}
+
 // sample usage
 func main() {
 	target_url := "http://localhost:8080/pageEtudiant?uploadFile"
 	filename := "./a.txt"
 	_ = upload(filename, target_url)
+	motdepasse := "test"
+	fmt.Println(HashPassword(motdepasse))
+	fmt.Println("test")
 }
