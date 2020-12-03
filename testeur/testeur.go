@@ -27,34 +27,40 @@ func Test(etudiant string) string {
 	path_jeu_de_tests = path_jeu_de_tests + "test_defi_" + num + "/"
 
 	i, _ := strconv.Atoi(num)
-	var resTest = make([]int, i) // 1 : réussi, 0 : échoué, -1 : error
-	fmt.Println(resTest)
+	var resTest = make([]int, i+1) // 1 : réussi, 0 : échoué, -1 : error
 
 	if !makeFileExecutable(path_script_etu + script_etu) {
-		return "chmod failed"
+		return "chmod failed pour" + script_etu
+	}
+	if !makeFileExecutable(path_defis + defi) {
+		return "chmod failed pour" + defi
 	}
 
-	deplacer(path_defis+defi, path_dir_test)
-	deplacer(path_script_etu+script_etu, path_dir_test)
-
-	// Début du test
+	// Début du test_2
 	tests, _ := exec.Command("find", path_jeu_de_tests, "-type", "f").CombinedOutput()
 	nbJeuDeTest := len(strings.Split(string(tests), "\n")) - 1
 
 	for i := 0; i < nbJeuDeTest; i++ {
+
+		deplacer(path_defis+defi, path_dir_test)
+		deplacer(path_script_etu+script_etu, path_dir_test)
+
 		test := "test_" + strconv.Itoa(i)
 		deplacer(path_jeu_de_tests+test, path_dir_test)
+
+		rename(path_dir_test, test, "test")
 
 		resTest[i] = testeurUnique(defi, script_etu)
 		if resTest[i] == 0 || resTest[i] == -1 {
 			passTout = false
 		}
+
+		rename(path_dir_test, "test", test)
 		deplacer(path_dir_test+test, path_jeu_de_tests)
+		deplacer(path_dir_test+defi, path_defis)
+		deplacer(path_dir_test+script_etu, path_script_etu)
 		clear(path_dir_test)
 	}
-
-	deplacer(path_dir_test+defi, path_defis)
-	deplacer(path_dir_test+script_etu, path_script_etu)
 
 	clear(path_dir_test)
 
@@ -62,16 +68,14 @@ func Test(etudiant string) string {
 		//mettre dans la table "defis" de la BDD num etu, num defis et "réussi"
 	}
 	res := ""
-	for test := range resTest {
-		switch test {
-		case 1:
-			res = res + "Test N°" + strconv.Itoa(test) + " : réussi\n"
-		case 0:
-			res = res + "Test N°" + strconv.Itoa(test) + " : échoué\n"
-		case -1:
-			res = res + "Test N°" + strconv.Itoa(test) + " : error\n"
+	for i := 0; i < len(resTest); i++ {
+		if resTest[i] == 1 {
+			res = res + "Test N°" + strconv.Itoa(i) + " : réussi\n"
+		} else if resTest[i] == 0 {
+			res = res + "Test N°" + strconv.Itoa(i) + " : échoué\n"
+		} else {
+			res = res + "Test N°" + strconv.Itoa(i) + " : error\n"
 		}
-
 	}
 	return res
 }
@@ -80,9 +84,8 @@ func testeurUnique(defi string, script_user string) int {
 
 	//cmd.SysProcAttr = &syscall.SysProcAttr{}
 	//cmd.SysProcAttr.Credential = &syscall.Credential{Uid: 501, Gid: 20}
-
 	arboAvant := getFiles(path_dir_test)
-
+	makeFileExecutable(path_dir_test + defi)
 	cmd := exec.Command("/bin/sh", defi)
 	cmd.Dir = path_dir_test
 	stdout_defi, err := cmd.CombinedOutput()
@@ -90,13 +93,11 @@ func testeurUnique(defi string, script_user string) int {
 		fmt.Println("erreur execution script défis : ", err)
 		return -1
 	}
-
 	arboApres := getFiles(path_dir_test)
 	if len(arboAvant) != len(arboApres) {
 		//modif dans un new fichier
 		//trouver le fichier / nom du fichier modifié
 		diff := difference(arboAvant, arboApres)
-		fmt.Println(diff)
 		mapDefi := make(map[string]string)
 		mapEtu := make(map[string]string)
 		for _, name := range diff {

@@ -35,7 +35,7 @@ func clear(path string) bool {
 
 		// Remove the file.
 		os.Remove(fullPath)
-		fmt.Println("Removed file:", fullPath)
+		//fmt.Println("Removed file:", fullPath)
 	}
 	return true
 }
@@ -76,4 +76,12 @@ func makeFileExecutable(script string) bool {
 		return false
 	}
 	return true
+}
+
+func rename(pathFile string, name string, newName string) {
+	name = pathFile + name
+	newName = pathFile + newName
+	if _, err := exec.Command("mv", name, newName).CombinedOutput(); err != nil {
+		fmt.Println("error rename\n", err)
+	}
 }

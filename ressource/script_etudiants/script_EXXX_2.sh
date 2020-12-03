@@ -1,2 +1,1 @@
-echo defi2 > echoscript
-echo defi2
+cat test > res
