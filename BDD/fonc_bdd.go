@@ -118,11 +118,12 @@ func GetInfo(id string) Etudiant {
 }
 
 func GetNameByToken(token string) string {
+	fmt.Println("getNameByToken(", token, ")")
 	var login string
 	row := db.QueryRow("SELECT * FROM token WHERE token = $1", token)
 	err := row.Scan(&login, &token)
 	if err != nil {
-		fmt.Printf("problme row scan \n", err)
+		fmt.Printf("problme GetNameByToken \n", err)
 	}
 	return login
 }
@@ -134,7 +135,7 @@ func InsertToken(login string, token string) {
 	}
 	_, err = stmt.Exec(login, token)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("probleme InsertToken", err)
 	} else {
 		fmt.Println("Ajout token : ", token, " pour ", login, " à ", time.Now(), "\n")
 	}
@@ -145,7 +146,7 @@ func DeleteToken(token string) {
 	stmt, _ := db.Prepare("DELETE FROM token WHERE token = ?")
 	_, err := stmt.Exec(token)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("probleme DeleteToken", err)
 	} else {
 		fmt.Println("delete token : ", token, " à ", time.Now(), "\n")
 	}

@@ -18,11 +18,11 @@ import (
 var etudiantCo BDD.Etudiant
 
 func InitWeb() {
-
+	http.HandleFunc("/", accueil)                  // Page de base : http://localhost:8080
 	http.HandleFunc("/login", accueil)             // Page d'acceuil : http://localhost:8080/login
 	http.HandleFunc("/pageEtudiant", pageEtudiant) // Page étudiant : http://localhost:8080/pageEtudiant
-
-	err := http.ListenAndServe(":8080", nil) // port utilisé
+	http.HandleFunc("/pageAdmin", pageAdmin)       // Page admin : http://localhost:8080/pageAdmin
+	err := http.ListenAndServe(":8080", nil)       // port utilisé
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
@@ -34,6 +34,11 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	//Check la méthode utilisé par le formulaire
 	if r.Method == "GET" {
 
+		if _, err := r.Cookie("token"); err != nil {
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
+
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
 		fmt.Println(r.Cookie("token"))
 
@@ -41,8 +46,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		name := BDD.GetNameByToken(token.Value)
 		fmt.Println("name récup de getnamebyToken", name)
 		etu := BDD.GetInfo(name)
-		err := t.Execute(w, etu)
-		if err != nil {
+		if err := t.Execute(w, etu); err != nil {
 			log.Printf("error exec template : ", err)
 		}
 	} else if r.Method == "POST" {
@@ -85,8 +89,12 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			// write this byte array to our temporary file
 			tempFile.Write(fileBytes)
 			// return that we have successfully uploaded our file!
-			fmt.Fprintf(w, "Successfully Uploaded File\n")
+			fmt.Println("Successfully Uploaded File\n")
 		}
+
+		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
+		t.Execute(w, etudiantCo)
+
 	}
 }
 
@@ -94,8 +102,9 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method de accueil :", r.Method)
 
 	if r.Method == "GET" {
-		if token, _ := r.Cookie("token"); token != nil {
+		if _, err := r.Cookie("token"); err != nil {
 			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
+			return
 		}
 		t, err := template.ParseFiles("./web/html/accueil.html")
 		if err != nil {
@@ -118,6 +127,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				expiration := time.Now().Add(1 * time.Minute)
 				cookie := http.Cookie{Name: "token", Value: token, Expires: expiration}
 				http.SetCookie(w, &cookie)
+				fmt.Println("insert login=", login, " token=", token)
 				BDD.InsertToken(login, token)
 
 				http.Redirect(w, r, "/pageEtudiant", http.StatusFound)

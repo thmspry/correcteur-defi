@@ -5,15 +5,9 @@
     <title>Profile Étudiant</title>
 </head>
 <body>
-étudiant : {{.Login}}
-<br>
-mdp : {{.Password}}
-<br>
-prénom : {{.Prenom}}  nom : {{.Nom}}
-<br>
-mail : {{.Mail}}  défis réussis : {{.DefiSucess}}
-
-<form   enctype="multipart/form-data"  action="/pageEtudiant" method="post">
+<h1>Connecté comme Admin</h1>
+<h2>Formulaire pour upload des défis : </h2>
+<form   enctype="multipart/form-data"  action="/pageAdmin" method="post">
     <input type="file" name="myFile"/>
     <input type="hidden" name="token" value=" " />
     <input type="submit" value="upload"/>
