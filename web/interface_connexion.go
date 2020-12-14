@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"io/ioutil"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -34,13 +35,18 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
+		fmt.Println(r.Cookie("token"))
 
-		err := t.Execute(w, etudiantCo)
+		token, _ := r.Cookie("token")
+		name := BDD.GetNameByToken(token.Value)
+		fmt.Println("name récup de getnamebyToken", name)
+		etu := BDD.GetInfo(name)
+		err := t.Execute(w, etu)
 		if err != nil {
 			log.Printf("error exec template : ", err)
 		}
 	} else if r.Method == "POST" {
-		fmt.Printf("sdxlkhbfsdlkjgh")
+		fmt.Printf("pageEtudiant post")
 		if r.URL.String() == "/pageEtudiant" {
 			// TODO récupération du fichier (qui se trouve dans r.FormValue["uploadfile"]
 			fmt.Println("File Upload Endpoint Hit")
@@ -88,6 +94,9 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method de accueil :", r.Method)
 
 	if r.Method == "GET" {
+		if token, _ := r.Cookie("token"); token != nil {
+			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
+		}
 		t, err := template.ParseFiles("./web/html/accueil.html")
 		if err != nil {
 			fmt.Print("erreur chargement accueil.html")
@@ -101,12 +110,19 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			password := r.FormValue("password")
 			fmt.Println("tentative de co avec :", login, " ", password)
 			existe := BDD.LoginCorrect(login, password)
-
+			//existe := true
 			if existe {
-				etudiantCo = BDD.GetInfo(login)
 				// crée un go routine qui envoie le token, voir si on peut faire ça en même temps que la redirection.
+				fmt.Println("Création du token : ")
+				token := tokenGenerator()
+				expiration := time.Now().Add(1 * time.Minute)
+				cookie := http.Cookie{Name: "token", Value: token, Expires: expiration}
+				http.SetCookie(w, &cookie)
+				BDD.InsertToken(login, token)
 
 				http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
+
+				go DeleteToken(token)
 				return
 			} else {
 				fmt.Println("login incorrecte")
@@ -127,6 +143,12 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 		BDD.Register(etudiantCo) // ajouter l'etudiant dans la base de données.
 		http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 	}
+}
+
+func DeleteToken(token string) {
+	time.Sleep(1 * time.Minute)
+	BDD.DeleteToken(token)
+	return
 }
 
 //On genere un token.

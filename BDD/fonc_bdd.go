@@ -3,6 +3,7 @@ package BDD
 import (
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 // Structure a réutiliser un peu partout
@@ -43,14 +44,14 @@ func InitBDD() {
 	stmt.Exec()
 
 	stmt, err = db.Prepare("CREATE TABLE IF NOT EXISTS Token (" +
-		"login TEXT UNIQUE NOT NULL," +
+		"login TEXT NOT NULL PRIMARY KEY," +
 		"token TEXT NOT NULL," +
-		"FOREIGN KEY(login) REFERENCES Etudiant(login)," +
+		"FOREIGN KEY(login) REFERENCES Etudiant(login)" +
 		")")
 	if err != nil {
-		fmt.Println("Erreur dans la table Requete" + err.Error())
-		stmt.Exec()
+		fmt.Println("Erreur dans la table Token" + err.Error())
 	}
+	stmt.Exec()
 
 }
 
@@ -67,6 +68,7 @@ func Register(etu Etudiant) bool {
 		return false
 	}
 	fmt.Println("l'étudiant de login : " + string(etu.Login) + " a été enregistré dans la bdd\n")
+	stmt.Close()
 	return true
 }
 
@@ -75,8 +77,10 @@ func LoginCorrect(id string, password string) bool {
 	stmt := "SELECT * FROM Etudiant WHERE login = ? AND password = ?"
 	row, _ := db.Query(stmt, id, password)
 	if row.Next() {
+		row.Close()
 		return true
 	}
+	row.Close()
 	return false
 }
 
@@ -111,4 +115,39 @@ func GetInfo(id string) Etudiant {
 
 	fmt.Println("/ fonc GetInfo")
 	return etu
+}
+
+func GetNameByToken(token string) string {
+	var login string
+	row := db.QueryRow("SELECT * FROM token WHERE token = $1", token)
+	err := row.Scan(&login, &token)
+	if err != nil {
+		fmt.Printf("problme row scan \n", err)
+	}
+	return login
+}
+
+func InsertToken(login string, token string) {
+	stmt, err := db.Prepare("INSERT INTO Token values(?,?)")
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = stmt.Exec(login, token)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println("Ajout token : ", token, " pour ", login, " à ", time.Now(), "\n")
+	}
+	stmt.Close()
+}
+
+func DeleteToken(token string) {
+	stmt, _ := db.Prepare("DELETE FROM token WHERE token = ?")
+	_, err := stmt.Exec(token)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println("delete token : ", token, " à ", time.Now(), "\n")
+	}
+	stmt.Close()
 }

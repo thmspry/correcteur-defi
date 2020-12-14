@@ -1,6 +1,7 @@
 package testeur
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -12,7 +13,7 @@ var (
 	path_defis        = "./ressource/defis/"
 	path_script_etu   = "./ressource/script_etudiants/"
 	path_dir_test     = "./dir_test/"
-	path_jeu_de_tests = "./ressource/jeu_de_test/"
+	path_jeu_de_tests = ""
 	passTout          bool
 )
 
@@ -22,6 +23,16 @@ func Test(etudiant string) string {
 	* executer le script dans un dossier sans pouvoir revenir plus haut et faire cd fait venir dans ce dossier
 	 */
 
+	//Création du user
+	if err := exec.Command("sudo", "useradd", etudiant).Run(); err != nil {
+		fmt.Println("error create user : ", err)
+	}
+	if err := exec.Command("sudo", "mkhomedir_helper", etudiant).Run(); err != nil {
+		fmt.Println("error create user : ", err)
+	}
+	path_dir_test = "/home/" + etudiant + "/"
+
+	//Récupérer le défi actuel
 	num, defi := Defi_actuel()
 	script_etu := "script_" + etudiant + "_" + num + ".sh"
 	path_jeu_de_tests = path_jeu_de_tests + "test_defi_" + num + "/"
@@ -50,7 +61,7 @@ func Test(etudiant string) string {
 
 		rename(path_dir_test, test, "test")
 
-		resTest[i] = testeurUnique(defi, script_etu)
+		resTest[i] = testeurUnique(defi, script_etu, etudiant)
 		if resTest[i] == 0 || resTest[i] == -1 {
 			passTout = false
 		}
@@ -63,6 +74,13 @@ func Test(etudiant string) string {
 	}
 
 	clear(path_dir_test)
+
+	if err := exec.Command("sudo", "userdel", etudiant).Run(); err != nil {
+		fmt.Println("error sudo userdel : ", err)
+	}
+	if err := exec.Command("sudo", "rm", "-rf", "/home/"+etudiant).Run(); err != nil {
+		fmt.Println("error sudo rm -rf /home/EXXX : ", err)
+	}
 
 	if passTout {
 		//mettre dans la table "defis" de la BDD num etu, num defis et "réussi"
@@ -80,19 +98,24 @@ func Test(etudiant string) string {
 	return res
 }
 
-func testeurUnique(defi string, script_user string) int {
+func testeurUnique(defi string, script_user string, etudiant string) int {
 
-	//cmd.SysProcAttr = &syscall.SysProcAttr{}
-	//cmd.SysProcAttr.Credential = &syscall.Credential{Uid: 501, Gid: 20}
+	var stderr bytes.Buffer
+	var out bytes.Buffer
+
 	arboAvant := getFiles(path_dir_test)
 	makeFileExecutable(path_dir_test + defi)
-	cmd := exec.Command("/bin/sh", defi)
-	cmd.Dir = path_dir_test
-	stdout_defi, err := cmd.CombinedOutput()
+	defi = "'/bin/sh " + path_dir_test + "defi'"
+	cmd := exec.Command("su", etudiant, "-c", defi)
+	cmd.Stderr = &stderr
+	cmd.Stdout = &out
+	err := cmd.Run()
 	if err != nil {
 		fmt.Println("erreur execution script défis : ", err)
+		fmt.Println(stderr.String())
 		return -1
 	}
+	stdout_defi := out.String()
 	arboApres := getFiles(path_dir_test)
 	if len(arboAvant) != len(arboApres) {
 		//modif dans un new fichier
@@ -109,8 +132,8 @@ func testeurUnique(defi string, script_user string) int {
 		}
 
 		//execution script étudiant
-		cmd := exec.Command("/bin/sh", script_user)
-		cmd.Dir = path_dir_test
+		command := "'/bin/sh " + path_dir_test + "defi'"
+		cmd := exec.Command("su", etudiant, "-c", command)
 		_, err := cmd.CombinedOutput()
 		if err != nil {
 			fmt.Println("erreur execution script étudiant : ", err)
@@ -149,9 +172,7 @@ func testeurUnique(defi string, script_user string) int {
 
 // testé à la main mais pas avec go sur le serveur
 func InitUser() {
-	//crée l'user
-	exec.Command("useradd", "testeur")
-	//crée le groupe
+
 	exec.Command("groupadd", "grpTest")
 	// ajouter l'user au groupe
 	exec.Command("usermod", "-a", "-G", "grpTest", "testeur")
