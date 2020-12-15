@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
@@ -14,11 +15,9 @@ func Defi_actuel() (string, string) {
 	if err != nil {
 		fmt.Print("error : ", err)
 	}
-	liste_defis := strings.Split(string(defis), "\n")
-	//Récupere le dernier défis de la liste_defis, split par / et récupere seulement le nom du défi
-	nom_defi := strings.Split(liste_defis[len(liste_defis)-2], "/")[4]
-
-	return string([]rune(nom_defi)[5]), nom_defi
+	liste_defis := strings.Split(string(defis), "\n.")
+	num := strconv.Itoa(len(liste_defis) - 1)
+	return num, "defi_" + num + ".sh"
 }
 
 func clear(path string) bool {
@@ -42,8 +41,9 @@ func clear(path string) bool {
 
 // fonction qui déplace un fichier (en ayant précisé son chemin pour le trouver) dans un nouveau dossier
 func deplacer(file string, path_out string) bool {
-	if _, err := exec.Command("mv", file, path_out).CombinedOutput(); err != nil {
-		fmt.Println(file, " not found")
+	fmt.Println("deplacer :" + file + " vers " + path_out)
+	if _, err := exec.Command("sudo", "mv", file, path_out).CombinedOutput(); err != nil {
+		fmt.Println(file, " not found\n", err.Error())
 		return false
 	}
 	return true
@@ -81,7 +81,7 @@ func makeFileExecutable(script string) bool {
 func rename(pathFile string, name string, newName string) {
 	name = pathFile + name
 	newName = pathFile + newName
-	if _, err := exec.Command("mv", name, newName).CombinedOutput(); err != nil {
+	if _, err := exec.Command("sudo", "mv", name, newName).CombinedOutput(); err != nil {
 		fmt.Println("error rename\n", err)
 	}
 }

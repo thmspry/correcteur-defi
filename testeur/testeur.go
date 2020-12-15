@@ -13,7 +13,7 @@ var (
 	path_defis        = "./ressource/defis/"
 	path_script_etu   = "./ressource/script_etudiants/"
 	path_dir_test     = "./dir_test/"
-	path_jeu_de_tests = ""
+	path_jeu_de_tests = "./ressource/jeu_de_test/"
 	passTout          bool
 )
 
@@ -28,7 +28,7 @@ func Test(etudiant string) string {
 		fmt.Println("error create user : ", err)
 	}
 	if err := exec.Command("sudo", "mkhomedir_helper", etudiant).Run(); err != nil {
-		fmt.Println("error create user : ", err)
+		fmt.Println("error create dir : ", err)
 	}
 	path_dir_test = "/home/" + etudiant + "/"
 
@@ -47,7 +47,7 @@ func Test(etudiant string) string {
 		return "chmod failed pour" + defi
 	}
 
-	// Début du test_2
+	// Début du testUnique
 	tests, _ := exec.Command("find", path_jeu_de_tests, "-type", "f").CombinedOutput()
 	nbJeuDeTest := len(strings.Split(string(tests), "\n")) - 1
 
@@ -105,8 +105,9 @@ func testeurUnique(defi string, script_user string, etudiant string) int {
 
 	arboAvant := getFiles(path_dir_test)
 	makeFileExecutable(path_dir_test + defi)
-	defi = "'/bin/sh " + path_dir_test + "defi'"
-	cmd := exec.Command("su", etudiant, "-c", defi)
+	command := "'/bin/sh " + path_dir_test + defi + "'"
+	cmd := exec.Command("sudo", "-H", "-u", etudiant, "bash", "-c", command)
+	//sudo -H -u paulvernin bash -c 'pwd'
 	cmd.Stderr = &stderr
 	cmd.Stdout = &out
 	err := cmd.Run()
@@ -132,7 +133,7 @@ func testeurUnique(defi string, script_user string, etudiant string) int {
 		}
 
 		//execution script étudiant
-		command := "'/bin/sh " + path_dir_test + "defi'"
+		command := "'/bin/sh " + path_dir_test + script_user + "'"
 		cmd := exec.Command("su", etudiant, "-c", command)
 		_, err := cmd.CombinedOutput()
 		if err != nil {
@@ -154,8 +155,8 @@ func testeurUnique(defi string, script_user string, etudiant string) int {
 		}
 		return 1
 	} else {
-		cmd = exec.Command("/bin/sh", script_user)
-		cmd.Dir = path_dir_test
+		command := "'/bin/sh " + path_dir_test + script_user + "'"
+		cmd = exec.Command("su", etudiant, "-c", command)
 		stdout_etu, err := cmd.CombinedOutput()
 		if err != nil {
 			fmt.Println(err, stdout_etu)
