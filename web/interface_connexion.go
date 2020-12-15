@@ -3,7 +3,8 @@ package web
 import (
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
-	"io/ioutil"
+	"io"
+	"os"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -27,6 +28,7 @@ func InitWeb() {
 		log.Fatal("ListenAndServe: ", err)
 	}
 	setupRoutes()
+
 }
 
 func pageEtudiant(w http.ResponseWriter, r *http.Request) {
@@ -52,9 +54,8 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "POST" {
 		fmt.Printf("pageEtudiant post")
 		if r.URL.String() == "/pageEtudiant" {
-			// TODO récupération du fichier (qui se trouve dans r.FormValue["uploadfile"]
-			fmt.Println("File Upload Endpoint Hit")
 
+			//http.HandleFunc("../../ressource/script_etudiants", pageEtudiant)
 			// Parse our multipart form, 10 << 20 specifies a maximum
 			// upload of 10 MB files.
 			r.ParseMultipartForm(10 << 20)
@@ -72,28 +73,32 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			fmt.Printf("File Size: %+v\n", handler.Size)
 			fmt.Printf("MIME Header: %+v\n", handler.Header)
 
-			// Create a temporary file within our directory that follows
-			// a particular naming pattern
-			tempFile, err := ioutil.TempFile("ressource/script_etudiants", "oh.txt")
-			if err != nil {
-				fmt.Println(err)
-			}
-			defer tempFile.Close()
+			script, err := os.Create(handler.Filename)
 
-			// read all of the contents of our uploaded file into a
-			// byte array
-			fileBytes, err := ioutil.ReadAll(file)
 			if err != nil {
+				fmt.Println("Internal Error")
 				fmt.Println(err)
+				return
 			}
-			// write this byte array to our temporary file
-			tempFile.Write(fileBytes)
+
+			defer script.Close()
+
+			_, err = io.Copy(script, file)
+			if err != nil {
+				fmt.Println("Internal Error")
+				fmt.Println(err)
+				return
+			}
+
 			// return that we have successfully uploaded our file!
 			fmt.Println("Successfully Uploaded File\n")
-		}
 
+		}
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
 		t.Execute(w, etudiantCo)
+
+		//rename fonctionne pas jsp pk
+		os.Rename("a.txt", "script_E1000.sh")
 
 	}
 }
@@ -102,10 +107,10 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method de accueil :", r.Method)
 
 	if r.Method == "GET" {
-		if _, err := r.Cookie("token"); err != nil {
+		/*if _, err := r.Cookie("token"); err != nil {
 			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 			return
-		}
+		}*/
 		t, err := template.ParseFiles("./web/html/accueil.html")
 		if err != nil {
 			fmt.Print("erreur chargement accueil.html")
