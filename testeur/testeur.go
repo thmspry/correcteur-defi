@@ -116,7 +116,8 @@ func testeurUnique(defi string, script_user string, etudiant string) int {
 		mapDefi := make(map[string]string)
 		mapEtu := make(map[string]string)
 		for _, name := range diff {
-			exec.Command("chmod", "777", path_dir_test+name).Run()
+			//On donne seulement le droit de lecteur sur les jeux de test
+			exec.Command("chmod", "444", path_dir_test+name).Run()
 			f, err := exec.Command("cat", path_dir_test+name).CombinedOutput()
 			if err != nil {
 				fmt.Println("erreur execution cat : ", path_dir_test+name, "\n", err)
