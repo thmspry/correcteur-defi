@@ -70,9 +70,9 @@ func getFiles(path string) []string {
 }
 
 // fonction qui rend le fichier executable
-func makeFileExecutable(script string) bool {
-	if err := os.Chmod(script, 0755); err != nil {
-		fmt.Print("chmod on ", script, " failed")
+func makeFileExecutable(path string) bool {
+	if err := os.Chmod(path, 0770); err != nil {
+		fmt.Print("chmod on ", path, " failed")
 		return false
 	}
 	return true
