@@ -18,6 +18,9 @@ import (
 
 var etudiantCo BDD.Etudiant
 
+/**
+Fonction pour lancer l'interface web
+*/
 func InitWeb() {
 	http.HandleFunc("/", accueil)                  // Page de base : http://localhost:8080
 	http.HandleFunc("/login", accueil)             // Page d'acceuil : http://localhost:8080/login
@@ -31,26 +34,33 @@ func InitWeb() {
 
 }
 
+/**
+Fonction pour afficher la page Etudiant à l'adresse /pageEtudiant
+*/
 func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method de pageEtudiant :", r.Method)
 	//Check la méthode utilisé par le formulaire
 	if r.Method == "GET" {
 
+		//Si il y a n'y a pas de token dans les cookies alors l'utilisateur est redirigé vers la page de login
 		if _, err := r.Cookie("token"); err != nil {
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
 
+		//Charge la template html
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
-		fmt.Println(r.Cookie("token"))
 
-		token, _ := r.Cookie("token")
-		name := BDD.GetNameByToken(token.Value)
-		fmt.Println("name récup de getnamebyToken", name)
-		etu := BDD.GetInfo(name)
+		token, _ := r.Cookie("token")           //récupère le token du cookie
+		name := BDD.GetNameByToken(token.Value) // récupère le login correspondant au token
+		etu := BDD.GetInfo(name)                // récupère les informations de l'étudiant grâce au login
+
+		// execute la page avec la structure "etu" qui viendra remplacer les éléments de la page en fonction de l'étudiant (voir pageEtudiant.html)
 		if err := t.Execute(w, etu); err != nil {
 			log.Printf("error exec template : ", err)
 		}
+
+		//Si la méthode est post c'est qu'on vient d'envoyer un fichier pour le faire tester
 	} else if r.Method == "POST" {
 		fmt.Printf("pageEtudiant post")
 		if r.URL.String() == "/pageEtudiant" {

@@ -10,6 +10,9 @@ import (
 	"strings"
 )
 
+/**
+retourne le numéro  et le nom du dernier défi enregistré
+*/
 func Defi_actuel() (string, string) {
 	defis, err := exec.Command("find", path_defis, "-type", "f").CombinedOutput()
 	if err != nil {
@@ -20,6 +23,9 @@ func Defi_actuel() (string, string) {
 	return num, "defi_" + num + ".sh"
 }
 
+/*
+Fonction qui delete tous les fichiers d'un répertoire
+*/
 func clear(path string) bool {
 	dirRead, _ := os.Open(path)
 	dirFiles, _ := dirRead.Readdir(0)
@@ -49,7 +55,9 @@ func deplacer(file string, path_out string) bool {
 	return true
 }
 
-//testé
+/**
+Fonction qui retourne un tableau contenant tous les noms des fichiers du répertoire entré en paramètre
+*/
 func getFiles(path string) []string {
 
 	//out, _ := exec.Command("find", path, "-type", "f").CombinedOutput()
@@ -69,15 +77,9 @@ func getFiles(path string) []string {
 	return nil
 }
 
-// fonction qui rend le fichier executable
-func makeFileExecutable(path string) bool {
-	if err := os.Chmod(path, 0770); err != nil {
-		fmt.Print("chmod on ", path, " failed")
-		return false
-	}
-	return true
-}
-
+/*
+Renome un fichier "name" par un nouveau nom "newName" qui se trouve dans le repertoire "pathFile"
+*/
 func rename(pathFile string, name string, newName string) {
 	name = pathFile + name
 	newName = pathFile + newName
