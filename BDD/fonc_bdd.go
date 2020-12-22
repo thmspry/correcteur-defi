@@ -55,7 +55,7 @@ func InitBDD() {
 
 }
 
-//testé
+// testé
 func Register(etu Etudiant) bool {
 	stmt, err := db.Prepare("INSERT INTO Etudiant values(?,?,?,?,?,?)")
 	if err != nil {
@@ -72,7 +72,7 @@ func Register(etu Etudiant) bool {
 	return true
 }
 
-//testé
+// testé
 func LoginCorrect(id string, password string) bool {
 	stmt := "SELECT * FROM Etudiant WHERE login = ? AND password = ?"
 	row, _ := db.Query(stmt, id, password)
@@ -84,7 +84,7 @@ func LoginCorrect(id string, password string) bool {
 	return false
 }
 
-//testé
+// testé
 func GetInfo(id string) Etudiant {
 	fmt.Println("fonc GetInfo : ")
 	var (
@@ -117,6 +117,7 @@ func GetInfo(id string) Etudiant {
 	return etu
 }
 
+// testé
 func GetNameByToken(token string) string {
 	fmt.Println("getNameByToken(", token, ")")
 	var login string
@@ -128,6 +129,7 @@ func GetNameByToken(token string) string {
 	return login
 }
 
+// testé
 func InsertToken(login string, token string) {
 	stmt, err := db.Prepare("INSERT INTO Token values(?,?)")
 	if err != nil {
@@ -142,6 +144,7 @@ func InsertToken(login string, token string) {
 	stmt.Close()
 }
 
+// testé
 func DeleteToken(token string) {
 	stmt, _ := db.Prepare("DELETE FROM token WHERE token = ?")
 	_, err := stmt.Exec(token)

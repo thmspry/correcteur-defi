@@ -6,13 +6,7 @@ import (
 )
 
 func main() {
-	//testeur.TestUser()
-	//fmt.Println(testeur.Test("EXXX"))
-	//fmt.Printf(testeur.Defi_actuel())
-	//fmt.Println(testeur.Test("EXXX"))
-	//testeur.TesteurUnique("","")
-	/*	BDD.InitBDD()
-
+	/*
 		etu := BDD.Etudiant{
 			Login:      "test",
 			Password:   "test",
@@ -24,7 +18,4 @@ func main() {
 		BDD.Register(etu)
 	*/
 	web.InitWeb()
-
-	//testeur.Test("EXXX")
-
 }
