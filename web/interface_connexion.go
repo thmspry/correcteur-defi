@@ -73,7 +73,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			fmt.Printf("File Size: %+v\n", handler.Size)
 			fmt.Printf("MIME Header: %+v\n", handler.Header)
 
-			script, err := os.Create(handler.Filename)
+			script, err := os.Create("./ressource/script_etudiants/script_E1000.sh") // remplacer handler.Filename par le nom et on le place où on veut
 
 			if err != nil {
 				fmt.Println("Internal Error")
@@ -92,13 +92,12 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 
 			// return that we have successfully uploaded our file!
 			fmt.Println("Successfully Uploaded File\n")
+			//rename fonctionne pas jsp pk
+			//os.Rename(handler.Filename, "script_E1000.sh")
 
 		}
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
 		t.Execute(w, etudiantCo)
-
-		//rename fonctionne pas jsp pk
-		os.Rename("a.txt", "script_E1000.sh")
 
 	}
 }
