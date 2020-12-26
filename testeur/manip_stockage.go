@@ -7,20 +7,21 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
-	"strings"
 )
 
 /**
 retourne le numéro  et le nom du dernier défi enregistré
 */
 func Defi_actuel() (string, string) {
-	defis, err := exec.Command("find", path_defis, "-type", "f").CombinedOutput()
+	var files []string
+	fileInfo, err := ioutil.ReadDir(path_defis)
 	if err != nil {
-		fmt.Print("error : ", err)
+		fmt.Print(err)
 	}
-	liste_defis := strings.Split(string(defis), "\n.")
-	num := strconv.Itoa(len(liste_defis) - 1)
-	return num, "defi_" + num + ".sh"
+	for _, file := range fileInfo {
+		files = append(files, file.Name())
+	}
+	return strconv.Itoa(len(files) - 1), files[len(files)-1]
 }
 
 /*

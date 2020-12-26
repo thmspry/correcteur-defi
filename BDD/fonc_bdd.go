@@ -145,13 +145,20 @@ func InsertToken(login string, token string) {
 }
 
 // testé
-func DeleteToken(token string) {
-	stmt, _ := db.Prepare("DELETE FROM token WHERE token = ?")
-	_, err := stmt.Exec(token)
+func DeleteToken(login string) {
+	stmt, _ := db.Prepare("DELETE FROM token WHERE login = ?")
+	_, err := stmt.Exec(login)
 	if err != nil {
 		fmt.Println("probleme DeleteToken", err)
 	} else {
-		fmt.Println("delete token : ", token, " à ", time.Now(), "\n")
+		fmt.Println("delete token du login : ", login, " à ", time.Now(), "\n")
 	}
 	stmt.Close()
+}
+
+func ResetToken() {
+	stmt, _ := db.Prepare("TRUNCATE TABLE token;")
+	if _, err := stmt.Exec(); err != nil {
+		fmt.Printf("erreur clear de la table token")
+	}
 }

@@ -3,6 +3,7 @@ package web
 import (
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/testeur"
 	"io"
 	"os"
 	"time"
@@ -39,22 +40,21 @@ Fonction pour afficher la page Etudiant à l'adresse /pageEtudiant
 */
 func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method de pageEtudiant :", r.Method)
+
+	//Si il y a n'y a pas de token dans les cookies alors l'utilisateur est redirigé vers la page de login
+	if _, err := r.Cookie("token"); err != nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	token, _ := r.Cookie("token")            //récupère le token du cookie
+	login := BDD.GetNameByToken(token.Value) // récupère le login correspondant au token
+	etu := BDD.GetInfo(login)                // récupère les informations de l'étudiant grâce au login
+
 	//Check la méthode utilisé par le formulaire
 	if r.Method == "GET" {
-
-		//Si il y a n'y a pas de token dans les cookies alors l'utilisateur est redirigé vers la page de login
-		if _, err := r.Cookie("token"); err != nil {
-			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
-
 		//Charge la template html
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
-
-		token, _ := r.Cookie("token")           //récupère le token du cookie
-		name := BDD.GetNameByToken(token.Value) // récupère le login correspondant au token
-		etu := BDD.GetInfo(name)                // récupère les informations de l'étudiant grâce au login
-
 		// execute la page avec la structure "etu" qui viendra remplacer les éléments de la page en fonction de l'étudiant (voir pageEtudiant.html)
 		if err := t.Execute(w, etu); err != nil {
 			log.Printf("error exec template : ", err)
@@ -65,25 +65,18 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("pageEtudiant post")
 		if r.URL.String() == "/pageEtudiant" {
 
-			//http.HandleFunc("../../ressource/script_etudiants", pageEtudiant)
-			// Parse our multipart form, 10 << 20 specifies a maximum
-			// upload of 10 MB files.
 			r.ParseMultipartForm(10 << 20)
-			// FormFile returns the first file for the given key `myFile`
-			// it also returns the FileHeader so we can get the Filename,
-			// the Header and the size of the file
-			file, handler, err := r.FormFile("myFile")
+
+			file, _, err := r.FormFile("script_etu")
 			if err != nil {
 				fmt.Println("Error Retrieving the File")
 				fmt.Println(err)
 				return
 			}
 			defer file.Close()
-			fmt.Printf("Uploaded File: %+v\n", handler.Filename)
-			fmt.Printf("File Size: %+v\n", handler.Size)
-			fmt.Printf("MIME Header: %+v\n", handler.Header)
 
-			script, err := os.Create("./ressource/script_etudiants/script_E1000.sh") // remplacer handler.Filename par le nom et on le place où on veut
+			num, _ := testeur.Defi_actuel()
+			script, err := os.Create("./ressource/script_etudiants/script_" + etu.Login + "_" + num + ".sh") // remplacer handler.Filename par le nom et on le place où on veut
 
 			if err != nil {
 				fmt.Println("Internal Error")
@@ -104,22 +97,20 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("Successfully Uploaded File\n")
 			//rename fonctionne pas jsp pk
 			//os.Rename(handler.Filename, "script_E1000.sh")
-
+			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 		}
-		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
-		t.Execute(w, etudiantCo)
-
 	}
 }
 
 func accueil(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method de accueil :", r.Method)
+	if _, err := r.Cookie("token"); err == nil {
+		http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
+		return
+	}
 
 	if r.Method == "GET" {
-		/*if _, err := r.Cookie("token"); err != nil {
-			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
-			return
-		}*/
+
 		t, err := template.ParseFiles("./web/html/accueil.html")
 		if err != nil {
 			fmt.Print("erreur chargement accueil.html")
@@ -146,7 +137,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 
 				http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 
-				go DeleteToken(token)
+				go DeleteToken(login)
 				return
 			} else {
 				fmt.Println("login incorrecte")
@@ -169,9 +160,9 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func DeleteToken(token string) {
+func DeleteToken(login string) {
 	time.Sleep(1 * time.Minute)
-	BDD.DeleteToken(token)
+	BDD.DeleteToken(login)
 	return
 }
 
