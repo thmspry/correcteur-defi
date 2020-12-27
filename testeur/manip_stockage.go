@@ -24,6 +24,18 @@ func Defi_actuel() (string, string) {
 	return strconv.Itoa(len(files) - 1), files[len(files)-1]
 }
 
+func Nb_test(path string) int {
+	var files []string
+	fileInfo, err := ioutil.ReadDir(path)
+	if err != nil {
+		fmt.Print(err)
+	}
+	for _, file := range fileInfo {
+		files = append(files, file.Name())
+	}
+	return len(files)
+}
+
 /*
 Fonction qui delete tous les fichiers d'un répertoire
 */

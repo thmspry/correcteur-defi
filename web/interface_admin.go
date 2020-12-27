@@ -27,7 +27,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 		r.ParseMultipartForm(10 << 20)
 
-		file, _, err := r.FormFile("script_etu")
+		file, _, err := r.FormFile("defi")
 		if err != nil {
 			fmt.Println("Error Retrieving the File")
 			fmt.Println(err)
@@ -36,16 +36,21 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 
 		num, _ := testeur.Defi_actuel()
-
+		path := ""
 		submit := r.FormValue("submit")
-		if submit == "upload" {
+		if submit == "defi_upload" {
 			n, _ := strconv.Atoi(num)
-			num = strconv.Itoa(n - 1)
+			num = strconv.Itoa(n + 1)
+			path = "./ressource/defis/defi_" + num + ".sh"
 		} else if submit == "modification" {
-
+			path = "./ressource/defis/defi_" + num + ".sh"
+		} else if submit == "test_upload" {
+			path = "./ressource/jeu_de_test/test_defi_" + num + "/"
+			num_test := testeur.Nb_test(path)
+			path = "./ressource/jeu_de_test/test_defi_" + num + "/test_" + strconv.Itoa(num_test)
 		}
 
-		script, err := os.Create("./ressource/defis/defi_" + num + ".sh") // remplacer handler.Filename par le nom et on le place où on veut
+		script, err := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
 
 		if err != nil {
 			fmt.Println("Internal Error")

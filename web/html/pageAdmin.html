@@ -8,10 +8,11 @@
 <h1>Connecté comme Admin</h1>
 <h2>Formulaire pour upload des défis : </h2>
 <form   enctype="multipart/form-data"  action="/pageAdmin" method="post">
-    <input type="file" name="myFile"/>
+    <input type="file" name="defi"/><br>
     <input type="hidden" name="token" value=" " />
-    Upload new script : <input type="submit" value="upload" name="submit"/>
-    Modification du script actuelle : <input type="submit" value="modification" name="submit"/>
+    Upload new script : <input type="submit" value="defi_upload" name="submit"/><br>
+    Modification du script actuelle : <input type="submit" value="modification" name="submit"/><br>
+    Upload test : <input type="submit" value="test_upload" name="submit"/>
 </form>
 
 </body>
