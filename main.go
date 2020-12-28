@@ -2,21 +2,21 @@ package main
 
 import (
 	_ "github.com/mattn/go-sqlite3"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
 )
 
 func main() {
-
-	BDD.InitBDD()
-	etu := BDD.Etudiant{
-		Login:      "test",
-		Password:   "test",
-		Prenom:     "testPrenom",
-		Nom:        "testNom",
-		Mail:       "testMail",
-		DefiSucess: 0,
-	}
-	BDD.Register(etu)
-
-	//web.InitWeb()
+	/*
+		BDD.InitBDD()
+		etu := BDD.Etudiant{
+			Login:      "test",
+			Password:   "test",
+			Prenom:     "testPrenom",
+			Nom:        "testNom",
+			Mail:       "testMail",
+			DefiSucess: 0,
+		}
+		BDD.Register(etu)
+	*/
+	web.InitWeb()
 }

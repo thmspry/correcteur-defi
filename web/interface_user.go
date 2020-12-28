@@ -11,6 +11,11 @@ import (
 	"os"
 )
 
+type data_pageEtudiant struct {
+	UserInfo BDD.Etudiant
+	Res      string
+}
+
 /**
 Fonction pour afficher la page Etudiant à l'adresse /pageEtudiant
 */
@@ -26,13 +31,17 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	token, _ := r.Cookie("token")            //récupère le token du cookie
 	login := BDD.GetNameByToken(token.Value) // récupère le login correspondant au token
 	etu := BDD.GetInfo(login)                // récupère les informations de l'étudiant grâce au login
-
+	data := data_pageEtudiant{
+		UserInfo: etu,
+		Res:      "",
+	}
 	//Check la méthode utilisé par le formulaire
 	if r.Method == "GET" {
 		//Charge la template html
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
+
 		// execute la page avec la structure "etu" qui viendra remplacer les éléments de la page en fonction de l'étudiant (voir pageEtudiant.html)
-		if err := t.Execute(w, etu); err != nil {
+		if err := t.Execute(w, data); err != nil {
 			log.Printf("error exec template : ", err)
 		}
 

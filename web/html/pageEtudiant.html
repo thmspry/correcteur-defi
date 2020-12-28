@@ -5,19 +5,23 @@
     <title>Profile Étudiant</title>
 </head>
 <body>
-étudiant : {{.Login}}
-<br>
-mdp : {{.Password}}
-<br>
-prénom : {{.Prenom}}  nom : {{.Nom}}
-<br>
-mail : {{.Mail}}  défis réussis : {{.DefiSucess}}
+<div id="user">
 
+    étudiant : {{.UserInfo.Login}}<br>
+    mdp : {{.UserInfo.Password}}<br>
+    prénom : {{.UserInfo.Prenom}}  nom : {{.UserInfo.Nom}}<br>
+    mail : {{.UserInfo.Mail}}  défis réussis : {{.UserInfo.DefiSucess}}<br>
+</div>
 <form   enctype="multipart/form-data"  action="/pageEtudiant" method="post">
     <input type="file" name="script_etu"/>
     <input type="hidden" name="token" value=" " />
     <input type="submit" value="upload"/>
 </form>
 
+<div class="res">
+    <p>
+        Résultat : {{ .Res }}
+    </p>
+</div>
 </body>
 </html>

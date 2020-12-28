@@ -163,6 +163,7 @@ func ResetToken() {
 	if _, err := stmt.Exec(); err != nil {
 		fmt.Printf("erreur clear de la table token")
 	}
+	stmt.Close()
 }
 
 func SaveDefi(lelogin string, lenum_defi int, letat int) {

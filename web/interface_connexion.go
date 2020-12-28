@@ -20,7 +20,7 @@ var etudiantCo BDD.Etudiant
 Fonction pour lancer l'interface web
 */
 func InitWeb() {
-	http.HandleFunc("/", accueil)                  // Page de base : http://localhost:8080
+	//http.HandleFunc("/", accueil)                  // Page de base : http://localhost:8080
 	http.HandleFunc("/login", accueil)             // Page d'acceuil : http://localhost:8080/login
 	http.HandleFunc("/pageEtudiant", pageEtudiant) // Page étudiant : http://localhost:8080/pageEtudiant
 	http.HandleFunc("/pageAdmin", pageAdmin)       // Page admin : http://localhost:8080/pageAdmin
@@ -34,6 +34,7 @@ func InitWeb() {
 
 func accueil(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method de accueil :", r.Method)
+
 	if _, err := r.Cookie("token"); err == nil {
 		http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 		return
@@ -65,7 +66,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				fmt.Println("insert login=", login, " token=", token)
 				BDD.InsertToken(login, token)
 
-				http.Redirect(w, r, "/pageEtudiant", http.StatusAccepted)
+				http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 
 				go DeleteToken(login)
 				return
@@ -85,7 +86,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				DefiSucess: 0,
 			}
 			BDD.Register(etudiantCo) // ajouter l'etudiant dans la base de données.
-			http.Redirect(w, r, "/pageEtudiant", http.StatusAccepted)
+			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 		}
 	}
 }
