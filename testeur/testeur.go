@@ -2,6 +2,7 @@ package testeur
 
 import (
 	"fmt"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -40,10 +41,10 @@ func Test(etudiant string) string {
 	clear(path_dir_test)
 
 	//Récupérer le défi actuel
-	num, defi := Defi_actuel()
-	script_etu := "script_" + etudiant + "_" + num + ".sh"
-	path_jeu_de_tests = path_jeu_de_tests + "test_defi_" + num + "/"
-	i, _ := strconv.Atoi(num)
+	num_defi, defi := Defi_actuel()
+	script_etu := "script_" + etudiant + "_" + num_defi + ".sh"
+	path_jeu_de_tests = path_jeu_de_tests + "test_defi_" + num_defi + "/"
+	i, _ := strconv.Atoi(num_defi)
 	//crée un tableau de int avec 1 = réussi, 0 = échoué, -1 = erreur
 	var resTest = make([]int, i+1)
 
@@ -90,8 +91,11 @@ func Test(etudiant string) string {
 		fmt.Println("error sudo rm -rf /home/EXXX : ", err)
 	}
 
+	num, _ := strconv.Atoi(num_defi)
 	if passTout {
-		//TODO mettre dans la table "defis" de la BDD num etu, num defis et "réussi"
+		BDD.SaveDefi(etudiant, num, 1)
+	} else {
+		BDD.SaveDefi(etudiant, num, 0)
 	}
 
 	res := ""
@@ -143,7 +147,7 @@ func testeurUnique(defi string, script_user string, etudiant string) int {
 		mapDefi := make(map[string]string)
 		mapEtu := make(map[string]string)
 		for _, name := range diff {
-			//On donne seulement le droit de lecteur sur les jeux de test
+			//On donne seulement le droit de lecture sur les jeux de test
 			exec.Command("chmod", "444", path_dir_test+name).Run()
 			f, err := exec.Command("cat", path_dir_test+name).CombinedOutput()
 			if err != nil {

@@ -35,7 +35,8 @@ func InitBDD() {
 	stmt, err = db.Prepare("CREATE TABLE IF NOT EXISTS Defis (" +
 		"login TEXT NOT NULL," +
 		"defi INTEGER NOT NULL," +
-		"etat TEXT NOT NULL," + // 3 états : R (réussi), T (tenté), N (non tenté):om
+		"etat INTEGER NOT NULL," + // 2 états : 1 (réussi), 0 (non réussi), (s'il n'y a pas de ligne == non tenté)
+		"tentative INTEGER NOT NULL," + // Nombre de tentative au test
 		"FOREIGN KEY (login) REFERENCES Etudiant(login)" +
 		")")
 	if err != nil {
@@ -101,6 +102,7 @@ func GetInfo(id string) Etudiant {
 
 	if err != nil {
 		fmt.Printf("problme row scan \n", err)
+
 	} else {
 		fmt.Println("etu : ", login, password, prenom, nom, mail, defiSucess)
 	}
@@ -161,4 +163,26 @@ func ResetToken() {
 	if _, err := stmt.Exec(); err != nil {
 		fmt.Printf("erreur clear de la table token")
 	}
+}
+
+func SaveDefi(lelogin string, lenum_defi int, letat int) {
+
+	var (
+		login     string
+		defi      int
+		etat      int
+		tentative int
+	)
+	row := db.QueryRow("SELECT * FROM Defis WHERE login = $1 AND defi = $2", lelogin, lenum_defi)
+
+	if err := row.Scan(&login, &defi, &etat, &tentative); err != nil {
+		stmt, _ := db.Prepare("INSERT INTO Defis values(?,?,?,?)")
+		_, err = stmt.Exec(lelogin, lenum_defi, letat, 1)
+		stmt.Close()
+
+	} else {
+		stmt, _ := db.Prepare("UPDATE Defis SET etat = ?, tentative = ? WHERE login = ? AND defi = ?")
+		stmt.Exec(letat, tentative+1, login, defi)
+	}
+
 }
