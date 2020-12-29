@@ -65,7 +65,7 @@ func Test(etudiant string) string {
 
 		test := "test_" + strconv.Itoa(i)
 		deplacer(path_jeu_de_tests+test, path_dir_test)
-		exec.Command("chmod", "777", path_dir_test+test).Run()
+		exec.Command("chmod", "444", path_dir_test+test).Run()
 
 		rename(path_dir_test, test, "test")
 

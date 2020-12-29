@@ -38,6 +38,11 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	//Check la méthode utilisé par le formulaire
 	if r.Method == "GET" {
 		//Charge la template html
+
+		if r.URL.String() == "/pageEtudiant?test" {
+			data.Res = testeur.Test(etu.Login)
+		}
+
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
 
 		// execute la page avec la structure "etu" qui viendra remplacer les éléments de la page en fonction de l'étudiant (voir pageEtudiant.html)
@@ -77,6 +82,8 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(err)
 				return
 			}
+
+			os.Chmod("./ressource/script_etudiants/script_"+etu.Login+"_"+num+".sh", 770)
 
 			// return that we have successfully uploaded our file!
 			fmt.Println("Successfully Uploaded File\n")

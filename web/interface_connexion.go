@@ -20,7 +20,7 @@ var etudiantCo BDD.Etudiant
 Fonction pour lancer l'interface web
 */
 func InitWeb() {
-	//http.HandleFunc("/", accueil)                  // Page de base : http://localhost:8080
+	http.HandleFunc("/", root)                     // Page de base : http://localhost:8080
 	http.HandleFunc("/login", accueil)             // Page d'acceuil : http://localhost:8080/login
 	http.HandleFunc("/pageEtudiant", pageEtudiant) // Page étudiant : http://localhost:8080/pageEtudiant
 	http.HandleFunc("/pageAdmin", pageAdmin)       // Page admin : http://localhost:8080/pageAdmin
@@ -30,6 +30,10 @@ func InitWeb() {
 	}
 	setupRoutes()
 
+}
+
+func root(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
 func accueil(w http.ResponseWriter, r *http.Request) {

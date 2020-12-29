@@ -1,7 +1,7 @@
-Utilisateur pour faire des tests : 
-login : test
+Utilisateur pour faire des tests :<br> 
+login : test<br>
 mot de passe : test
 
-Pour se connecter à la page admin : 
-login : admin
-mot de passe : password
+Pour se connecter à la page admin :
+<br>login : admin
+<br>mot de passe : password

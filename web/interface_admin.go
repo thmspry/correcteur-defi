@@ -67,6 +67,8 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		os.Chmod(path, 770)
+
 		// return that we have successfully uploaded our file!
 		fmt.Println("Successfully Uploaded File\n")
 		//rename fonctionne pas jsp pk
