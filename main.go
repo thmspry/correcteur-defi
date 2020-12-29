@@ -2,7 +2,7 @@ package main
 
 import (
 	_ "github.com/mattn/go-sqlite3"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/logs"
 )
 
 func main() {
@@ -18,5 +18,6 @@ func main() {
 		}
 		BDD.Register(etu)
 	*/
-	web.InitWeb()
+	//web.InitWeb()
+	logs.WriteLog("oui")
 }

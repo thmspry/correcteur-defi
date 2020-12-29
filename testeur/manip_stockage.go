@@ -90,6 +90,15 @@ func getFiles(path string) []string {
 	return nil
 }
 
+func Contains(path string, fileName string) bool {
+	for _, file := range getFiles(path) {
+		if file == fileName {
+			return true
+		}
+	}
+	return false
+}
+
 /*
 Renome un fichier "name" par un nouveau nom "newName" qui se trouve dans le repertoire "pathFile"
 */

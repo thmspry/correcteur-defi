@@ -3,6 +3,7 @@ package web
 import (
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/logs"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/testeur"
 	"html/template"
 	"io"
@@ -85,9 +86,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 
 			os.Chmod("./ressource/script_etudiants/script_"+etu.Login+"_"+num+".sh", 770)
 
-			// return that we have successfully uploaded our file!
-			fmt.Println("Successfully Uploaded File\n")
-			//rename fonctionne pas jsp pk
+			logs.WriteLog(etu.Login, "upload de script du défis "+num)
 			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 		}
 	}

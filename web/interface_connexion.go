@@ -3,6 +3,7 @@ package web
 import (
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/logs"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -10,11 +11,8 @@ import (
 	"crypto/rand"
 	//"github.com/gomodule/redigo/redis" pas sur de ce truc.
 	"html/template"
-	"log"
 	"net/http"
 )
-
-var etudiantCo BDD.Etudiant
 
 /**
 Fonction pour lancer l'interface web
@@ -26,7 +24,7 @@ func InitWeb() {
 	http.HandleFunc("/pageAdmin", pageAdmin)       // Page admin : http://localhost:8080/pageAdmin
 	err := http.ListenAndServe(":8080", nil)       // port utilisé
 	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
+		fmt.Printf("ListenAndServe: ", err)
 	}
 	setupRoutes()
 
@@ -70,6 +68,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				fmt.Println("insert login=", login, " token=", token)
 				BDD.InsertToken(login, token)
 
+				logs.WriteLog(login, "connexion")
 				http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 
 				go DeleteToken(login)
@@ -81,7 +80,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 		} else if r.URL.String() == "/login?register" {
 			// request provient du formulaire pour s'enregistrer
 			// pas de vérification de champs implémenter pour l'instant
-			etudiantCo = BDD.Etudiant{
+			etu := BDD.Etudiant{
 				Login:      r.FormValue("login"),
 				Password:   r.FormValue("password"),
 				Prenom:     r.FormValue("prenom"),
@@ -89,7 +88,10 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				Mail:       r.FormValue("mail"),
 				DefiSucess: 0,
 			}
-			BDD.Register(etudiantCo) // ajouter l'etudiant dans la base de données.
+			BDD.Register(etu) // ajouter l'etudiant dans la base de données.
+
+			logs.WriteLog(etu.Login, "création du compte : "+etu.Login+":"+etu.Password)
+
 			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 		}
 	}
