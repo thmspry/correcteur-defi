@@ -18,7 +18,10 @@ import (
 Fonction pour lancer l'interface web
 */
 func InitWeb() {
-	http.HandleFunc("/", root)                     // Page de base : http://localhost:8080
+
+	http.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web")))) // compliqué à expliquer
+
+	//http.HandleFunc("/", root)                     // Page de base : http://localhost:8080
 	http.HandleFunc("/login", accueil)             // Page d'acceuil : http://localhost:8080/login
 	http.HandleFunc("/pageEtudiant", pageEtudiant) // Page étudiant : http://localhost:8080/pageEtudiant
 	http.HandleFunc("/pageAdmin", pageAdmin)       // Page admin : http://localhost:8080/pageAdmin

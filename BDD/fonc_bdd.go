@@ -16,6 +16,13 @@ type Etudiant struct {
 	DefiSucess int
 }
 
+type Defi struct {
+	Login     string
+	Defi      int
+	Etat      int
+	Tentative int
+}
+
 var db, _ = sql.Open("sqlite3", "./BDD/projS3.db")
 
 func InitBDD() {
@@ -186,4 +193,34 @@ func SaveDefi(lelogin string, lenum_defi int, letat int) {
 		stmt.Exec(letat, tentative+1, login, defi)
 	}
 
+}
+
+func GetEtudiants() []Etudiant {
+	var etu Etudiant
+	etudiants := make([]Etudiant, 0)
+	row, err := db.Query("SELECT * FROM Etudiant")
+	defer row.Close()
+	if err != nil {
+		fmt.Printf(err.Error())
+	}
+	for row.Next() {
+		row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.DefiSucess)
+		etudiants = append(etudiants, etu)
+	}
+	return etudiants
+}
+
+func GetDefis(login string) []Defi {
+	var defi Defi
+	defis := make([]Defi, 0)
+	row, err := db.Query("SELECT * FROM Defis WHERE login = ? ORDER BY defi ASC", login)
+	defer row.Close()
+	if err != nil {
+		fmt.Printf(err.Error())
+	}
+	for row.Next() {
+		row.Scan(&defi.Login, &defi.Defi, &defi.Etat, &defi.Tentative)
+		defis = append(defis, defi)
+	}
+	return defis
 }

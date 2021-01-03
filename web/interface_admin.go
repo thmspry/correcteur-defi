@@ -2,6 +2,7 @@ package web
 
 import (
 	"fmt"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/testeur"
 	"html/template"
 	"io"
@@ -14,12 +15,28 @@ import (
 type Admin struct {
 }
 
+type data_pageAdmin struct {
+	Etudiants []BDD.Etudiant
+	Defis_etu []BDD.Defi
+}
+
 func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
+
+		data := data_pageAdmin{
+			Etudiants: BDD.GetEtudiants(),
+			Defis_etu: nil,
+		}
+
+		if r.URL.Query()["Etudiant"] != nil {
+			etu := r.URL.Query()["Etudiant"][0]
+			data.Defis_etu = BDD.GetDefis(etu)
+		}
+
 		t := template.Must(template.ParseFiles("./web/html/pageAdmin.html"))
 
-		if err := t.Execute(w, nil); err != nil {
+		if err := t.Execute(w, data); err != nil {
 			log.Printf("error exec template : ", err)
 		}
 	}
@@ -55,7 +72,6 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println("Internal Error")
 			fmt.Println(err)
-			return
 		}
 
 		defer script.Close()

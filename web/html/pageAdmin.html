@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Profile Étudiant</title>
+    <link rel="stylesheet" href="/web/css/pageAdmin.css">
 </head>
 <body>
 <h1>Connecté comme Admin</h1>
@@ -14,6 +15,26 @@
     Modification du script actuelle : <input type="submit" value="modification" name="submit"/><br>
     Upload test : <input type="submit" value="test_upload" name="submit"/>
 </form>
+Liste des étudiants :
+<div id="etudiants">
+    {{range .Etudiants}}
+        <a href="pageAdmin?Etudiant={{.Login}}">{{.Login}}</a>
+    {{end}}
+    <br>
+</div>
+Info de l'étudiant :
+<div id="etudiant">
+    {{range .Defis_etu}}
+        Defi n°{{.Defi}}
+        Etat :  {{if eq .Etat 1}}
+                Réussi
+                {{else if eq .Etat 0}}
+                Échoué
+                {{end}}
+        Nombre de tentative : {{.Tentative}}
+    <br>
+    {{end}}
+</div>
 
 </body>
 </html>

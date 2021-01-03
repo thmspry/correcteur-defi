@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 )
@@ -20,10 +21,11 @@ var (
 Fonction a appelé pour tester
 */
 func Test(etudiant string) string {
-	/*
-	* Sauvegarder le layout avant execution du script
-	* executer le script dans un dossier sans pouvoir revenir plus haut et faire cd fait venir dans ce dossier
-	 */
+
+	os := runtime.GOOS
+	if os == "windows" || os == "darwin" {
+		return "Le testeur ne peut être lancé que sur linux"
+	}
 
 	//Création du user
 	if err := exec.Command("useradd", etudiant).Run(); err != nil {
