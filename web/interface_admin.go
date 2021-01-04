@@ -6,6 +6,7 @@ import (
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/testeur"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -16,8 +17,10 @@ type Admin struct {
 }
 
 type data_pageAdmin struct {
-	Etudiants []BDD.Etudiant
-	Defis_etu []BDD.Defi
+	Etu_select string
+	Etudiants  []BDD.Etudiant
+	Defis_etu  []BDD.Defi
+	File       string
 }
 
 func pageAdmin(w http.ResponseWriter, r *http.Request) {
@@ -25,12 +28,35 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 
 		data := data_pageAdmin{
-			Etudiants: BDD.GetEtudiants(),
-			Defis_etu: nil,
+			Etu_select: "",
+			Etudiants:  BDD.GetEtudiants(),
+			Defis_etu:  nil,
+			File:       "",
 		}
 
 		if r.URL.Query()["Etudiant"] != nil {
 			etu := r.URL.Query()["Etudiant"][0]
+			data.Etu_select = etu
+
+			//Permet de changer l'état de la du défis
+			if r.URL.Query()["Script"] != nil && r.URL.Query()["Etat"] != nil {
+				etat := r.URL.Query()["Etat"][0]
+				num, _ := strconv.Atoi(r.URL.Query()["Script"][0])
+				if etat == "1" {
+					BDD.SaveDefi(etu, num, 0, true)
+				} else {
+					BDD.SaveDefi(etu, num, 1, true)
+				}
+			} else if r.URL.Query()["Script"] != nil {
+				num := r.URL.Query()["Script"][0]
+				f, err := ioutil.ReadFile(testeur.Path_script_etu + "script_" + etu + "_" + num + ".sh")
+				if err != nil {
+					data.File = "erreur pour récupérer le script de l'étudiant"
+				} else {
+
+					data.File = string(f)
+				}
+			}
 			data.Defis_etu = BDD.GetDefis(etu)
 		}
 

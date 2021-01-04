@@ -21,6 +21,7 @@ Liste des étudiants :
         <a href="pageAdmin?Etudiant={{.Login}}">{{.Login}}</a>
     {{end}}
     <br>
+    <a href="pageAdmin">désélectionner</a>
 </div>
 Info de l'étudiant :
 <div id="etudiant">
@@ -32,9 +33,14 @@ Info de l'étudiant :
                 Échoué
                 {{end}}
         Nombre de tentative : {{.Tentative}}
+        <a href="pageAdmin?Etudiant={{$.Etu_select}}&Script={{.Defi}}"> Afficher le script</a>
+        <a href="pageAdmin?Etudiant={{$.Etu_select}}&Script={{.Defi}}&Etat={{.Etat}}"> Modifier l'état de la partie</a>
     <br>
     {{end}}
 </div>
-
+Affichage du script :
+<div>
+    {{.File}}
+</div>
 </body>
 </html>

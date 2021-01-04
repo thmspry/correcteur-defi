@@ -10,10 +10,10 @@ import (
 )
 
 var (
-	path_defis        = "./ressource/defis/"
-	path_script_etu   = "./ressource/script_etudiants/"
-	path_dir_test     = "./dir_test/"
-	path_jeu_de_tests = "./ressource/jeu_de_test/"
+	Path_defis        = "./ressource/defis/"
+	Path_script_etu   = "./ressource/script_etudiants/"
+	Path_dir_test     = "./dir_test/"
+	Path_jeu_de_tests = "./ressource/jeu_de_test/"
 	passTout          bool
 )
 
@@ -36,16 +36,16 @@ func Test(etudiant string) string {
 		fmt.Println("error create dir : ", err)
 	}
 	//Associe le chemin de test au dossier créé
-	path_dir_test = "/home/" + etudiant + "/"
-	if err := exec.Command("chmod", "770", path_dir_test).Run(); err != nil {
-		fmt.Println("error chmod "+path_dir_test, err)
+	Path_dir_test = "/home/" + etudiant + "/"
+	if err := exec.Command("chmod", "770", Path_dir_test).Run(); err != nil {
+		fmt.Println("error chmod "+Path_dir_test, err)
 	}
-	clear(path_dir_test)
+	clear(Path_dir_test)
 
 	//Récupérer le défi actuel
 	num_defi, defi := Defi_actuel()
 	script_etu := "script_" + etudiant + "_" + num_defi + ".sh"
-	path_jeu_de_tests = path_jeu_de_tests + "test_defi_" + num_defi + "/"
+	Path_jeu_de_tests = Path_jeu_de_tests + "test_defi_" + num_defi + "/"
 	i, _ := strconv.Atoi(num_defi)
 	//crée un tableau de int avec 1 = réussi, 0 = échoué, -1 = erreur
 	var resTest = make([]int, i+1)
@@ -53,37 +53,37 @@ func Test(etudiant string) string {
 	// Début du testUnique
 
 	// Donne les droits d'accès et de modifications à l'étudiant
-	exec.Command("sudo", "chown", etudiant, path_script_etu+script_etu).Run()
-	exec.Command("sudo", "chown", etudiant, path_dir_test).Run()
+	exec.Command("sudo", "chown", etudiant, Path_script_etu+script_etu).Run()
+	exec.Command("sudo", "chown", etudiant, Path_dir_test).Run()
 
 	//On récupère le nombre de test pour faire la boucle
-	tests, _ := exec.Command("find", path_jeu_de_tests, "-type", "f").CombinedOutput()
+	tests, _ := exec.Command("find", Path_jeu_de_tests, "-type", "f").CombinedOutput()
 	nbJeuDeTest := len(strings.Split(string(tests), "\n")) - 1
 
 	for i := 0; i < nbJeuDeTest; i++ {
 
-		deplacer(path_defis+defi, path_dir_test)
-		deplacer(path_script_etu+script_etu, path_dir_test)
+		deplacer(Path_defis+defi, Path_dir_test)
+		deplacer(Path_script_etu+script_etu, Path_dir_test)
 
 		test := "test_" + strconv.Itoa(i)
-		deplacer(path_jeu_de_tests+test, path_dir_test)
-		exec.Command("chmod", "444", path_dir_test+test).Run()
+		deplacer(Path_jeu_de_tests+test, Path_dir_test)
+		exec.Command("chmod", "444", Path_dir_test+test).Run()
 
-		rename(path_dir_test, test, "test")
+		rename(Path_dir_test, test, "test")
 
 		resTest[i] = testeurUnique(defi, script_etu, etudiant)
 		if resTest[i] == 0 || resTest[i] == -1 {
 			passTout = false
 		}
 
-		rename(path_dir_test, "test", test)
-		deplacer(path_dir_test+test, path_jeu_de_tests)
-		deplacer(path_dir_test+defi, path_defis)
-		deplacer(path_dir_test+script_etu, path_script_etu)
-		clear(path_dir_test)
+		rename(Path_dir_test, "test", test)
+		deplacer(Path_dir_test+test, Path_jeu_de_tests)
+		deplacer(Path_dir_test+defi, Path_defis)
+		deplacer(Path_dir_test+script_etu, Path_script_etu)
+		clear(Path_dir_test)
 	}
 
-	clear(path_dir_test)
+	clear(Path_dir_test)
 
 	//supprime l'user et son dossier
 	if err := exec.Command("sudo", "userdel", etudiant).Run(); err != nil {
@@ -95,9 +95,9 @@ func Test(etudiant string) string {
 
 	num, _ := strconv.Atoi(num_defi)
 	if passTout {
-		BDD.SaveDefi(etudiant, num, 1)
+		BDD.SaveDefi(etudiant, num, 1, false)
 	} else {
-		BDD.SaveDefi(etudiant, num, 0)
+		BDD.SaveDefi(etudiant, num, 0, false)
 	}
 
 	res := ""
@@ -132,16 +132,16 @@ Si non :
 */
 func testeurUnique(defi string, script_user string, etudiant string) int {
 
-	arboAvant := getFiles(path_dir_test)
+	arboAvant := getFiles(Path_dir_test)
 
-	cmd := exec.Command(path_dir_test + defi)
-	cmd.Dir = path_dir_test
+	cmd := exec.Command(Path_dir_test + defi)
+	cmd.Dir = Path_dir_test
 	stdout_defi, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println("erreur execution script défis : ", err)
 		return -1
 	}
-	arboApres := getFiles(path_dir_test)
+	arboApres := getFiles(Path_dir_test)
 	if len(arboAvant) != len(arboApres) {
 		//modif dans un new fichier
 		//trouver le fichier / nom du fichier modifié
@@ -150,19 +150,19 @@ func testeurUnique(defi string, script_user string, etudiant string) int {
 		mapEtu := make(map[string]string)
 		for _, name := range diff {
 			//On donne seulement le droit de lecture sur les jeux de test
-			exec.Command("chmod", "444", path_dir_test+name).Run()
-			f, err := exec.Command("cat", path_dir_test+name).CombinedOutput()
+			exec.Command("chmod", "444", Path_dir_test+name).Run()
+			f, err := exec.Command("cat", Path_dir_test+name).CombinedOutput()
 			if err != nil {
-				fmt.Println("erreur execution cat : ", path_dir_test+name, "\n", err)
+				fmt.Println("erreur execution cat : ", Path_dir_test+name, "\n", err)
 				return -1
 			}
 			mapDefi[name] = string(f)
 		}
 		//execution script étudiant
 
-		command := "'" + path_dir_test + script_user + "'"
+		command := "'" + Path_dir_test + script_user + "'"
 		cmd := exec.Command("sudo", "-H", "-u", etudiant, "bash", "-c", command)
-		cmd.Dir = path_dir_test
+		cmd.Dir = Path_dir_test
 		_, err := cmd.CombinedOutput()
 		if err != nil {
 			fmt.Println("erreur execution script étudiant : ", err)
@@ -170,9 +170,9 @@ func testeurUnique(defi string, script_user string, etudiant string) int {
 		}
 		//Récup les fichiers
 		for _, name := range diff {
-			f, err := exec.Command("cat", path_dir_test+name).CombinedOutput()
+			f, err := exec.Command("cat", Path_dir_test+name).CombinedOutput()
 			if err != nil {
-				fmt.Println("erreur execution cat : ", path_dir_test+name, "\n", err)
+				fmt.Println("erreur execution cat : ", Path_dir_test+name, "\n", err)
 				return -1
 			}
 			mapEtu[name] = string(f)
@@ -184,9 +184,9 @@ func testeurUnique(defi string, script_user string, etudiant string) int {
 		}
 		return 1
 	} else {
-		command := "'" + path_dir_test + script_user + "'"
+		command := "'" + Path_dir_test + script_user + "'"
 		cmd := exec.Command("sudo", "-H", "-u", etudiant, "bash", "-c", command)
-		cmd.Dir = path_dir_test
+		cmd.Dir = Path_dir_test
 		stdout_etu, err := cmd.CombinedOutput()
 		if err != nil {
 			fmt.Println(err, stdout_etu)

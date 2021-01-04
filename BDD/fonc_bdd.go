@@ -173,7 +173,11 @@ func ResetToken() {
 	stmt.Close()
 }
 
-func SaveDefi(lelogin string, lenum_defi int, letat int) {
+/**
+admin == true : fonction lancé par l'admin pour modifier les valeurs
+admin == false : fonction lancé lors d'une nouvelle tentative
+*/
+func SaveDefi(lelogin string, lenum_defi int, letat int, admin bool) {
 
 	var (
 		login     string
@@ -190,9 +194,12 @@ func SaveDefi(lelogin string, lenum_defi int, letat int) {
 
 	} else {
 		stmt, _ := db.Prepare("UPDATE Defis SET etat = ?, tentative = ? WHERE login = ? AND defi = ?")
-		stmt.Exec(letat, tentative+1, login, defi)
+		if admin {
+			stmt.Exec(letat, tentative, login, defi)
+		} else {
+			stmt.Exec(letat, tentative+1, login, defi)
+		}
 	}
-
 }
 
 func GetEtudiants() []Etudiant {

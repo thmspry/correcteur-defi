@@ -14,7 +14,7 @@ retourne le numéro  et le nom du dernier défi enregistré
 */
 func Defi_actuel() (string, string) {
 	var files []string
-	fileInfo, err := ioutil.ReadDir(path_defis)
+	fileInfo, err := ioutil.ReadDir(Path_defis)
 	if err != nil {
 		fmt.Print(err)
 	}
