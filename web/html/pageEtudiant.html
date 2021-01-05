@@ -28,10 +28,31 @@
     <input type="submit" value="upload"/>
 </form>
 
+<a href="/pageEtudiant?test">Tester son script</a><br>
 <div class="res">
+    <h1>{{.Msg_res}}</h1>
     <p>
-        <a href="/pageEtudiant?test">Tester son script</a><br>
-        Résultat : {{.Res}}
+        {{range .Res}}
+            Test : {{.Test}} <br>
+            {{if eq .Etat 1}}
+                Vous avez réussi ce test
+            {{else if eq .Etat 0}}
+                Vous avez échoué ce test
+            {{else if eq .Etat -1}}
+                Il y a eu une erreur durant ce test
+            {{end}}<br>
+            Résultat de la correction : <br>
+            {{range .Res_correction}}
+                {{.Nom}} contient <br>
+                {{.Contenu}}
+            {{end}}<br>
+            Résultat de de votre script : <br>
+            {{range .Res_etu}}
+                {{.}}<br>
+            {{end}}<br>
+            {{.Error_message}}
+        {{end}}
+        <br>
     </p>
 </div>
 </body>

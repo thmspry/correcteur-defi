@@ -18,6 +18,5 @@ func main() {
 		}
 		BDD.Register(etu)
 	*/
-
 	web.InitWeb()
 }

@@ -10,13 +10,15 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 type data_pageEtudiant struct {
 	UserInfo  BDD.Etudiant
 	Defi_sent bool
-	Num_defi  string
-	Res       string
+	Num_defi  int
+	Res       []testeur.Resultat
+	Msg_res   string
 }
 
 /**
@@ -39,8 +41,8 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	data := data_pageEtudiant{
 		UserInfo:  etu,
 		Num_defi:  num_defi_actuel,
-		Defi_sent: testeur.Contains(testeur.Path_script_etu, "script_"+etu.Login+"_"+num_defi_actuel+".sh"),
-		Res:       "",
+		Defi_sent: testeur.Contains(testeur.Path_script_etu, "script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel)+".sh"),
+		Res:       nil,
 	}
 
 	//Check la méthode utilisé par le formulaire
@@ -48,7 +50,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		//Charge la template html
 
 		if r.URL.String() == "/pageEtudiant?test" {
-			data.Res = testeur.Test(etu.Login)
+			data.Msg_res, data.Res = testeur.Test(etu.Login)
 		}
 
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
@@ -74,7 +76,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			defer file.Close()
 
 			num, _ := testeur.Defi_actuel()
-			script, err := os.Create("./ressource/script_etudiants/script_" + etu.Login + "_" + num + ".sh") // remplacer handler.Filename par le nom et on le place où on veut
+			script, err := os.Create("./ressource/script_etudiants/script_" + etu.Login + "_" + strconv.Itoa(num) + ".sh") // remplacer handler.Filename par le nom et on le place où on veut
 
 			if err != nil {
 				fmt.Println("Internal Error")
@@ -91,9 +93,9 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			os.Chmod("./ressource/script_etudiants/script_"+etu.Login+"_"+num+".sh", 770)
+			os.Chmod("./ressource/script_etudiants/script_"+etu.Login+"_"+strconv.Itoa(num)+".sh", 770)
 
-			logs.WriteLog(etu.Login, "upload de script du défis "+num)
+			logs.WriteLog(etu.Login, "upload de script du défis "+strconv.Itoa(num))
 			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 		}
 	}

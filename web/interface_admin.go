@@ -78,19 +78,18 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 
-		num, _ := testeur.Defi_actuel()
+		num_defi_actuel, _ := testeur.Defi_actuel()
 		path := ""
 		submit := r.FormValue("submit")
 		if submit == "defi_upload" {
-			n, _ := strconv.Atoi(num)
-			num = strconv.Itoa(n + 1)
-			path = "./ressource/defis/defi_" + num + ".sh"
+			num_defi_actuel = num_defi_actuel + 1
+			path = "./ressource/defis/defi_" + strconv.Itoa(num_defi_actuel) + ".sh"
 		} else if submit == "modification" {
-			path = "./ressource/defis/defi_" + num + ".sh"
+			path = "./ressource/defis/defi_" + strconv.Itoa(num_defi_actuel) + ".sh"
 		} else if submit == "test_upload" {
-			path = "./ressource/jeu_de_test/test_defi_" + num + "/"
+			path = "./ressource/jeu_de_test/test_defi_" + strconv.Itoa(num_defi_actuel) + "/"
 			num_test := testeur.Nb_test(path)
-			path = "./ressource/jeu_de_test/test_defi_" + num + "/test_" + strconv.Itoa(num_test)
+			path = "./ressource/jeu_de_test/test_defi_" + strconv.Itoa(num_defi_actuel) + "/test_" + strconv.Itoa(num_test)
 		}
 
 		script, err := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut

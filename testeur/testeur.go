@@ -3,6 +3,7 @@ package testeur
 import (
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
+	"io/ioutil"
 	"os/exec"
 	"runtime"
 	"strconv"
@@ -17,14 +18,26 @@ var (
 	passTout          bool
 )
 
+type Resultat struct {
+	Etat           int
+	Test           string
+	Res_etu        []Retour
+	Res_correction []Retour
+	Error_message  string
+}
+type Retour struct {
+	Nom     string
+	Contenu string
+}
+
 /*
 Fonction a appelé pour tester
 */
-func Test(etudiant string) string {
+func Test(etudiant string) (string, []Resultat) {
 
 	os := runtime.GOOS
 	if os == "windows" || os == "darwin" {
-		return "Le testeur ne peut être lancé que sur linux"
+		return "Le testeur ne peut être lancé que sur linux", nil
 	}
 
 	//Création du user
@@ -35,7 +48,7 @@ func Test(etudiant string) string {
 	if err := exec.Command("mkhomedir_helper", etudiant).Run(); err != nil {
 		fmt.Println("error create dir : ", err)
 	}
-	//Associe le chemin de test au dossier créé
+	//Associe le chemin de Test au dossier créé
 	Path_dir_test = "/home/" + etudiant + "/"
 	if err := exec.Command("chmod", "770", Path_dir_test).Run(); err != nil {
 		fmt.Println("error chmod "+Path_dir_test, err)
@@ -44,11 +57,10 @@ func Test(etudiant string) string {
 
 	//Récupérer le défi actuel
 	num_defi, defi := Defi_actuel()
-	script_etu := "script_" + etudiant + "_" + num_defi + ".sh"
-	Path_jeu_de_tests = Path_jeu_de_tests + "test_defi_" + num_defi + "/"
-	i, _ := strconv.Atoi(num_defi)
-	//crée un tableau de int avec 1 = réussi, 0 = échoué, -1 = erreur
-	var resTest = make([]int, i+1)
+	script_etu := "script_" + etudiant + "_" + strconv.Itoa(num_defi) + ".sh"
+	Path_jeu_de_tests = Path_jeu_de_tests + "test_defi_" + strconv.Itoa(num_defi) + "/"
+
+	var resTest = make([]Resultat, 0)
 
 	// Début du testUnique
 
@@ -56,31 +68,37 @@ func Test(etudiant string) string {
 	exec.Command("sudo", "chown", etudiant, Path_script_etu+script_etu).Run()
 	exec.Command("sudo", "chown", etudiant, Path_dir_test).Run()
 
-	//On récupère le nombre de test pour faire la boucle
+	//On récupère le nombre de Test pour faire la boucle
 	tests, _ := exec.Command("find", Path_jeu_de_tests, "-type", "f").CombinedOutput()
 	nbJeuDeTest := len(strings.Split(string(tests), "\n")) - 1
 
 	for i := 0; i < nbJeuDeTest; i++ {
-
 		deplacer(Path_defis+defi, Path_dir_test)
 		deplacer(Path_script_etu+script_etu, Path_dir_test)
-
 		test := "test_" + strconv.Itoa(i)
 		deplacer(Path_jeu_de_tests+test, Path_dir_test)
 		exec.Command("chmod", "444", Path_dir_test+test).Run()
+		rename(Path_dir_test, test, "Test")
 
-		rename(Path_dir_test, test, "test")
+		res := testeurUnique(defi, script_etu, etudiant)
+		f, _ := ioutil.ReadFile(Path_dir_test + test)
+		res.Test = string(f)
+		resTest = append(resTest, res)
 
-		resTest[i] = testeurUnique(defi, script_etu, etudiant)
-		if resTest[i] == 0 || resTest[i] == -1 {
-			passTout = false
-		}
-
-		rename(Path_dir_test, "test", test)
+		rename(Path_dir_test, "Test", test)
 		deplacer(Path_dir_test+test, Path_jeu_de_tests)
 		deplacer(Path_dir_test+defi, Path_defis)
 		deplacer(Path_dir_test+script_etu, Path_script_etu)
 		clear(Path_dir_test)
+
+		if res.Etat == 0 {
+			BDD.SaveDefi(etudiant, num_defi, 0, false)
+			return "Le Test n°" + strconv.Itoa(i) + " n'est pas passé", resTest
+		}
+		if res.Etat == -1 {
+			BDD.SaveDefi(etudiant, num_defi, 0, false)
+			return "Il y a eu un erreur lors du Test n°" + strconv.Itoa(i), resTest
+		}
 	}
 
 	clear(Path_dir_test)
@@ -93,24 +111,9 @@ func Test(etudiant string) string {
 		fmt.Println("error sudo rm -rf /home/EXXX : ", err)
 	}
 
-	num, _ := strconv.Atoi(num_defi)
-	if passTout {
-		BDD.SaveDefi(etudiant, num, 1, false)
-	} else {
-		BDD.SaveDefi(etudiant, num, 0, false)
-	}
+	BDD.SaveDefi(etudiant, num_defi, 1, false)
 
-	res := ""
-	for i := 0; i < len(resTest); i++ {
-		if resTest[i] == 1 {
-			res = res + "Test N°" + strconv.Itoa(i) + " : réussi\n"
-		} else if resTest[i] == 0 {
-			res = res + "Test N°" + strconv.Itoa(i) + " : échoué\n"
-		} else {
-			res = res + "Test N°" + strconv.Itoa(i) + " : error\n"
-		}
-	}
-	return res
+	return "Vous avez passé tous les tests avec succès", resTest
 }
 
 /*
@@ -130,8 +133,18 @@ Si non :
 	- compare stdout du défis et de l'étudiant
 	- retunr 1 si c'est pareil, 0 sinon
 */
-func testeurUnique(defi string, script_user string, etudiant string) int {
+func testeurUnique(defi string, script_user string, etudiant string) Resultat {
 
+	res := Resultat{
+		Etat:           0,
+		Res_etu:        make([]Retour, 0),
+		Res_correction: make([]Retour, 0),
+		Error_message:  "",
+	}
+	retour := Retour{
+		Nom:     "",
+		Contenu: "",
+	}
 	arboAvant := getFiles(Path_dir_test)
 
 	cmd := exec.Command(Path_dir_test + defi)
@@ -139,7 +152,9 @@ func testeurUnique(defi string, script_user string, etudiant string) int {
 	stdout_defi, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println("erreur execution script défis : ", err)
-		return -1
+		res.Error_message = "erreur execution du script de correction"
+		res.Etat = -1
+		return res
 	}
 	arboApres := getFiles(Path_dir_test)
 	if len(arboAvant) != len(arboApres) {
@@ -149,14 +164,20 @@ func testeurUnique(defi string, script_user string, etudiant string) int {
 		mapDefi := make(map[string]string)
 		mapEtu := make(map[string]string)
 		for _, name := range diff {
-			//On donne seulement le droit de lecture sur les jeux de test
+			//On donne seulement le droit de lecture sur les jeux de Test
 			exec.Command("chmod", "444", Path_dir_test+name).Run()
 			f, err := exec.Command("cat", Path_dir_test+name).CombinedOutput()
 			if err != nil {
 				fmt.Println("erreur execution cat : ", Path_dir_test+name, "\n", err)
-				return -1
+				res.Error_message = "erreur lecture du fichier " + Path_dir_test + name
+				res.Etat = -1
+				return res
 			}
 			mapDefi[name] = string(f)
+			retour.Nom = "fichier " + name
+			retour.Contenu = string(f)
+
+			res.Res_correction = append(res.Res_correction, retour)
 		}
 		//execution script étudiant
 
@@ -166,23 +187,30 @@ func testeurUnique(defi string, script_user string, etudiant string) int {
 		_, err := cmd.CombinedOutput()
 		if err != nil {
 			fmt.Println("erreur execution script étudiant : ", err)
-			return -1
+			res.Error_message = "erreur execution du script de l'étudiant"
+			res.Etat = -1
+			return res
 		}
 		//Récup les fichiers
 		for _, name := range diff {
 			f, err := exec.Command("cat", Path_dir_test+name).CombinedOutput()
 			if err != nil {
 				fmt.Println("erreur execution cat : ", Path_dir_test+name, "\n", err)
-				return -1
+				res.Error_message = "erreur lecture du fichier " + Path_dir_test + name
+				res.Etat = -1
+				return res
 			}
 			mapEtu[name] = string(f)
-			fmt.Println("mapEtu[" + name + "] = " + mapEtu[name])
-			fmt.Println("mapDefi[" + name + "] = " + mapDefi[name])
+			retour.Nom = "fichier " + name
+			retour.Contenu = string(f)
+			res.Res_etu = append(res.Res_etu, retour)
 			if mapEtu[name] != mapDefi[name] {
-				return 0
+				res.Etat = 0
+				return res
 			}
 		}
-		return 1
+		res.Etat = 1
+		return res
 	} else {
 		command := "'" + Path_dir_test + script_user + "'"
 		cmd := exec.Command("sudo", "-H", "-u", etudiant, "bash", "-c", command)
@@ -190,13 +218,22 @@ func testeurUnique(defi string, script_user string, etudiant string) int {
 		stdout_etu, err := cmd.CombinedOutput()
 		if err != nil {
 			fmt.Println(err, stdout_etu)
-			return -1
+			res.Error_message = "erreur execution du script étudiant"
+			res.Etat = -1
+			return res
 		}
 
-		if string(stdout_defi) == string(stdout_etu) {
-			return 1
+		retour.Nom = "sortie standart"
+		retour.Contenu = string(stdout_etu)
+		res.Res_etu = append(res.Res_etu, retour)
+		retour.Contenu = string(stdout_defi)
+		res.Res_correction = append(res.Res_correction, retour)
+		if res.Res_etu[0] == res.Res_correction[0] {
+			res.Etat = 1
+			return res
 		} else {
-			return 0
+			res.Etat = 0
+			return res
 		}
 	}
 }
