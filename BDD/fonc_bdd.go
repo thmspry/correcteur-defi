@@ -160,7 +160,7 @@ func DeleteToken(login string) {
 	if err != nil {
 		fmt.Println("probleme DeleteToken", err)
 	} else {
-		fmt.Println("delete token du login : ", login, " à ", time.Now(), "\n")
+		fmt.Println("delete token du login, ", login, " à ", time.Now(), "\n")
 	}
 	stmt.Close()
 }

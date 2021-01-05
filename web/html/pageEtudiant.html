@@ -13,6 +13,15 @@
     prénom : {{.UserInfo.Prenom}}  nom : {{.UserInfo.Nom}}<br>
     mail : {{.UserInfo.Mail}}  défis réussis : {{.UserInfo.DefiSucess}}<br>
 </div>
+<div>
+    Défi actuel numéro {{.Num_defi}}
+    {{if .Defi_sent}}
+        Vous avez déjà rendu un script pour ce défi
+    {{else}}
+        Vous n'avez pas encore envoyé de script
+    {{end}}
+</div>
+
 <form   enctype="multipart/form-data"  action="/pageEtudiant" method="post">
     <input type="file" name="script_etu"/>
     <input type="hidden" name="token" value=" " />

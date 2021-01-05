@@ -30,7 +30,7 @@ func WriteLog(login string, msg string) {
 	if err != nil {
 		fmt.Printf(err.Error())
 	}
-	f.WriteString(GetHoraire() + " : " + login + " : " + msg + "\n")
+	f.WriteString(GetHoraire() + ", " + login + " : " + msg + "\n")
 
 	f.Close()
 }

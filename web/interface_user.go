@@ -13,8 +13,10 @@ import (
 )
 
 type data_pageEtudiant struct {
-	UserInfo BDD.Etudiant
-	Res      string
+	UserInfo  BDD.Etudiant
+	Defi_sent bool
+	Num_defi  string
+	Res       string
 }
 
 /**
@@ -22,7 +24,7 @@ Fonction pour afficher la page Etudiant à l'adresse /pageEtudiant
 */
 func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method de pageEtudiant :", r.Method)
-
+	num_defi_actuel, _ := testeur.Defi_actuel()
 	//Si il y a n'y a pas de token dans les cookies alors l'utilisateur est redirigé vers la page de login
 	if _, err := r.Cookie("token"); err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
@@ -32,10 +34,15 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	token, _ := r.Cookie("token")            //récupère le token du cookie
 	login := BDD.GetNameByToken(token.Value) // récupère le login correspondant au token
 	etu := BDD.GetInfo(login)                // récupère les informations de l'étudiant grâce au login
+
+	//Parse data
 	data := data_pageEtudiant{
-		UserInfo: etu,
-		Res:      "",
+		UserInfo:  etu,
+		Num_defi:  num_defi_actuel,
+		Defi_sent: testeur.Contains(testeur.Path_script_etu, "script_"+etu.Login+"_"+num_defi_actuel+".sh"),
+		Res:       "",
 	}
+
 	//Check la méthode utilisé par le formulaire
 	if r.Method == "GET" {
 		//Charge la template html

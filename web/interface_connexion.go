@@ -102,6 +102,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 
 func DeleteToken(login string) {
 	time.Sleep(1 * time.Minute)
+	logs.WriteLog(login, "déconnexion du serveur")
 	BDD.DeleteToken(login)
 	return
 }
