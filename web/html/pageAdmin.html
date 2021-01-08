@@ -6,15 +6,42 @@
     <link rel="stylesheet" href="/web/css/pageAdmin.css">
 </head>
 <body>
-<h1>Connecté comme Admin</h1>
+<h1>Page admin</h1>
 <h2>Formulaire pour upload des défis : </h2>
-<form   enctype="multipart/form-data"  action="/pageAdmin" method="post">
-    <input type="file" name="defi"/><br>
-    <input type="hidden" name="token" value=" " />
-    Upload new script : <input type="submit" value="defi_upload" name="submit"/><br>
-    Modification du script actuelle : <input type="submit" value="modification" name="submit"/><br>
-    Upload test : <input type="submit" value="test_upload" name="submit"/>
+{{if eq .Defi_actuel.Num -1}} Il n'y a pas de défi en cours
+{{else}}
+    Défi actuel : défi n°{{.Defi_actuel.Num}}<br>
+    Il a commencé le {{.Defi_actuel.Date_debut}}
+    et se termine le {{.Defi_actuel.Date_fin}}
+{{end}}
+<br>
+<br>
+
+Formumaire pour modifier uniquement la date :
+<br>
+<form action="/pageAdmin?form=modify_date" method="post">
+    Format date : "JJ-MM-YYYY" <br>
+    Date de début : <input type="text" name="date_debut" value="{{.Defi_actuel.Date_debut}}"> <br>
+    Date de fin : <input type="text" name="date_fin" value="{{.Defi_actuel.Date_fin}}"> <br>
+    <input type="submit">
 </form>
+<br>
+Formulaire pour enregistrer un défis avec sa correction, sa date de début et de fin. Il peut aussi servir à modifier la correction du défi actuel.
+<form   enctype="multipart/form-data"  action="/pageAdmin?form=defi" method="post">
+    Dépot de la correction : <input type="file" name="defi"><br>
+    Format date : "JJ-MM-YYYY" <br>
+    Date de début : <input type="text" name="date_debut" value="{{.Defi_actuel.Date_debut}}"> <br>
+    Date de fin : <input type="text" name="date_fin" value="{{.Defi_actuel.Date_fin}}"> <br>
+    <input type="submit" value="déposer" name="submit"/>
+    <input type="submit" value="modifier" name="submit"/>
+</form>
+
+<h2>Formulaire pour upload des tests : </h2>
+<form enctype="multipart/form-data" action="/pageAdmin?form=test" method="post">
+    Dépot du test : <input type="file" name="test">
+    <input type="submit" value="déposer" name="submit">
+</form>
+
 Liste des étudiants :
 <div id="etudiants">
     {{range .Etudiants}}
@@ -25,7 +52,7 @@ Liste des étudiants :
 </div>
 Info de l'étudiant :
 <div id="etudiant">
-    {{range .Defis_etu}}
+    {{range .Res_etu}}
         Defi n°{{.Defi}}
         Etat :  {{if eq .Etat 1}}
                 Réussi
@@ -42,5 +69,6 @@ Affichage du script :
 <div>
     {{.File}}
 </div>
+
 </body>
 </html>

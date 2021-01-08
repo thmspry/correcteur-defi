@@ -3,6 +3,7 @@ package testeur
 import (
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"io/ioutil"
 	"os/exec"
 	"runtime"
@@ -10,16 +11,8 @@ import (
 	"strings"
 )
 
-var (
-	Path_defis        = "./ressource/defis/"
-	Path_script_etu   = "./ressource/script_etudiants/"
-	Path_dir_test     = "./dir_test/"
-	Path_jeu_de_tests = "./ressource/jeu_de_test/"
-	passTout          bool
-)
-
 type Resultat struct {
-	Etat           int
+	Etat           int // 1 réussi, 0 échoué, -1 erreur
 	Test           string
 	Res_etu        []Retour
 	Res_correction []Retour
@@ -35,6 +28,9 @@ Fonction a appelé pour tester
 */
 func Test(etudiant string) (string, []Resultat) {
 
+	messageDeRetour := ""
+	etatTestGlobal := 0
+
 	os := runtime.GOOS
 	if os == "windows" || os == "darwin" {
 		return "Le testeur ne peut être lancé que sur linux", nil
@@ -49,59 +45,65 @@ func Test(etudiant string) (string, []Resultat) {
 		fmt.Println("error create dir : ", err)
 	}
 	//Associe le chemin de Test au dossier créé
-	Path_dir_test = "/home/" + etudiant + "/"
-	if err := exec.Command("chmod", "770", Path_dir_test).Run(); err != nil {
-		fmt.Println("error chmod "+Path_dir_test, err)
+	config.Path_dir_test = "/home/" + etudiant + "/"
+	if err := exec.Command("chmod", "770", config.Path_dir_test).Run(); err != nil {
+		fmt.Println("error chmod "+config.Path_dir_test, err)
 	}
-	clear(Path_dir_test)
+	clear(config.Path_dir_test)
 
 	//Récupérer le défi actuel
-	num_defi, defi := Defi_actuel()
+	num_defi := BDD.GetLastDefi().Num
+	//num_defi = BDD.Defi_actuel()
+	correction := "correction_" + strconv.Itoa(num_defi)
 	script_etu := "script_" + etudiant + "_" + strconv.Itoa(num_defi) + ".sh"
-	Path_jeu_de_tests = Path_jeu_de_tests + "test_defi_" + strconv.Itoa(num_defi) + "/"
+	config.Path_jeu_de_tests = config.Path_jeu_de_tests + "test_defi_" + strconv.Itoa(num_defi) + "/"
 
 	var resTest = make([]Resultat, 0)
 
 	// Début du testUnique
 
 	// Donne les droits d'accès et de modifications à l'étudiant
-	exec.Command("sudo", "chown", etudiant, Path_script_etu+script_etu).Run()
-	exec.Command("sudo", "chown", etudiant, Path_dir_test).Run()
+	exec.Command("sudo", "chown", etudiant, config.Path_scripts+script_etu).Run()
+	exec.Command("sudo", "chown", etudiant, config.Path_dir_test).Run()
 
 	//On récupère le nombre de Test pour faire la boucle
-	tests, _ := exec.Command("find", Path_jeu_de_tests, "-type", "f").CombinedOutput()
+	tests, _ := exec.Command("find", config.Path_jeu_de_tests, "-type", "f").CombinedOutput()
 	nbJeuDeTest := len(strings.Split(string(tests), "\n")) - 1
 
 	for i := 0; i < nbJeuDeTest; i++ {
-		deplacer(Path_defis+defi, Path_dir_test)
-		deplacer(Path_script_etu+script_etu, Path_dir_test)
+		deplacer(config.Path_defis+correction, config.Path_dir_test)
+		deplacer(config.Path_scripts+script_etu, config.Path_dir_test)
 		test := "test_" + strconv.Itoa(i)
-		deplacer(Path_jeu_de_tests+test, Path_dir_test)
-		exec.Command("chmod", "444", Path_dir_test+test).Run()
-		rename(Path_dir_test, test, "Test")
+		deplacer(config.Path_jeu_de_tests+test, config.Path_dir_test)
+		exec.Command("chmod", "444", config.Path_dir_test+test).Run()
+		rename(config.Path_dir_test, test, "Test")
 
-		res := testeurUnique(defi, script_etu, etudiant)
-		f, _ := ioutil.ReadFile(Path_dir_test + test)
+		res := testeurUnique(correction, script_etu, etudiant)
+		f, _ := ioutil.ReadFile(config.Path_dir_test + test)
 		res.Test = string(f)
 		resTest = append(resTest, res)
 
-		rename(Path_dir_test, "Test", test)
-		deplacer(Path_dir_test+test, Path_jeu_de_tests)
-		deplacer(Path_dir_test+defi, Path_defis)
-		deplacer(Path_dir_test+script_etu, Path_script_etu)
-		clear(Path_dir_test)
+		rename(config.Path_dir_test, "Test", test)
+		deplacer(config.Path_dir_test+test, config.Path_jeu_de_tests)
+		deplacer(config.Path_dir_test+correction, config.Path_defis)
+		deplacer(config.Path_dir_test+script_etu, config.Path_scripts)
+		clear(config.Path_dir_test)
 
 		if res.Etat == 0 {
-			BDD.SaveDefi(etudiant, num_defi, 0, false)
-			return "Le Test n°" + strconv.Itoa(i) + " n'est pas passé", resTest
+			BDD.SaveResultat(etudiant, num_defi, 0, false)
+			i = nbJeuDeTest
+			messageDeRetour = "Le Test n°" + strconv.Itoa(i) + " n'est pas passé"
+			etatTestGlobal = 0
 		}
 		if res.Etat == -1 {
-			BDD.SaveDefi(etudiant, num_defi, 0, false)
-			return "Il y a eu un erreur lors du Test n°" + strconv.Itoa(i), resTest
+			BDD.SaveResultat(etudiant, num_defi, 0, false)
+			i = nbJeuDeTest
+			messageDeRetour = "Il y a eu un erreur lors du Test n°" + strconv.Itoa(i)
+			etatTestGlobal = -1
 		}
 	}
 
-	clear(Path_dir_test)
+	clear(config.Path_dir_test)
 
 	//supprime l'user et son dossier
 	if err := exec.Command("sudo", "userdel", etudiant).Run(); err != nil {
@@ -111,8 +113,11 @@ func Test(etudiant string) (string, []Resultat) {
 		fmt.Println("error sudo rm -rf /home/EXXX : ", err)
 	}
 
-	BDD.SaveDefi(etudiant, num_defi, 1, false)
+	BDD.SaveResultat(etudiant, num_defi, 1, false)
 
+	if etatTestGlobal == 0 || etatTestGlobal == -1 {
+		return messageDeRetour, resTest
+	}
 	return "Vous avez passé tous les tests avec succès", resTest
 }
 
@@ -133,7 +138,7 @@ Si non :
 	- compare stdout du défis et de l'étudiant
 	- retunr 1 si c'est pareil, 0 sinon
 */
-func testeurUnique(defi string, script_user string, etudiant string) Resultat {
+func testeurUnique(correction string, script_user string, etudiant string) Resultat {
 
 	res := Resultat{
 		Etat:           0,
@@ -145,35 +150,35 @@ func testeurUnique(defi string, script_user string, etudiant string) Resultat {
 		Nom:     "",
 		Contenu: "",
 	}
-	arboAvant := getFiles(Path_dir_test)
+	arboAvant := getFiles(config.Path_dir_test)
 
-	cmd := exec.Command(Path_dir_test + defi)
-	cmd.Dir = Path_dir_test
-	stdout_defi, err := cmd.CombinedOutput()
+	cmd := exec.Command(config.Path_dir_test + correction)
+	cmd.Dir = config.Path_dir_test
+	stdout_correction, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println("erreur execution script défis : ", err)
 		res.Error_message = "erreur execution du script de correction"
 		res.Etat = -1
 		return res
 	}
-	arboApres := getFiles(Path_dir_test)
+	arboApres := getFiles(config.Path_dir_test)
 	if len(arboAvant) != len(arboApres) {
 		//modif dans un new fichier
 		//trouver le fichier / nom du fichier modifié
 		diff := difference(arboAvant, arboApres)
-		mapDefi := make(map[string]string)
+		mapCorrection := make(map[string]string)
 		mapEtu := make(map[string]string)
 		for _, name := range diff {
 			//On donne seulement le droit de lecture sur les jeux de Test
-			exec.Command("chmod", "444", Path_dir_test+name).Run()
-			f, err := exec.Command("cat", Path_dir_test+name).CombinedOutput()
+			exec.Command("chmod", "444", config.Path_dir_test+name).Run()
+			f, err := exec.Command("cat", config.Path_dir_test+name).CombinedOutput()
 			if err != nil {
-				fmt.Println("erreur execution cat : ", Path_dir_test+name, "\n", err)
-				res.Error_message = "erreur lecture du fichier " + Path_dir_test + name
+				fmt.Println("erreur execution cat : ", config.Path_dir_test+name, "\n", err)
+				res.Error_message = "erreur lecture du fichier " + config.Path_dir_test + name
 				res.Etat = -1
 				return res
 			}
-			mapDefi[name] = string(f)
+			mapCorrection[name] = string(f)
 			retour.Nom = "fichier " + name
 			retour.Contenu = string(f)
 
@@ -181,9 +186,9 @@ func testeurUnique(defi string, script_user string, etudiant string) Resultat {
 		}
 		//execution script étudiant
 
-		command := "'" + Path_dir_test + script_user + "'"
+		command := "'" + config.Path_dir_test + script_user + "'"
 		cmd := exec.Command("sudo", "-H", "-u", etudiant, "bash", "-c", command)
-		cmd.Dir = Path_dir_test
+		cmd.Dir = config.Path_dir_test
 		_, err := cmd.CombinedOutput()
 		if err != nil {
 			fmt.Println("erreur execution script étudiant : ", err)
@@ -193,10 +198,10 @@ func testeurUnique(defi string, script_user string, etudiant string) Resultat {
 		}
 		//Récup les fichiers
 		for _, name := range diff {
-			f, err := exec.Command("cat", Path_dir_test+name).CombinedOutput()
+			f, err := exec.Command("cat", config.Path_dir_test+name).CombinedOutput()
 			if err != nil {
-				fmt.Println("erreur execution cat : ", Path_dir_test+name, "\n", err)
-				res.Error_message = "erreur lecture du fichier " + Path_dir_test + name
+				fmt.Println("erreur execution cat : ", config.Path_dir_test+name, "\n", err)
+				res.Error_message = "erreur lecture du fichier " + config.Path_dir_test + name
 				res.Etat = -1
 				return res
 			}
@@ -204,7 +209,7 @@ func testeurUnique(defi string, script_user string, etudiant string) Resultat {
 			retour.Nom = "fichier " + name
 			retour.Contenu = string(f)
 			res.Res_etu = append(res.Res_etu, retour)
-			if mapEtu[name] != mapDefi[name] {
+			if mapEtu[name] != mapCorrection[name] {
 				res.Etat = 0
 				return res
 			}
@@ -212,9 +217,9 @@ func testeurUnique(defi string, script_user string, etudiant string) Resultat {
 		res.Etat = 1
 		return res
 	} else {
-		command := "'" + Path_dir_test + script_user + "'"
+		command := "'" + config.Path_dir_test + script_user + "'"
 		cmd := exec.Command("sudo", "-H", "-u", etudiant, "bash", "-c", command)
-		cmd.Dir = Path_dir_test
+		cmd.Dir = config.Path_dir_test
 		stdout_etu, err := cmd.CombinedOutput()
 		if err != nil {
 			fmt.Println(err, stdout_etu)
@@ -226,7 +231,7 @@ func testeurUnique(defi string, script_user string, etudiant string) Resultat {
 		retour.Nom = "sortie standart"
 		retour.Contenu = string(stdout_etu)
 		res.Res_etu = append(res.Res_etu, retour)
-		retour.Contenu = string(stdout_defi)
+		retour.Contenu = string(stdout_correction)
 		res.Res_correction = append(res.Res_correction, retour)
 		if res.Res_etu[0] == res.Res_correction[0] {
 			res.Etat = 1

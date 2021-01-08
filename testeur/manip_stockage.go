@@ -11,17 +11,6 @@ import (
 /**
 retourne le numéro  et le nom du dernier défi enregistré
 */
-func Defi_actuel() (int, string) {
-	var files []string
-	fileInfo, err := ioutil.ReadDir(Path_defis)
-	if err != nil {
-		fmt.Print(err)
-	}
-	for _, file := range fileInfo {
-		files = append(files, file.Name())
-	}
-	return len(files) - 1, files[len(files)-1]
-}
 
 func Nb_test(path string) int {
 	var files []string

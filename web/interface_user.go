@@ -3,6 +3,7 @@ package web
 import (
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/logs"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/testeur"
 	"html/template"
@@ -26,7 +27,7 @@ Fonction pour afficher la page Etudiant à l'adresse /pageEtudiant
 */
 func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method de pageEtudiant :", r.Method)
-	num_defi_actuel, _ := testeur.Defi_actuel()
+	num_defi_actuel := BDD.GetLastDefi().Num
 	//Si il y a n'y a pas de token dans les cookies alors l'utilisateur est redirigé vers la page de login
 	if _, err := r.Cookie("token"); err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
@@ -41,7 +42,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	data := data_pageEtudiant{
 		UserInfo:  etu,
 		Num_defi:  num_defi_actuel,
-		Defi_sent: testeur.Contains(testeur.Path_script_etu, "script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel)+".sh"),
+		Defi_sent: testeur.Contains(config.Path_scripts, "script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel)+".sh"),
 		Res:       nil,
 	}
 
@@ -75,8 +76,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			}
 			defer file.Close()
 
-			num, _ := testeur.Defi_actuel()
-			script, err := os.Create("./ressource/script_etudiants/script_" + etu.Login + "_" + strconv.Itoa(num) + ".sh") // remplacer handler.Filename par le nom et on le place où on veut
+			script, err := os.Create(config.Path_scripts + "script_" + etu.Login + "_" + strconv.Itoa(num_defi_actuel) + ".sh") // remplacer handler.Filename par le nom et on le place où on veut
 
 			if err != nil {
 				fmt.Println("Internal Error")
@@ -93,9 +93,9 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			os.Chmod("./ressource/script_etudiants/script_"+etu.Login+"_"+strconv.Itoa(num)+".sh", 770)
+			os.Chmod(config.Path_scripts+"script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel)+".sh", 770)
 
-			logs.WriteLog(etu.Login, "upload de script du défis "+strconv.Itoa(num))
+			logs.WriteLog(etu.Login, "upload de script du défis "+strconv.Itoa(num_defi_actuel))
 			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 		}
 	}

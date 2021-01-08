@@ -9,12 +9,6 @@ import (
 	"time"
 )
 
-func GetDate() string {
-	annee, mois, jour := time.Now().Date()
-	date := strconv.Itoa(jour) + "-" + strconv.Itoa(int(mois)) + "-" + strconv.Itoa(annee)
-	return date
-}
-
 func GetHoraire() string {
 	minute, heure, seconde := time.Now().Clock()
 	horaire := strconv.Itoa(minute) + ":" + strconv.Itoa(heure) + ":" + strconv.Itoa(seconde)
@@ -22,11 +16,12 @@ func GetHoraire() string {
 }
 
 func WriteLog(login string, msg string) {
-	if !testeur.Contains("./logs/", GetDate()) {
-		ioutil.WriteFile("./logs/"+GetDate(), nil, 0755)
+	date := testeur.GetDate()
+	if !testeur.Contains("./logs/", date.String) {
+		ioutil.WriteFile("./logs/"+date.String, nil, 0755)
 	}
 
-	f, err := os.OpenFile("./logs/"+GetDate(), os.O_APPEND|os.O_WRONLY, 0600)
+	f, err := os.OpenFile("./logs/"+date.String, os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		fmt.Printf(err.Error())
 	}

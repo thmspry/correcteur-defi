@@ -20,21 +20,13 @@ Fonction pour lancer l'interface web
 func InitWeb() {
 
 	http.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web")))) // compliqué à expliquer
-
-	//http.HandleFunc("/", root)                     // Page de base : http://localhost:8080
-	http.HandleFunc("/login", accueil)             // Page d'acceuil : http://localhost:8080/login
-	http.HandleFunc("/pageEtudiant", pageEtudiant) // Page étudiant : http://localhost:8080/pageEtudiant
-	http.HandleFunc("/pageAdmin", pageAdmin)       // Page admin : http://localhost:8080/pageAdmin
-	err := http.ListenAndServe(":8080", nil)       // port utilisé
+	http.HandleFunc("/login", accueil)                                                // Page d'acceuil : http://localhost:8080/login
+	http.HandleFunc("/pageEtudiant", pageEtudiant)                                    // Page étudiant : http://localhost:8080/pageEtudiant
+	http.HandleFunc("/pageAdmin", pageAdmin)                                          // Page admin : http://localhost:8080/pageAdmin
+	err := http.ListenAndServe(":8080", nil)                                          // port utilisé
 	if err != nil {
 		fmt.Printf("ListenAndServe: ", err)
 	}
-	setupRoutes()
-
-}
-
-func root(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
 func accueil(w http.ResponseWriter, r *http.Request) {
@@ -84,12 +76,11 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			// request provient du formulaire pour s'enregistrer
 			// pas de vérification de champs implémenter pour l'instant
 			etu := BDD.Etudiant{
-				Login:      r.FormValue("login"),
-				Password:   r.FormValue("password"),
-				Prenom:     r.FormValue("prenom"),
-				Nom:        r.FormValue("nom"),
-				Mail:       r.FormValue("mail"),
-				DefiSucess: 0,
+				Login:    r.FormValue("login"),
+				Password: r.FormValue("password"),
+				Prenom:   r.FormValue("prenom"),
+				Nom:      r.FormValue("nom"),
+				Mail:     r.FormValue("mail"),
 			}
 			BDD.Register(etu) // ajouter l'etudiant dans la base de données.
 
@@ -118,11 +109,6 @@ func tokenGenerator() string {
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
-}
-
-func setupRoutes() {
-	http.HandleFunc("/pageEtudiant", pageEtudiant)
-	http.ListenAndServe(":8080", nil)
 }
 
 func password() {

@@ -3,6 +3,8 @@ package web
 import (
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/logs"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/testeur"
 	"html/template"
 	"io"
@@ -17,23 +19,28 @@ type Admin struct {
 }
 
 type data_pageAdmin struct {
-	Etu_select string
-	Etudiants  []BDD.Etudiant
-	Defis_etu  []BDD.Defi
-	File       string
+	Etu_select  string
+	Etudiants   []BDD.Etudiant
+	Res_etu     []BDD.ResBDD
+	File        string
+	Defi_actuel BDD.Defi
 }
 
 func pageAdmin(w http.ResponseWriter, r *http.Request) {
+	data := data_pageAdmin{
+		Etu_select:  "",
+		Etudiants:   BDD.GetEtudiants(),
+		Res_etu:     nil,
+		File:        "",
+		Defi_actuel: BDD.GetLastDefi(),
+	}
 
 	if r.Method == "GET" {
 
-		data := data_pageAdmin{
-			Etu_select: "",
-			Etudiants:  BDD.GetEtudiants(),
-			Defis_etu:  nil,
-			File:       "",
+		//if date actuelle > defi actel.datefin alors defiactuel.num = -1
+		if testeur.DatePassed(testeur.GetDateFromString(BDD.GetLastDefi().Date_fin)) {
+			data.Defi_actuel.Num = -1
 		}
-
 		if r.URL.Query()["Etudiant"] != nil {
 			etu := r.URL.Query()["Etudiant"][0]
 			data.Etu_select = etu
@@ -43,13 +50,13 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				etat := r.URL.Query()["Etat"][0]
 				num, _ := strconv.Atoi(r.URL.Query()["Script"][0])
 				if etat == "1" {
-					BDD.SaveDefi(etu, num, 0, true)
+					BDD.SaveResultat(etu, num, 0, true)
 				} else {
-					BDD.SaveDefi(etu, num, 1, true)
+					BDD.SaveResultat(etu, num, 1, true)
 				}
 			} else if r.URL.Query()["Script"] != nil {
 				num := r.URL.Query()["Script"][0]
-				f, err := ioutil.ReadFile(testeur.Path_script_etu + "script_" + etu + "_" + num + ".sh")
+				f, err := ioutil.ReadFile(config.Path_scripts + "script_" + etu + "_" + num + ".sh")
 				if err != nil {
 					data.File = "erreur pour récupérer le script de l'étudiant"
 				} else {
@@ -57,7 +64,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 					data.File = string(f)
 				}
 			}
-			data.Defis_etu = BDD.GetDefis(etu)
+			data.Res_etu = BDD.GetResultat(etu)
 		}
 
 		t := template.Must(template.ParseFiles("./web/html/pageAdmin.html"))
@@ -67,9 +74,14 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if r.Method == "POST" {
+		if r.URL.Query()["form"][0] == "modify_date" {
+			logs.WriteLog("Admin", "modification de la date de rendu")
+			BDD.ModifyDefi(data.Defi_actuel.Num, r.FormValue("date_debut"), r.FormValue("date_fin"))
+			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
+			return
+		}
 
 		r.ParseMultipartForm(10 << 20)
-
 		file, _, err := r.FormFile("defi")
 		if err != nil {
 			fmt.Println("Error Retrieving the File")
@@ -78,18 +90,32 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 
-		num_defi_actuel, _ := testeur.Defi_actuel()
+		defi_actuel := BDD.GetLastDefi()
+		num_defi_actuel := defi_actuel.Num
 		path := ""
-		submit := r.FormValue("submit")
-		if submit == "defi_upload" {
-			num_defi_actuel = num_defi_actuel + 1
-			path = "./ressource/defis/defi_" + strconv.Itoa(num_defi_actuel) + ".sh"
-		} else if submit == "modification" {
-			path = "./ressource/defis/defi_" + strconv.Itoa(num_defi_actuel) + ".sh"
-		} else if submit == "test_upload" {
-			path = "./ressource/jeu_de_test/test_defi_" + strconv.Itoa(num_defi_actuel) + "/"
+
+		if r.URL.Query()["form"][0] == "defi" {
+			submit := r.FormValue("submit")
+			date_debut := r.FormValue("date_debut")
+			date_fin := r.FormValue("date_fin")
+			if submit == "modifier" {
+				logs.WriteLog("Admin", "modification de la correction")
+				BDD.ModifyDefi(data.Defi_actuel.Num, date_debut, date_fin)
+				path = config.Path_defis + "correction_" + strconv.Itoa(num_defi_actuel) + ".sh"
+			} else {
+				logs.WriteLog("Admin", "ajout d'un nouveau défis")
+				// ajouter a la table défis
+				BDD.AddDefi(num_defi_actuel+1, date_debut, date_fin)
+				os.Mkdir(config.Path_jeu_de_tests+"test_defi_"+strconv.Itoa(num_defi_actuel+1), os.ModePerm)
+				num_defi_actuel = num_defi_actuel + 1
+				path = config.Path_defis + "correction_" + strconv.Itoa(num_defi_actuel) + ".sh"
+			}
+		} else if r.URL.Query()["form"][0] == "test" {
+
+			logs.WriteLog("Admin", "upload d'un test pour le défi n°"+strconv.Itoa(num_defi_actuel))
+			path = config.Path_jeu_de_tests + "test_defi_" + strconv.Itoa(num_defi_actuel) + "/"
 			num_test := testeur.Nb_test(path)
-			path = "./ressource/jeu_de_test/test_defi_" + strconv.Itoa(num_defi_actuel) + "/test_" + strconv.Itoa(num_test)
+			path = config.Path_jeu_de_tests + "test_defi_" + strconv.Itoa(num_defi_actuel) + "/test_" + strconv.Itoa(num_test)
 		}
 
 		script, err := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
@@ -105,7 +131,6 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println("Internal Error")
 			fmt.Println(err)
-			return
 		}
 
 		os.Chmod(path, 770)
