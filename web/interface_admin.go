@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bufio"
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
@@ -8,7 +9,6 @@ import (
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/testeur"
 	"html/template"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -22,7 +22,7 @@ type data_pageAdmin struct {
 	Etu_select  string
 	Etudiants   []BDD.Etudiant
 	Res_etu     []BDD.ResBDD
-	File        string
+	File        []string
 	Defi_actuel BDD.Defi
 }
 
@@ -31,7 +31,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		Etu_select:  "",
 		Etudiants:   BDD.GetEtudiants(),
 		Res_etu:     nil,
-		File:        "",
+		File:        nil,
 		Defi_actuel: BDD.GetLastDefi(),
 	}
 
@@ -56,12 +56,14 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				}
 			} else if r.URL.Query()["Script"] != nil {
 				num := r.URL.Query()["Script"][0]
-				f, err := ioutil.ReadFile(config.Path_scripts + "script_" + etu + "_" + num + ".sh")
+				f, err := os.Open(config.Path_scripts + "script_" + etu + "_" + num + ".sh")
 				if err != nil {
-					data.File = "erreur pour récupérer le script de l'étudiant"
+					data.File[0] = "erreur pour récupérer le script de l'étudiant"
 				} else {
-
-					data.File = string(f)
+					scanner := bufio.NewScanner(f)
+					for scanner.Scan() {
+						data.File = append(data.File, scanner.Text())
+					}
 				}
 			}
 			data.Res_etu = BDD.GetResultat(etu)

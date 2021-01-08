@@ -66,8 +66,10 @@ Info de l'étudiant :
     {{end}}
 </div>
 Affichage du script :
-<div>
-    {{.File}}
+<div id="file">
+    {{range .File}}
+        {{.}} <br>
+    {{end}}
 </div>
 
 </body>

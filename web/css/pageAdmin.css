@@ -5,3 +5,10 @@
 body {
     background: antiquewhite;
 }
+
+
+#file {
+    border-style: solid;
+    background: aliceblue;
+    display: block;
+}
