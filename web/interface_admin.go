@@ -32,13 +32,13 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		Etudiants:   BDD.GetEtudiants(),
 		Res_etu:     nil,
 		File:        nil,
-		Defi_actuel: BDD.GetLastDefi(),
+		Defi_actuel: BDD.GetDefiActuel(),
 	}
 
 	if r.Method == "GET" {
 
 		//if date actuelle > defi actel.datefin alors defiactuel.num = -1
-		if testeur.DatePassed(testeur.GetDateFromString(BDD.GetLastDefi().Date_fin)) {
+		if testeur.DatePassed(testeur.GetDateFromString(BDD.GetDefiActuel().Date_fin)) {
 			data.Defi_actuel.Num = -1
 		}
 		if r.URL.Query()["Etudiant"] != nil {
@@ -56,6 +56,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				}
 			} else if r.URL.Query()["Script"] != nil {
 				num := r.URL.Query()["Script"][0]
+
 				f, err := os.Open(config.Path_scripts + "script_" + etu + "_" + num + ".sh")
 				if err != nil {
 					data.File[0] = "erreur pour récupérer le script de l'étudiant"
@@ -83,6 +84,27 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if r.URL.Query()["form"][0] == "getResult" {
+			num := r.FormValue("num")
+			n, err := strconv.Atoi(num)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			file_name := "resultat_" + num + ".csv"
+
+			testeur.CreateCSV(file_name, n)
+
+			w.Header().Set("Content-Disposition", "attachment; filename="+file_name)
+			w.Header().Set("Content-Type", "application/octet-stream")
+			http.ServeFile(w, r, file_name)
+
+			os.Remove(file_name)
+
+			//http.Redirect(w, r, "/pageAdmin", http.StatusFound)
+
+			return
+		}
+
 		r.ParseMultipartForm(10 << 20)
 		file, _, err := r.FormFile("defi")
 		if err != nil {
@@ -92,7 +114,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 
-		defi_actuel := BDD.GetLastDefi()
+		defi_actuel := BDD.GetDefiActuel()
 		num_defi_actuel := defi_actuel.Num
 		path := ""
 

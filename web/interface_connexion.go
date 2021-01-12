@@ -55,12 +55,11 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			existe := BDD.LoginCorrect(login, password)
 			if existe {
 				// crée un go routine qui envoie le token, voir si on peut faire ça en même temps que la redirection.
-				fmt.Println("Création du token : ")
 				token := tokenGenerator()
 				expiration := time.Now().Add(1 * time.Minute)
 				cookie := http.Cookie{Name: "token", Value: token, Expires: expiration}
 				http.SetCookie(w, &cookie)
-				fmt.Println("insert login=", login, " token=", token)
+				fmt.Println("(login=", login, ",token=", token)
 				BDD.InsertToken(login, token)
 
 				logs.WriteLog(login, "connexion")

@@ -11,15 +11,27 @@
     étudiant : {{.UserInfo.Login}}<br>
     mdp : {{.UserInfo.Password}}<br>
     prénom : {{.UserInfo.Prenom}}  nom : {{.UserInfo.Nom}}<br>
-    mail : {{.UserInfo.Mail}}  défis réussis : {{.UserInfo.DefiSucess}}<br>
+    mail : {{.UserInfo.Mail}}<br>
 </div>
+<br>
 <div>
-    Défi actuel numéro {{.Num_defi}}
+{{if eq .Defi_actuel.Num -1}}
+        Il n'y a pas défi en cours.
+{{else}}
+    Défi actuel numéro {{.Defi_actuel.Num}}<br>
     {{if .Defi_sent}}
-        Vous avez déjà rendu un script pour ce défi
+        Vous avez déjà rendu un script pour ce défi<br>
+        {{if eq .Resultat_defi.Etat 1}}
+            Votre script est correcte
+        {{else}}
+            Votre script est incorrecte
+        {{end}}
+    <br>
+        Vous pouvez le modifier jusqu'au {{.Defi_actuel.Date_fin}}
     {{else}}
-        Vous n'avez pas encore envoyé de script
-    {{end}}
+        Vous n'avez pas encore envoyé de script<br>
+        Vous avez jusqu'au {{.Defi_actuel.Date_fin}} pour le rendre.
+    {{end}}<br><br>
 </div>
 
 <form   enctype="multipart/form-data"  action="/pageEtudiant" method="post">
@@ -32,7 +44,7 @@
 <div class="res">
     <h1>{{.Msg_res}}</h1>
     <p>
-        {{range .Res}}
+        {{range .ResTest}}
             Test : {{.Test}} <br>
             {{if eq .Etat 1}}
                 Vous avez réussi ce test
@@ -55,5 +67,6 @@
         <br>
     </p>
 </div>
+{{end}}
 </body>
 </html>

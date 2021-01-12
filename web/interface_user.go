@@ -15,11 +15,12 @@ import (
 )
 
 type data_pageEtudiant struct {
-	UserInfo  BDD.Etudiant
-	Defi_sent bool
-	Num_defi  int
-	Res       []testeur.Resultat
-	Msg_res   string
+	UserInfo      BDD.Etudiant
+	Defi_sent     bool
+	Defi_actuel   BDD.Defi
+	Resultat_defi BDD.ResBDD
+	ResTest       []testeur.Resultat
+	Msg_res       string
 }
 
 /**
@@ -27,7 +28,7 @@ Fonction pour afficher la page Etudiant à l'adresse /pageEtudiant
 */
 func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method de pageEtudiant :", r.Method)
-	num_defi_actuel := BDD.GetLastDefi().Num
+	num_defi_actuel := BDD.GetDefiActuel().Num
 	//Si il y a n'y a pas de token dans les cookies alors l'utilisateur est redirigé vers la page de login
 	if _, err := r.Cookie("token"); err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
@@ -40,10 +41,14 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 
 	//Parse data
 	data := data_pageEtudiant{
-		UserInfo:  etu,
-		Num_defi:  num_defi_actuel,
-		Defi_sent: testeur.Contains(config.Path_scripts, "script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel)+".sh"),
-		Res:       nil,
+		UserInfo:      etu,
+		Defi_actuel:   BDD.GetDefiActuel(),
+		Resultat_defi: BDD.GetResult(etu.Login, num_defi_actuel),
+		Defi_sent:     testeur.Contains(config.Path_scripts, "script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel)+".sh"),
+		ResTest:       nil,
+	}
+	if testeur.DatePassed(testeur.GetDateFromString(BDD.GetDefiActuel().Date_fin)) {
+		data.Defi_actuel.Num = -1
 	}
 
 	//Check la méthode utilisé par le formulaire
@@ -51,7 +56,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		//Charge la template html
 
 		if r.URL.String() == "/pageEtudiant?test" {
-			data.Msg_res, data.Res = testeur.Test(etu.Login)
+			data.Msg_res, data.ResTest = testeur.Test(etu.Login)
 		}
 
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
@@ -78,6 +83,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 
 			script, err := os.Create(config.Path_scripts + "script_" + etu.Login + "_" + strconv.Itoa(num_defi_actuel) + ".sh") // remplacer handler.Filename par le nom et on le place où on veut
 
+			BDD.SaveResultat(etu.Login, num_defi_actuel, -1, false)
 			if err != nil {
 				fmt.Println("Internal Error")
 				fmt.Println(err)

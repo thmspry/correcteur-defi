@@ -52,7 +52,7 @@ func Test(etudiant string) (string, []Resultat) {
 	clear(config.Path_dir_test)
 
 	//Récupérer le défi actuel
-	num_defi := BDD.GetLastDefi().Num
+	num_defi := BDD.GetDefiActuel().Num
 	//num_defi = BDD.Defi_actuel()
 	correction := "correction_" + strconv.Itoa(num_defi)
 	script_etu := "script_" + etudiant + "_" + strconv.Itoa(num_defi) + ".sh"

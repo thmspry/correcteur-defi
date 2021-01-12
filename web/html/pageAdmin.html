@@ -7,18 +7,16 @@
 </head>
 <body>
 <h1>Page admin</h1>
-<h2>Formulaire pour upload des défis : </h2>
-{{if eq .Defi_actuel.Num -1}} Il n'y a pas de défi en cours
+{{if eq .Defi_actuel.Num -1}}
+    Il n'y a pas de défi en cours
 {{else}}
     Défi actuel : défi n°{{.Defi_actuel.Num}}<br>
     Il a commencé le {{.Defi_actuel.Date_debut}}
     et se termine le {{.Defi_actuel.Date_fin}}
 {{end}}
 <br>
-<br>
 
-Formumaire pour modifier uniquement la date :
-<br>
+<h3>Formumaire pour modifier uniquement la date :</h3>
 <form action="/pageAdmin?form=modify_date" method="post">
     Format date : "JJ-MM-YYYY" <br>
     Date de début : <input type="text" name="date_debut" value="{{.Defi_actuel.Date_debut}}"> <br>
@@ -26,7 +24,7 @@ Formumaire pour modifier uniquement la date :
     <input type="submit">
 </form>
 <br>
-Formulaire pour enregistrer un défis avec sa correction, sa date de début et de fin. Il peut aussi servir à modifier la correction du défi actuel.
+<h3>Formulaire pour enregistrer un défis avec sa correction,<br> sa date de début et de fin. Il peut aussi servir à modifier la correction du défi actuel.</h3>
 <form   enctype="multipart/form-data"  action="/pageAdmin?form=defi" method="post">
     Dépot de la correction : <input type="file" name="defi"><br>
     Format date : "JJ-MM-YYYY" <br>
@@ -36,16 +34,23 @@ Formulaire pour enregistrer un défis avec sa correction, sa date de début et d
     <input type="submit" value="modifier" name="submit"/>
 </form>
 
-<h2>Formulaire pour upload des tests : </h2>
+<h3>Formulaire pour upload des tests : </h3>
 <form enctype="multipart/form-data" action="/pageAdmin?form=test" method="post">
-    Dépot du test : <input type="file" name="test">
+    Dépot du test : <input type="file" name="test"><br>
     <input type="submit" value="déposer" name="submit">
 </form>
+<br>
 
+<h3>Formulaire pour get resultat : </h3>
+<form enctype="multipart/form-data" action="/pageAdmin?form=getResult" method="post">
+    Numéro du défi : <input type="text" name="num" value="0"><br>
+    <input type="submit" value="télécharger" name="submit">
+</form>
+<br>
 Liste des étudiants :
 <div id="etudiants">
     {{range .Etudiants}}
-        <a href="pageAdmin?Etudiant={{.Login}}">{{.Login}}</a>
+        <a href="pageAdmin?Etudiant={{.Login}}">{{.Nom}} {{.Prenom}}</a><br>
     {{end}}
     <br>
     <a href="pageAdmin">désélectionner</a>
@@ -65,7 +70,8 @@ Info de l'étudiant :
     <br>
     {{end}}
 </div>
-Affichage du script :
+
+Contenu du script :
 <div id="file">
     {{range .File}}
         {{.}} <br>

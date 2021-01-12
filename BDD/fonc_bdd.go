@@ -21,6 +21,11 @@ type ResBDD struct {
 	Etat      int
 	Tentative int
 }
+type ResultatCSV struct {
+	Etudiant Etudiant
+	Resultat ResBDD
+}
+
 type Defi struct {
 	Num        int
 	Date_debut string
@@ -56,13 +61,13 @@ func InitBDD() {
 	stmt, err = db.Prepare("CREATE TABLE IF NOT EXISTS Resultat (" +
 		"login TEXT NOT NULL," +
 		"defi INTEGER NOT NULL," +
-		"etat INTEGER NOT NULL," + // 2 états : 1 (réussi), 0 (non réussi), (s'il n'y a pas de ligne == non tenté)
+		"etat INTEGER NOT NULL," + // 2 états : 1 (réussi), 0 (non réussi), -1 (non testé)
 		"tentative INTEGER NOT NULL," + // Nombre de tentative au test
 		"FOREIGN KEY (login) REFERENCES Etudiant(login)" +
 		"FOREIGN KEY (defi) REFERENCES Defis(numero)" +
 		")")
 	if err != nil {
-		fmt.Println("prblm table Res" + err.Error())
+		fmt.Println("prblm table ResTest" + err.Error())
 	}
 	stmt.Exec()
 
@@ -110,7 +115,6 @@ func LoginCorrect(id string, password string) bool {
 
 // testé
 func GetInfo(id string) Etudiant {
-	fmt.Println("fonc GetInfo : ")
 	var (
 		login    string
 		password string
@@ -118,15 +122,11 @@ func GetInfo(id string) Etudiant {
 		nom      string
 		mail     string
 	)
-
 	row := db.QueryRow("SELECT * FROM Etudiant WHERE login = $1", id)
 	err := row.Scan(&login, &password, &prenom, &nom, &mail)
 
 	if err != nil {
 		fmt.Printf("problme row scan \n", err)
-
-	} else {
-		fmt.Println("etu : ", login, password, prenom, nom, mail)
 	}
 	etu := Etudiant{
 		Login:    login,
@@ -135,8 +135,6 @@ func GetInfo(id string) Etudiant {
 		Nom:      nom,
 		Mail:     mail,
 	}
-
-	fmt.Println("/ fonc GetInfo")
 	return etu
 }
 
@@ -231,7 +229,16 @@ func GetEtudiants() []Etudiant {
 	return etudiants
 }
 
-func GetLastDefi() Defi {
+func GetResult(login string, defi int) ResBDD {
+	var res ResBDD
+	row := db.QueryRow("SELECT * FROM Resultat WHERE login = $1 AND defi = $2", login, defi)
+	if err := row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative); err != nil {
+		fmt.Println("erreur GetResult")
+	}
+	return res
+}
+
+func GetDefiActuel() Defi {
 	var defi Defi
 	row := db.QueryRow("SELECT * FROM Defis ORDER BY numero DESC")
 	err := row.Scan(&defi.Num, &defi.Date_debut, &defi.Date_fin)
@@ -242,7 +249,6 @@ func GetLastDefi() Defi {
 			Date_fin:   "",
 		}
 	}
-
 	return defi
 }
 
@@ -274,6 +280,24 @@ func GetResultat(login string) []ResBDD {
 	}
 	for row.Next() {
 		row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative)
+		resT = append(resT, res)
+	}
+
+	return resT
+}
+
+func GetAllResult(num_defi int) []ResultatCSV {
+	var res ResultatCSV
+	resT := make([]ResultatCSV, 0)
+
+	row, err := db.Query("SELECT * FROM Etudiant e, Resultat r WHERE e.login = r.login AND r.defi = ? ORDER BY nom", num_defi)
+	defer row.Close()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for row.Next() {
+		row.Scan(&res.Etudiant.Login, &res.Etudiant.Password, &res.Etudiant.Prenom, &res.Etudiant.Nom, &res.Etudiant.Mail, &res.Resultat.Login, &res.Resultat.Defi,
+			&res.Resultat.Etat, &res.Resultat.Tentative)
 		resT = append(resT, res)
 	}
 

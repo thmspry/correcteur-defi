@@ -1,11 +1,14 @@
 package testeur
 
 import (
+	"encoding/csv"
 	"fmt"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
 )
 
 /**
@@ -95,5 +98,31 @@ func rename(pathFile string, name string, newName string) {
 	newName = pathFile + newName
 	if _, err := exec.Command("sudo", "mv", name, newName).CombinedOutput(); err != nil {
 		fmt.Println("error rename\n", err)
+	}
+}
+
+//https://golangcode.com/write-data-to-a-csv-file/
+func CreateCSV(file_name string, num int) {
+	ResultatCSV := BDD.GetAllResult(num)
+
+	file, _ := os.Create(file_name)
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	writer.Write([]string{"Login", "Nom", "Prenom", "Mail", "Num défi", "Résultat", "Nb tentative"})
+	for _, value := range ResultatCSV {
+		line := []string{value.Resultat.Login,
+			value.Etudiant.Nom,
+			value.Etudiant.Prenom,
+			value.Etudiant.Mail,
+			strconv.Itoa(value.Resultat.Defi),
+			strconv.Itoa(value.Resultat.Etat),
+			strconv.Itoa(value.Resultat.Tentative)}
+
+		if err := writer.Write(line); err != nil {
+			fmt.Println(err.Error())
+		}
 	}
 }
