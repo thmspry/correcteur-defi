@@ -26,20 +26,16 @@ type data_pageAdmin struct {
 	Defi_actuel BDD.Defi
 	Logs        []string
 	Log         []string
+	LogDate     string
 }
 
 func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	data := data_pageAdmin{
-		Etu_select:  "",
 		Etudiants:   BDD.GetEtudiants(),
-		Res_etu:     nil,
-		File:        nil,
 		Defi_actuel: BDD.GetDefiActuel(),
 		Logs:        testeur.GetFiles(config.Path_log),
-		Log:         nil,
 	}
 	data.Logs = data.Logs[0 : len(data.Logs)-1]
-
 	//if date actuelle > defi actel.datefin alors defiactuel.num = -1
 	if testeur.DatePassed(testeur.GetDateFromString(BDD.GetDefiActuel().Date_fin)) {
 		data.Defi_actuel.Num = -1
@@ -49,6 +45,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 		if r.URL.Query()["Log"] != nil {
 			log := r.URL.Query()["Log"][0]
+			data.LogDate = log
 			f, err := os.Open(config.Path_log + log)
 			if err != nil {
 				data.File[0] = "erreur pour récupérer le script de l'étudiant"

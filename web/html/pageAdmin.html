@@ -43,7 +43,7 @@
 
 <h3>Formulaire pour get resultat : </h3>
 <form enctype="multipart/form-data" action="/pageAdmin?form=getResult" method="post">
-    Numéro du défi : <input type="text" name="num" value="0"><br>
+    Numéro du défi :<input type="number" name="num" min="10" max="100" value="0"><br>
     <input type="submit" value="télécharger" name="submit">
 </form>
 <br>
@@ -83,11 +83,10 @@ Contenu du script :
     {{range .Logs}}
         <a href="pageAdmin?Log={{.}}">{{.}}</a><br>
     {{end}}
+    <a href="pageAdmin">désélectionner</a>
 </div>
-{{if not .Log}}
-    oui
-{{else}}
-    Contenu des logs : <br>
+{{if .Log}}
+    Contenu des logs du {{.LogDate}} : <br>
     <div>
         {{range .Log}}
             {{.}}<br>
