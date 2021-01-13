@@ -62,7 +62,7 @@ func deplacer(file string, path_out string) bool {
 /**
 Fonction qui retourne un tableau contenant tous les noms des fichiers du répertoire entré en paramètre
 */
-func getFiles(path string) []string {
+func GetFiles(path string) []string {
 
 	//out, _ := exec.Command("find", path, "-type", "f").CombinedOutput()
 	//return string(out)
@@ -82,7 +82,7 @@ func getFiles(path string) []string {
 }
 
 func Contains(path string, fileName string) bool {
-	for _, file := range getFiles(path) {
+	for _, file := range GetFiles(path) {
 		if file == fileName {
 			return true
 		}

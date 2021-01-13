@@ -19,15 +19,15 @@ func GetDate() Date {
 		jour:   jour,
 		mois:   int(mois),
 		annee:  annee,
-		String: strconv.Itoa(jour) + "-" + strconv.Itoa(int(mois)) + "-" + strconv.Itoa(annee),
+		String: strconv.Itoa(annee) + "-" + strconv.Itoa(int(mois)) + "-" + strconv.Itoa(jour),
 	}
 	return date
 }
 func GetDateFromString(date string) Date {
 	d := strings.Split(date, "-")
-	j, _ := strconv.Atoi(d[0])
+	a, _ := strconv.Atoi(d[0])
 	m, _ := strconv.Atoi(d[1])
-	a, _ := strconv.Atoi(d[2])
+	j, _ := strconv.Atoi(d[2])
 	res := Date{
 		jour:   j,
 		mois:   m,
@@ -36,6 +36,7 @@ func GetDateFromString(date string) Date {
 	}
 	return res
 }
+
 func DatePassed(date1 Date) bool {
 	date2 := GetDate()
 	if date1.annee > date2.annee {

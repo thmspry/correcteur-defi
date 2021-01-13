@@ -150,7 +150,7 @@ func testeurUnique(correction string, script_user string, etudiant string) Resul
 		Nom:     "",
 		Contenu: "",
 	}
-	arboAvant := getFiles(config.Path_dir_test)
+	arboAvant := GetFiles(config.Path_dir_test)
 
 	cmd := exec.Command(config.Path_dir_test + correction)
 	cmd.Dir = config.Path_dir_test
@@ -161,7 +161,7 @@ func testeurUnique(correction string, script_user string, etudiant string) Resul
 		res.Etat = -1
 		return res
 	}
-	arboApres := getFiles(config.Path_dir_test)
+	arboApres := GetFiles(config.Path_dir_test)
 	if len(arboAvant) != len(arboApres) {
 		//modif dans un new fichier
 		//trouver le fichier / nom du fichier modifié

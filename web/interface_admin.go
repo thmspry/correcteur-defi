@@ -24,6 +24,8 @@ type data_pageAdmin struct {
 	Res_etu     []BDD.ResBDD
 	File        []string
 	Defi_actuel BDD.Defi
+	Logs        []string
+	Log         []string
 }
 
 func pageAdmin(w http.ResponseWriter, r *http.Request) {
@@ -33,13 +35,29 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		Res_etu:     nil,
 		File:        nil,
 		Defi_actuel: BDD.GetDefiActuel(),
+		Logs:        testeur.GetFiles(config.Path_log),
+		Log:         nil,
+	}
+	data.Logs = data.Logs[0 : len(data.Logs)-1]
+
+	//if date actuelle > defi actel.datefin alors defiactuel.num = -1
+	if testeur.DatePassed(testeur.GetDateFromString(BDD.GetDefiActuel().Date_fin)) {
+		data.Defi_actuel.Num = -1
 	}
 
 	if r.Method == "GET" {
 
-		//if date actuelle > defi actel.datefin alors defiactuel.num = -1
-		if testeur.DatePassed(testeur.GetDateFromString(BDD.GetDefiActuel().Date_fin)) {
-			data.Defi_actuel.Num = -1
+		if r.URL.Query()["Log"] != nil {
+			log := r.URL.Query()["Log"][0]
+			f, err := os.Open(config.Path_log + log)
+			if err != nil {
+				data.File[0] = "erreur pour récupérer le script de l'étudiant"
+			} else {
+				scanner := bufio.NewScanner(f)
+				for scanner.Scan() {
+					data.Log = append(data.Log, scanner.Text())
+				}
+			}
 		}
 		if r.URL.Query()["Etudiant"] != nil {
 			etu := r.URL.Query()["Etudiant"][0]

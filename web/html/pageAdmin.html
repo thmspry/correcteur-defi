@@ -78,5 +78,22 @@ Contenu du script :
     {{end}}
 </div>
 
+<h3>Logs :</h3>
+<div>
+    {{range .Logs}}
+        <a href="pageAdmin?Log={{.}}">{{.}}</a><br>
+    {{end}}
+</div>
+{{if not .Log}}
+    oui
+{{else}}
+    Contenu des logs : <br>
+    <div>
+        {{range .Log}}
+            {{.}}<br>
+        {{end}}
+    </div>
+{{end}}
+
 </body>
 </html>
