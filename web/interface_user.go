@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 )
 
 type data_pageEtudiant struct {
@@ -37,7 +38,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 
 	token, _ := r.Cookie("token")            //récupère le token du cookie
 	login := BDD.GetNameByToken(token.Value) // récupère le login correspondant au token
-	etu := BDD.GetInfo(login)                // récupère les informations de l'étudiant grâce au login
+	etu := BDD.GetEtudiant(login)            // récupère les informations de l'étudiant grâce au login
 
 	//Parse data
 	data := data_pageEtudiant{
@@ -55,7 +56,13 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		//Charge la template html
 
-		if r.URL.String() == "/pageEtudiant?test" {
+		if r.URL.Query()["logout"] != nil {
+			fmt.Println("logout " + etu.Login)
+			DeleteToken(etu.Login, time.Second*0)
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
+		if r.URL.Query()["test"] != nil {
 			data.Msg_res, data.ResTest = testeur.Test(etu.Login)
 		}
 

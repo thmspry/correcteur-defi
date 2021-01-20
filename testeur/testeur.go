@@ -12,7 +12,7 @@ import (
 )
 
 type Resultat struct {
-	Etat           int // 1 réussi, 0 échoué, -1 erreur
+	Etat           int
 	Test           string
 	Res_etu        []Retour
 	Res_correction []Retour
@@ -31,8 +31,8 @@ func Test(etudiant string) (string, []Resultat) {
 	messageDeRetour := ""
 	etatTestGlobal := 0
 
-	os := runtime.GOOS
-	if os == "windows" || os == "darwin" {
+	OS := runtime.GOOS
+	if OS == "windows" || OS == "darwin" {
 		return "Le testeur ne peut être lancé que sur linux", nil
 	}
 
@@ -40,6 +40,7 @@ func Test(etudiant string) (string, []Resultat) {
 	if err := exec.Command("useradd", etudiant).Run(); err != nil {
 		fmt.Println("error create user : ", err)
 	}
+
 	//Associe le dossier à l'user
 	if err := exec.Command("mkhomedir_helper", etudiant).Run(); err != nil {
 		fmt.Println("error create dir : ", err)
@@ -170,7 +171,7 @@ func testeurUnique(correction string, script_user string, etudiant string) Resul
 		mapEtu := make(map[string]string)
 		for _, name := range diff {
 			//On donne seulement le droit de lecture sur les jeux de Test
-			exec.Command("chmod", "444", config.Path_dir_test+name).Run()
+			exec.Command("chmod", "777", config.Path_dir_test+name).Run()
 			f, err := exec.Command("cat", config.Path_dir_test+name).CombinedOutput()
 			if err != nil {
 				fmt.Println("erreur execution cat : ", config.Path_dir_test+name, "\n", err)

@@ -32,9 +32,11 @@ func InitWeb() {
 func accueil(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method de accueil :", r.Method)
 
-	if _, err := r.Cookie("token"); err == nil {
-		http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
-		return
+	if token, err := r.Cookie("token"); err == nil {
+		if BDD.TokenExiste(token.Value) {
+			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
+			return
+		}
 	}
 
 	if r.Method == "GET" {
@@ -56,7 +58,8 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			if existe {
 				// crée un go routine qui envoie le token, voir si on peut faire ça en même temps que la redirection.
 				token := tokenGenerator()
-				expiration := time.Now().Add(1 * time.Minute)
+				temps := 1 * time.Minute // défini le temps d'attente
+				expiration := time.Now().Add(temps)
 				cookie := http.Cookie{Name: "token", Value: token, Expires: expiration}
 				http.SetCookie(w, &cookie)
 				fmt.Println("(login=", login, ",token=", token)
@@ -65,7 +68,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				logs.WriteLog(login, "connexion")
 				http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 
-				go DeleteToken(login)
+				go DeleteToken(login, temps)
 				return
 			} else {
 				fmt.Println("login incorrecte")
@@ -90,8 +93,8 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func DeleteToken(login string) {
-	time.Sleep(1 * time.Minute)
+func DeleteToken(login string, temps time.Duration) {
+	time.Sleep(temps)
 	logs.WriteLog(login, "déconnexion du serveur")
 	BDD.DeleteToken(login)
 	return

@@ -33,7 +33,10 @@
         Vous avez jusqu'au {{.Defi_actuel.Date_fin}} pour le rendre.
     {{end}}<br><br>
 </div>
-
+<button>
+    <a href="pageEtudiant?logout">logout</a>
+</button>
+<br>
 <form   enctype="multipart/form-data"  action="/pageEtudiant" method="post">
     <input type="file" name="script_etu"/>
     <input type="hidden" name="token" value=" " />

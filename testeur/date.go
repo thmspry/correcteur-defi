@@ -13,13 +13,16 @@ type Date struct {
 	String string
 }
 
+/**
+à modifier
+*/
 func GetDate() Date {
 	annee, mois, jour := time.Now().Date()
 	date := Date{
 		jour:   jour,
 		mois:   int(mois),
 		annee:  annee,
-		String: strconv.Itoa(annee) + "-" + strconv.Itoa(int(mois)) + "-" + strconv.Itoa(jour),
+		String: strconv.Itoa(jour) + "-" + strconv.Itoa(int(mois)) + "-" + strconv.Itoa(annee),
 	}
 	return date
 }

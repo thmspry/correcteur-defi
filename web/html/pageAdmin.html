@@ -18,16 +18,17 @@
 
 <h3>Formumaire pour modifier uniquement la date :</h3>
 <form action="/pageAdmin?form=modify_date" method="post">
-    Format date : "JJ-MM-YYYY" <br>
+    Format date : "YYYY-MM-DD" <br>
     Date de début : <input type="text" name="date_debut" value="{{.Defi_actuel.Date_debut}}"> <br>
     Date de fin : <input type="text" name="date_fin" value="{{.Defi_actuel.Date_fin}}"> <br>
     <input type="submit">
 </form>
+
 <br>
 <h3>Formulaire pour enregistrer un défis avec sa correction,<br> sa date de début et de fin. Il peut aussi servir à modifier la correction du défi actuel.</h3>
 <form   enctype="multipart/form-data"  action="/pageAdmin?form=defi" method="post">
     Dépot de la correction : <input type="file" name="defi"><br>
-    Format date : "JJ-MM-YYYY" <br>
+    Format date : "YYYY-MM-DD" <br>
     Date de début : <input type="text" name="date_debut" value="{{.Defi_actuel.Date_debut}}"> <br>
     Date de fin : <input type="text" name="date_fin" value="{{.Defi_actuel.Date_fin}}"> <br>
     <input type="submit" value="déposer" name="submit"/>
@@ -65,8 +66,12 @@ Info de l'étudiant :
                 Échoué
                 {{end}}
         Nombre de tentative : {{.Tentative}}
-        <a href="pageAdmin?Etudiant={{$.Etu_select}}&Script={{.Defi}}"> Afficher le script</a>
-        <a href="pageAdmin?Etudiant={{$.Etu_select}}&Script={{.Defi}}&Etat={{.Etat}}"> Modifier l'état de la partie</a>
+        <a href="pageAdmin?Etudiant={{$.Etu_select}}&Script={{.Defi}}">
+            Afficher le script
+        </a>
+        <a href="pageAdmin?Etudiant={{$.Etu_select}}&Script={{.Defi}}&Etat={{.Etat}}">
+            Modifier l'état de la partie
+        </a>
     <br>
     {{end}}
 </div>

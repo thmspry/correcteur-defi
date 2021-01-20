@@ -15,9 +15,6 @@ import (
 	"strconv"
 )
 
-type Admin struct {
-}
-
 type data_pageAdmin struct {
 	Etu_select  string
 	Etudiants   []BDD.Etudiant
@@ -82,7 +79,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			data.Res_etu = BDD.GetResultat(etu)
+			data.Res_etu = BDD.GetAllResultat(etu)
 		}
 
 		t := template.Must(template.ParseFiles("./web/html/pageAdmin.html"))
@@ -94,7 +91,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		if r.URL.Query()["form"][0] == "modify_date" {
 			logs.WriteLog("Admin", "modification de la date de rendu")
-			BDD.ModifyDefi(data.Defi_actuel.Num, r.FormValue("date_debut"), r.FormValue("date_fin"))
+			BDD.ModifyDefi(BDD.GetDefiActuel().Num, r.FormValue("date_debut"), r.FormValue("date_fin"))
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 		}
@@ -139,7 +136,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			date_fin := r.FormValue("date_fin")
 			if submit == "modifier" {
 				logs.WriteLog("Admin", "modification de la correction")
-				BDD.ModifyDefi(data.Defi_actuel.Num, date_debut, date_fin)
+				BDD.ModifyDefi(BDD.GetDefiActuel().Num, date_debut, date_fin)
 				path = config.Path_defis + "correction_" + strconv.Itoa(num_defi_actuel) + ".sh"
 			} else {
 				logs.WriteLog("Admin", "ajout d'un nouveau défis")
