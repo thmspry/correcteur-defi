@@ -9,6 +9,10 @@ import (
 )
 
 func main() {
+	/*
+		set GOOS=linux
+		set GOARCH=amd64
+	*/
 	mode := os.Args[0]
 	if mode == "0" {
 		Init()
