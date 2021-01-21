@@ -5,7 +5,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
 	"os"
 )
 
@@ -20,9 +19,9 @@ func main() {
 	if mode == "0" {
 		fmt.Println("0")
 	} else if mode == "1" {
-		web.InitWeb()
+		fmt.Println("1")
 	} else {
-		web.InitWeb()
+		fmt.Println("else")
 	}
 	//Init()
 	/*BDD.InitBDD()
