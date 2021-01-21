@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
@@ -13,9 +14,11 @@ func main() {
 		set GOOS=linux
 		set GOARCH=amd64
 	*/
+	fmt.Println("HELLO")
+	fmt.Println(os.Args)
 	mode := os.Args[0]
 	if mode == "0" {
-		Init()
+		fmt.Println("0")
 	} else if mode == "1" {
 		web.InitWeb()
 	} else {
