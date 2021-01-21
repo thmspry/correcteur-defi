@@ -13,27 +13,25 @@ func main() {
 		set GOOS=linux
 		set GOARCH=amd64
 	*/
-	mode := os.Args[1]
+	web.InitWeb()
+	/*mode := os.Args[1]
 	if mode == "0" {
 		Init()
 	} else if mode == "1" {
 		web.InitWeb()
 	} else {
 		web.InitWeb()
-	}
-	//Init()
-	/*BDD.InitBDD()
-	etu := BDD.Etudiant{
-		Login:      "test",
-		Password:   "test",
-		Prenom:     "testPrenom",
-		Nom:        "testNom",
-		Mail:       "testMail",
-	}
-	BDD.Register(etu)
+	}*/
+	/*	BDD.InitBDD()
+		etu := BDD.Etudiant{
+			Login:      "test",
+			Password:   "test",
+			Prenom:     "testPrenom",
+			Nom:        "testNom",
+			Mail:       "testMail",
+		}
+		BDD.Register(etu)
 	*/
-	//web.InitWeb()
-
 }
 
 func Init() {

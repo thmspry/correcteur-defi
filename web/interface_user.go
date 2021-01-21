@@ -48,8 +48,10 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		Defi_sent:     testeur.Contains(config.Path_scripts, "script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel)+".sh"),
 		ResTest:       nil,
 	}
-	if testeur.DatePassed(testeur.GetDateFromString(BDD.GetDefiActuel().Date_fin)) {
-		data.Defi_actuel.Num = -1
+	if data.Defi_actuel.Num != -1 {
+		if testeur.DatePassed(testeur.GetDateFromString(BDD.GetDefiActuel().Date_fin)) {
+			data.Defi_actuel.Num = -1
+		}
 	}
 
 	//Check la méthode utilisé par le formulaire

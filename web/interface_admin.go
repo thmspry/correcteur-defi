@@ -33,9 +33,12 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		Logs:        testeur.GetFiles(config.Path_log),
 	}
 	data.Logs = data.Logs[0 : len(data.Logs)-1]
+
 	//if date actuelle > defi actel.datefin alors defiactuel.num = -1
-	if testeur.DatePassed(testeur.GetDateFromString(BDD.GetDefiActuel().Date_fin)) {
-		data.Defi_actuel.Num = -1
+	if data.Defi_actuel.Num != -1 {
+		if testeur.DatePassed(testeur.GetDateFromString(BDD.GetDefiActuel().Date_fin)) {
+			data.Defi_actuel.Num = -1
+		}
 	}
 
 	if r.Method == "GET" {

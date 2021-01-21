@@ -23,7 +23,7 @@ func InitWeb() {
 	http.HandleFunc("/login", accueil)                                                // Page d'acceuil : http://localhost:8080/login
 	http.HandleFunc("/pageEtudiant", pageEtudiant)                                    // Page étudiant : http://localhost:8080/pageEtudiant
 	http.HandleFunc("/pageAdmin", pageAdmin)                                          // Page admin : http://localhost:8080/pageAdmin
-	err := http.ListenAndServe(":8080", nil)                                          // port utilisé
+	err := http.ListenAndServe(":8192", nil)                                          // port utilisé
 	if err != nil {
 		fmt.Printf("ListenAndServe: ", err)
 	}
@@ -58,7 +58,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			if existe {
 				// crée un go routine qui envoie le token, voir si on peut faire ça en même temps que la redirection.
 				token := tokenGenerator()
-				temps := 1 * time.Minute // défini le temps d'attente
+				temps := 5 * time.Minute // défini le temps d'attente
 				expiration := time.Now().Add(temps)
 				cookie := http.Cookie{Name: "token", Value: token, Expires: expiration}
 				http.SetCookie(w, &cookie)
