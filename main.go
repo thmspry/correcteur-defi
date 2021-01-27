@@ -10,28 +10,18 @@ import (
 
 func main() {
 	/*
-		set GOOS=linux
-		set GOARCH=amd64
-	*/
+			set GOOS=linux
+			set GOARCH=amd64
+
+		mode := os.Args[1]
+		if mode == "0" {
+			Init()
+		} else if mode == "1" {
+			web.InitWeb()
+		} else {
+			web.InitWeb()
+		}*/
 	web.InitWeb()
-	/*mode := os.Args[1]
-	if mode == "0" {
-		Init()
-	} else if mode == "1" {
-		web.InitWeb()
-	} else {
-		web.InitWeb()
-	}*/
-	/*	BDD.InitBDD()
-		etu := BDD.Etudiant{
-			Login:      "test",
-			Password:   "test",
-			Prenom:     "testPrenom",
-			Nom:        "testNom",
-			Mail:       "testMail",
-		}
-		BDD.Register(etu)
-	*/
 }
 
 func Init() {

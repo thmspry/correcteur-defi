@@ -43,6 +43,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
 
+		//Permet d'afficher les logs d'une date précise
 		if r.URL.Query()["Log"] != nil {
 			log := r.URL.Query()["Log"][0]
 			data.LogDate = log
@@ -56,6 +57,8 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+
+		//Permet d'afficher les résultats correspondant à un étudiant en particulier
 		if r.URL.Query()["Etudiant"] != nil {
 			etu := r.URL.Query()["Etudiant"][0]
 			data.Etu_select = etu
@@ -69,6 +72,8 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				} else {
 					BDD.SaveResultat(etu, num, 1, true)
 				}
+
+				//Permet d'afficher le contenu du script envoyé par l'étudiant pour le défi séléctionné
 			} else if r.URL.Query()["Script"] != nil {
 				num := r.URL.Query()["Script"][0]
 
@@ -91,7 +96,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			log.Printf("error exec template : ", err)
 		}
 	}
+
 	if r.Method == "POST" {
+
 		if r.URL.Query()["form"][0] == "modify_date" {
 			logs.WriteLog("Admin", "modification de la date de rendu")
 			BDD.ModifyDefi(BDD.GetDefiActuel().Num, r.FormValue("date_debut"), r.FormValue("date_fin"))
