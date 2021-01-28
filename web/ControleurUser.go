@@ -2,6 +2,7 @@ package web
 
 import (
 	"fmt"
+	"github.com/aodin/date"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/logs"
@@ -30,6 +31,7 @@ Fonction pour afficher la page Etudiant à l'adresse /pageEtudiant
 func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method de pageEtudiant :", r.Method)
 	num_defi_actuel := BDD.GetDefiActuel().Num
+
 	//Si il y a n'y a pas de token dans les cookies alors l'utilisateur est redirigé vers la page de login
 	if _, err := r.Cookie("token"); err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
@@ -42,15 +44,21 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 
 	//Parse data
 	data := data_pageEtudiant{
-		UserInfo:      etu,
-		Defi_actuel:   BDD.GetDefiActuel(),
-		Resultat_defi: BDD.GetResult(etu.Login, num_defi_actuel),
-		Defi_sent:     testeur.Contains(config.Path_scripts, "script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel)+".sh"),
-		ResTest:       nil,
+		UserInfo:    etu,
+		Defi_actuel: BDD.GetDefiActuel(),
+		ResTest:     nil,
 	}
+
 	if data.Defi_actuel.Num != -1 {
-		if testeur.DatePassed(testeur.GetDateFromString(BDD.GetDefiActuel().Date_fin)) {
+		if date.Today().Within(date.NewRange(data.Defi_actuel.Date_debut, data.Defi_actuel.Date_fin)) {
 			data.Defi_actuel.Num = -1
+		}
+	}
+
+	if data.Defi_actuel.Num == -1 {
+		data.Defi_sent = testeur.Contains(config.Path_scripts, "script_"+etu.Login+"_"+strconv.Itoa(data.Defi_actuel.Num)+".sh")
+		if data.Defi_sent {
+			data.Resultat_defi = BDD.GetResult(etu.Login, data.Defi_actuel.Num)
 		}
 	}
 
@@ -78,7 +86,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		//Si la méthode est post c'est qu'on vient d'envoyer un fichier pour le faire tester
 	} else if r.Method == "POST" {
 		fmt.Printf("pageEtudiant post")
-		if r.URL.String() == "/pageEtudiant" {
+		if r.URL.Query()["upload"] != nil {
 
 			r.ParseMultipartForm(10 << 20)
 

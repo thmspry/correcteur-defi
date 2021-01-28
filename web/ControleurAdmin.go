@@ -3,6 +3,7 @@ package web
 import (
 	"bufio"
 	"fmt"
+	"github.com/aodin/date"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/logs"
@@ -32,11 +33,11 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		Defi_actuel: BDD.GetDefiActuel(),
 		Logs:        testeur.GetFiles(config.Path_log),
 	}
-	data.Logs = data.Logs[0 : len(data.Logs)-1]
+	data.Logs = data.Logs[:len(data.Logs)-1]
 
 	//if date actuelle > defi actel.datefin alors defiactuel.num = -1
 	if data.Defi_actuel.Num != -1 {
-		if testeur.DatePassed(testeur.GetDateFromString(BDD.GetDefiActuel().Date_fin)) {
+		if date.Today().Within(date.NewRange(data.Defi_actuel.Date_debut, data.Defi_actuel.Date_fin)) {
 			data.Defi_actuel.Num = -1
 		}
 	}
@@ -101,7 +102,13 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 		if r.URL.Query()["form"][0] == "modify_date" {
 			logs.WriteLog("Admin", "modification de la date de rendu")
-			BDD.ModifyDefi(BDD.GetDefiActuel().Num, r.FormValue("date_debut"), r.FormValue("date_fin"))
+			debut, err1 := date.Parse(r.FormValue("date_debut"))
+			fin, err2 := date.Parse(r.FormValue("date_fin"))
+			if err1 != nil || err2 != nil {
+				fmt.Println("Erreur de format dans les dates entrés pour modifier la date")
+			} else {
+				BDD.ModifyDefi(BDD.GetDefiActuel().Num, debut, fin)
+			}
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 		}
@@ -142,8 +149,14 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 		if r.URL.Query()["form"][0] == "defi" {
 			submit := r.FormValue("submit")
-			date_debut := r.FormValue("date_debut")
-			date_fin := r.FormValue("date_fin")
+			date_debut, err := date.Parse(r.FormValue("date_debut"))
+			if err != nil {
+				fmt.Println("Erreur dans le format de la date de début")
+			}
+			date_fin, err := date.Parse(r.FormValue("date_fin"))
+			if err != nil {
+				fmt.Println("Erreur dans le format de la date de fin")
+			}
 			if submit == "modifier" {
 				logs.WriteLog("Admin", "modification de la correction")
 				BDD.ModifyDefi(BDD.GetDefiActuel().Num, date_debut, date_fin)

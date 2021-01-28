@@ -13,9 +13,7 @@
     Défi actuel : défi n°{{.Defi_actuel.Num}}<br>
     Il a commencé le {{.Defi_actuel.Date_debut}}
     et se termine le {{.Defi_actuel.Date_fin}}
-{{end}}
 <br>
-
 <h3>Formumaire pour modifier uniquement la date :</h3>
 <form action="/pageAdmin?form=modify_date" method="post">
     Format date : "YYYY-MM-DD" <br>
@@ -23,6 +21,7 @@
     Date de fin : <input type="text" name="date_fin" value="{{.Defi_actuel.Date_fin}}"> <br>
     <input type="submit">
 </form>
+{{end}}
 
 <br>
 <h3>Formulaire pour enregistrer un défis avec sa correction,<br> sa date de début et de fin. Il peut aussi servir à modifier la correction du défi actuel.</h3>

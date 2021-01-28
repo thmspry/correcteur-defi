@@ -2,6 +2,7 @@ package logs
 
 import (
 	"fmt"
+	date "github.com/aodin/date"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/testeur"
 	"io/ioutil"
 	"os"
@@ -16,12 +17,12 @@ func GetHoraire() string {
 }
 
 func WriteLog(login string, msg string) {
-	date := testeur.GetDate()
-	if !testeur.Contains("./logs/", date.String) {
-		ioutil.WriteFile("./logs/"+date.String, nil, 0755)
+	d := date.Today()
+	if !testeur.Contains("./logs/", d.String()) {
+		ioutil.WriteFile("./logs/"+d.String(), nil, 0755)
 	}
 
-	f, err := os.OpenFile("./logs/"+date.String, os.O_APPEND|os.O_WRONLY, 0600)
+	f, err := os.OpenFile("./logs/"+d.String(), os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		fmt.Printf(err.Error())
 	}

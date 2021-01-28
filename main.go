@@ -9,18 +9,20 @@ import (
 )
 
 func main() {
-	/*
-			set GOOS=linux
-			set GOARCH=amd64
 
-		mode := os.Args[1]
-		if mode == "0" {
-			Init()
-		} else if mode == "1" {
-			web.InitWeb()
-		} else {
-			web.InitWeb()
-		}*/
+	/*
+				set GOOS=linux
+				set GOARCH=amd64
+		à décommenter lorsqu'on crée un exécutable
+			mode := os.Args[1]
+			if mode == "0" {
+				Init()
+			} else if mode == "1" {
+				web.InitWeb()
+			} else {
+				web.InitWeb()
+			}*/
+
 	web.InitWeb()
 }
 

@@ -3,6 +3,8 @@ package BDD
 import (
 	"database/sql"
 	"fmt"
+	"github.com/aodin/date"
+	_ "github.com/aodin/date"
 	"time"
 )
 
@@ -28,8 +30,8 @@ type ResultatCSV struct {
 
 type Defi struct {
 	Num        int
-	Date_debut string
-	Date_fin   string
+	Date_debut date.Date
+	Date_fin   date.Date
 }
 
 var db, _ = sql.Open("sqlite3", "./BDD/projS3.db")
@@ -264,25 +266,38 @@ func GetResult(login string, defi int) ResBDD {
 Récupère le dernier défi enregistrer dans la table Defis
 */
 func GetDefiActuel() Defi {
-	var defi Defi
+	var (
+		num   int
+		debut string
+		fin   string
+	)
 	row := db.QueryRow("SELECT * FROM Defis ORDER BY numero DESC")
-	err := row.Scan(&defi.Num, &defi.Date_debut, &defi.Date_fin)
+	err := row.Scan(&num, &debut, &fin)
 	if err != nil {
 		return Defi{
 			Num:        -1,
-			Date_debut: "",
-			Date_fin:   "",
+			Date_debut: date.Date{},
+			Date_fin:   date.Date{},
 		}
 	}
-	return defi
+	d := Defi{
+		Num:        num,
+		Date_debut: date.Date{},
+		Date_fin:   date.Date{},
+	}
+	d.Date_debut, _ = date.Parse(debut)
+	d.Date_fin, _ = date.Parse(fin)
+	//Pas besoin de check si le date.Parse retourne une erreur car le string date enregistré dans la BDD est forcément correcte
+	//étant donné qu'on vérifie qu'il soit correcte avant de l'enregistrer
+	return d
 }
 
 /**
 Ajoute un défi à la table Defis
 */
-func AddDefi(num int, dateD string, dateF string) {
+func AddDefi(num int, dateD date.Date, dateF date.Date) {
 	stmt, err := db.Prepare("INSERT INTO Defis values(?,?,?)")
-	_, err = stmt.Exec(num, dateD, dateF)
+	_, err = stmt.Exec(num, dateD.String(), dateF.String())
 	if err != nil {
 		fmt.Println("erreur add défi " + err.Error())
 	}
@@ -292,12 +307,12 @@ func AddDefi(num int, dateD string, dateF string) {
 /**
 Modifie le défi de numéro num
 */
-func ModifyDefi(num int, dateD string, dateF string) {
+func ModifyDefi(num int, dateD date.Date, dateF date.Date) {
 	stmt, err := db.Prepare("UPDATE Defis SET date_debut = ?, date_fin = ? where numero = ?")
 	if err != nil {
 		fmt.Println(err)
 	}
-	if _, err := stmt.Exec(dateD, dateF, num); err != nil {
+	if _, err := stmt.Exec(dateD.String(), dateF.String(), num); err != nil {
 		fmt.Println("erreur modify defi " + err.Error())
 	}
 	stmt.Close()
