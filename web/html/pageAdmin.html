@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Profile Étudiant</title>
+    <title>Page Admin</title>
     <link rel="stylesheet" href="/web/css/pageAdmin.css">
 </head>
 <body>
@@ -26,7 +26,7 @@
 <br>
 <h3>Formulaire pour enregistrer un défis avec sa correction,<br> sa date de début et de fin. Il peut aussi servir à modifier la correction du défi actuel.</h3>
 <form   enctype="multipart/form-data"  action="/pageAdmin?form=defi" method="post">
-    Dépot de la correction : <input type="file" name="defi"><br>
+    Dépot de la correction : <input type="file" name="defi" required="required"><br>
     Format date : "YYYY-MM-DD" <br>
     Date de début : <input type="text" name="date_debut" value="{{.Defi_actuel.Date_debut}}"> <br>
     Date de fin : <input type="text" name="date_fin" value="{{.Defi_actuel.Date_fin}}"> <br>
@@ -40,10 +40,17 @@
     <input type="submit" value="déposer" name="submit">
 </form>
 <br>
-
-<h3>Formulaire pour get resultat : </h3>
+<div>
+    <h3>Liste des défis enregistrés : </h3>
+    {{range .ListeDefis}}
+        <p class="{{if eq $.Defi_actuel.Num .Num}}red{{end}}">
+        Défi n°{{.Num}} du {{.Date_debut}} au {{.Date_fin}}</p>
+    {{end}}
+</div>
+<br>
+<h3>Récupérer les résultats d'un défi au format CSV : </h3>
 <form enctype="multipart/form-data" action="/pageAdmin?form=getResult" method="post">
-    Numéro du défi :<input type="number" name="num" min="10" max="100" value="0"><br>
+    Numéro du défi :<input type="number" name="num" min="0" max="100" value="0"><br>
     <input type="submit" value="télécharger" name="submit">
 </form>
 <br>

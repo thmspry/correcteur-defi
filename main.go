@@ -4,6 +4,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/testeur"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
 	"os"
 )
@@ -38,6 +39,10 @@ func Init() {
 	os.Mkdir(path+"/defis", 0755)
 	os.Mkdir(path+"/script_etudiants", 0755)
 	os.Mkdir(path+"/jeu_de_test", 0755)
+
+	if testeur.Contains("./BDD/", "projS3.db") {
+		os.Remove("./BDD/projS3.db")
+	}
 
 	BDD.InitBDD()
 	etu := BDD.Etudiant{

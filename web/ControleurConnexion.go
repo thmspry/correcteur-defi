@@ -71,7 +71,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				go DeleteToken(login, temps)
 				return
 			} else {
-				fmt.Println("login incorrecte")
+				fmt.Println("login '" + login + "' incorrecte")
 				http.Redirect(w, r, "/login", http.StatusFound)
 			}
 		} else if r.URL.String() == "/login?register" {
@@ -111,8 +111,4 @@ func tokenGenerator() string {
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
-}
-
-func password() {
-	fmt.Print()
 }

@@ -20,6 +20,7 @@ type data_pageAdmin struct {
 	Etu_select  string
 	Etudiants   []BDD.Etudiant
 	Res_etu     []BDD.ResBDD
+	ListeDefis  []BDD.Defi
 	File        []string
 	Defi_actuel BDD.Defi
 	Logs        []string
@@ -31,17 +32,18 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	data := data_pageAdmin{
 		Etudiants:   BDD.GetEtudiants(),
 		Defi_actuel: BDD.GetDefiActuel(),
+		ListeDefis:  BDD.GetDefis(),
 		Logs:        testeur.GetFiles(config.Path_log),
 	}
 	data.Logs = data.Logs[:len(data.Logs)-1]
 
 	//if date actuelle > defi actel.datefin alors defiactuel.num = -1
 	if data.Defi_actuel.Num != -1 {
-		if date.Today().Within(date.NewRange(data.Defi_actuel.Date_debut, data.Defi_actuel.Date_fin)) {
+		if !date.Today().Within(date.NewRange(data.Defi_actuel.Date_debut, data.Defi_actuel.Date_fin)) {
 			data.Defi_actuel.Num = -1
 		}
 	}
-
+	fmt.Println(r.URL.String())
 	if r.Method == "GET" {
 
 		//Permet d'afficher les logs d'une date précise
@@ -112,7 +114,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 		}
-
+		//Permet de récupérer les résultats de tous les étudiants ainsi que leurs informations pour un défi donné
 		if r.URL.Query()["form"][0] == "getResult" {
 			num := r.FormValue("num")
 			n, err := strconv.Atoi(num)
@@ -120,17 +122,12 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(err.Error())
 			}
 			file_name := "resultat_" + num + ".csv"
-
 			testeur.CreateCSV(file_name, n)
-
 			w.Header().Set("Content-Disposition", "attachment; filename="+file_name)
 			w.Header().Set("Content-Type", "application/octet-stream")
 			http.ServeFile(w, r, file_name)
-
 			os.Remove(file_name)
-
-			//http.Redirect(w, r, "/pageAdmin", http.StatusFound)
-
+			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 		}
 

@@ -13,6 +13,9 @@
     prénom : {{.UserInfo.Prenom}}  nom : {{.UserInfo.Nom}}<br>
     mail : {{.UserInfo.Mail}}<br>
 </div>
+<button>
+    <a href="pageEtudiant?logout">logout</a>
+</button>
 <br>
 <div>
 {{if eq .Defi_actuel.Num -1}}
@@ -33,9 +36,7 @@
         Vous avez jusqu'au {{.Defi_actuel.Date_fin}} pour le rendre.
     {{end}}<br><br>
 </div>
-<button>
-    <a href="pageEtudiant?logout">logout</a>
-</button>
+
 <br>
 <form   enctype="multipart/form-data"  action="/pageEtudiant?upload" method="post">
     <input type="file" name="script_etu"/>

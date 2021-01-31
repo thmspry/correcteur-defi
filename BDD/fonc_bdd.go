@@ -263,36 +263,6 @@ func GetResult(login string, defi int) ResBDD {
 }
 
 /**
-Récupère le dernier défi enregistrer dans la table Defis
-*/
-func GetDefiActuel() Defi {
-	var (
-		num   int
-		debut string
-		fin   string
-	)
-	row := db.QueryRow("SELECT * FROM Defis ORDER BY numero DESC")
-	err := row.Scan(&num, &debut, &fin)
-	if err != nil {
-		return Defi{
-			Num:        -1,
-			Date_debut: date.Date{},
-			Date_fin:   date.Date{},
-		}
-	}
-	d := Defi{
-		Num:        num,
-		Date_debut: date.Date{},
-		Date_fin:   date.Date{},
-	}
-	d.Date_debut, _ = date.Parse(debut)
-	d.Date_fin, _ = date.Parse(fin)
-	//Pas besoin de check si le date.Parse retourne une erreur car le string date enregistré dans la BDD est forcément correcte
-	//étant donné qu'on vérifie qu'il soit correcte avant de l'enregistrer
-	return d
-}
-
-/**
 Ajoute un défi à la table Defis
 */
 func AddDefi(num int, dateD date.Date, dateF date.Date) {
@@ -318,6 +288,43 @@ func ModifyDefi(num int, dateD date.Date, dateF date.Date) {
 	stmt.Close()
 }
 
+func GetDefis() []Defi {
+	var (
+		debutString string
+		finString   string
+		defi        Defi
+	)
+	defis := make([]Defi, 0)
+	row, err := db.Query("SELECT * FROM Defis")
+	defer row.Close()
+	if err != nil {
+		fmt.Printf(err.Error())
+	}
+	for row.Next() {
+		row.Scan(&defi.Num, &debutString, &finString)
+		defi.Date_debut, _ = date.Parse(debutString)
+		defi.Date_fin, _ = date.Parse(finString)
+		defis = append(defis, defi)
+	}
+	return defis
+}
+
+func GetDefiActuel() Defi {
+	defis := GetDefis()
+
+	defiActuel := Defi{
+		Num:        -1,
+		Date_debut: date.Date{},
+		Date_fin:   date.Date{},
+	}
+	for _, d := range defis {
+		if date.Today().Within(date.NewRange(d.Date_debut, d.Date_fin)) {
+			defiActuel = d
+		}
+	}
+	return defiActuel
+}
+
 /**
 Récupère tous les résultats d'un étudiant à tous les défis auquel il a participé
 */
@@ -340,7 +347,7 @@ func GetAllResultat(login string) []ResBDD {
 /**
 Récupère tous les résultats de tous les étudiants pour un défi spécifique
 */
-func GetAllResult(num_defi int) []ResultatCSV {
+func GetResultCSV(num_defi int) []ResultatCSV {
 	var res ResultatCSV
 	resT := make([]ResultatCSV, 0)
 
