@@ -7,7 +7,6 @@
 </head>
 <body>
 <div id="user">
-
     étudiant : {{.UserInfo.Login}}<br>
     mdp : {{.UserInfo.Password}}<br>
     prénom : {{.UserInfo.Prenom}}  nom : {{.UserInfo.Nom}}<br>
@@ -39,7 +38,7 @@
 
 <br>
 <form   enctype="multipart/form-data"  action="/pageEtudiant?upload" method="post">
-    <input type="file" name="script_etu"/>
+    <input type="file" name="script_etu" required="required"/>
     <input type="hidden" name="token" value=" " />
     <input type="submit" value="upload"/>
 </form>

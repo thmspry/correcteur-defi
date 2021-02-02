@@ -34,7 +34,7 @@ type Defi struct {
 	Date_fin   date.Date
 }
 
-var db, _ = sql.Open("sqlite3", "./BDD/projS3.db")
+var db, _ = sql.Open("sqlite3", "./BDD/database.db")
 
 /**
 Fonction qui initialise les tables vides
@@ -188,8 +188,13 @@ func DeleteToken(login string) {
 }
 
 func TokenExiste(token string) bool {
-	row := db.QueryRow("SELECT * FROM token WHERE token = ?")
-	if row.Err() != nil {
+	var (
+		log string
+		tok string
+	)
+	row := db.QueryRow("SELECT * FROM token WHERE token = $1", token)
+	err := row.Scan(&log, &tok)
+	if err != nil {
 		return false
 	}
 	return true

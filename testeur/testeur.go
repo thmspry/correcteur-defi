@@ -244,11 +244,6 @@ func testeurUnique(correction string, script_user string, etudiant string) Resul
 	}
 }
 
-// testé à la main mais pas avec go sur le serveur
-func InitUser() {
-
-}
-
 /*
 Fonction qui renvoie un tableau contenant la différence entre les deux tableaux entrés en paramètre
 */

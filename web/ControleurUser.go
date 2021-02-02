@@ -33,7 +33,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	num_defi_actuel := BDD.GetDefiActuel().Num
 
 	//Si il y a n'y a pas de token dans les cookies alors l'utilisateur est redirigé vers la page de login
-	if _, err := r.Cookie("token"); err != nil {
+	if token, err := r.Cookie("token"); err != nil || !BDD.TokenExiste(token.Value) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}

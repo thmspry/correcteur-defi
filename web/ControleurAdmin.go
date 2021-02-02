@@ -132,7 +132,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		}
 
 		r.ParseMultipartForm(10 << 20)
-		file, _, err := r.FormFile("defi")
+		file, _, err := r.FormFile("upload")
 		if err != nil {
 			fmt.Println("Error Retrieving the File")
 			fmt.Println(err)

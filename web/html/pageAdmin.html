@@ -26,7 +26,7 @@
 <br>
 <h3>Formulaire pour enregistrer un défis avec sa correction,<br> sa date de début et de fin. Il peut aussi servir à modifier la correction du défi actuel.</h3>
 <form   enctype="multipart/form-data"  action="/pageAdmin?form=defi" method="post">
-    Dépot de la correction : <input type="file" name="defi" required="required"><br>
+    Dépot de la correction : <input type="file" name="upload" required="required"><br>
     Format date : "YYYY-MM-DD" <br>
     Date de début : <input type="text" name="date_debut" value="{{.Defi_actuel.Date_debut}}"> <br>
     Date de fin : <input type="text" name="date_fin" value="{{.Defi_actuel.Date_fin}}"> <br>
@@ -36,7 +36,7 @@
 
 <h3>Formulaire pour upload des tests : </h3>
 <form enctype="multipart/form-data" action="/pageAdmin?form=test" method="post">
-    Dépot du test : <input type="file" name="test"><br>
+    Dépot du test : <input type="file" name="upload" required="required"><br>
     <input type="submit" value="déposer" name="submit">
 </form>
 <br>
