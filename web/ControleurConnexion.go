@@ -32,11 +32,12 @@ func InitWeb() {
 func accueil(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method de accueil :", r.Method)
 
-	if token, err := r.Cookie("token"); err == nil || BDD.TokenExiste(token.Value) {
-		http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
-		return
+	if tk, err := r.Cookie("token"); err == nil {
+		if BDD.TokenExiste(tk.Value) {
+			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
+			return
+		}
 	}
-
 	if r.Method == "GET" {
 
 		t, err := template.ParseFiles("./web/html/accueil.html")
