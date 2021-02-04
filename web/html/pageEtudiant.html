@@ -1,26 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Profile Étudiant</title>
+    <title>Profil Étudiant | {{.UserInfo.Login}}</title>
     <link rel="stylesheet" href="./web/css/pageEtudiant.css">
 </head>
 <body>
-<div id="user">
-    étudiant : {{.UserInfo.Login}}<br>
-    mdp : {{.UserInfo.Password}}<br>
-    prénom : {{.UserInfo.Prenom}}  nom : {{.UserInfo.Nom}}<br>
-    mail : {{.UserInfo.Mail}}<br>
+<div id="header">
+    <h1>Page Etudiant</h1>
+    <div id="logout">
+        <a href="pageEtudiant?logout">Logout</a>
+    </div>
 </div>
-<button>
-    <a href="pageEtudiant?logout">logout</a>
-</button>
+<div id="user">
+    <h2>Profil</h2>
+    <p>{{.UserInfo.Login}} ({{.UserInfo.Prenom}} {{.UserInfo.Nom}})<br>
+    Mot de passe : {{.UserInfo.Password}}
+    </p>
+    <p class="italic">{{.UserInfo.Mail}}</p>
+</div>
+
 <br>
-<div>
+<div id="content">
 {{if eq .Defi_actuel.Num -1}}
         Il n'y a pas défi en cours.
 {{else}}
-    Défi actuel numéro {{.Defi_actuel.Num}}<br>
+    Défi actuel : Défi n°{{.Defi_actuel.Num}}<br>
     {{if .Defi_sent}}
         Vous avez déjà rendu un script pour ce défi<br>
         {{if eq .Resultat_defi.Etat 1}}
@@ -31,7 +36,7 @@
     <br>
         Vous pouvez le modifier jusqu'au {{.Defi_actuel.Date_fin}}
     {{else}}
-        Vous n'avez pas encore envoyé de script<br>
+        Vous n'avez pas encore envoyé de script pour ce défi<br>
         Vous avez jusqu'au {{.Defi_actuel.Date_fin}} pour le rendre.
     {{end}}<br><br>
 </div>
