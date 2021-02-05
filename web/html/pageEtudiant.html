@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Profil Étudiant | {{.UserInfo.Login}}</title>
     <link rel="stylesheet" href="./web/css/pageEtudiant.css">
+    <link rel="icon" type="image/png" href="./web/logo.png" />
 </head>
 <body>
 <div id="header">
@@ -12,70 +13,69 @@
         <a href="pageEtudiant?logout">Logout</a>
     </div>
 </div>
-<div id="user">
-    <h2>Profil</h2>
-    <p>{{.UserInfo.Login}} ({{.UserInfo.Prenom}} {{.UserInfo.Nom}})<br>
-    Mot de passe : {{.UserInfo.Password}}
-    </p>
-    <p class="italic">{{.UserInfo.Mail}}</p>
-</div>
-
-<br>
-<div id="content">
-{{if eq .Defi_actuel.Num -1}}
-        Il n'y a pas défi en cours.
-{{else}}
-    Défi actuel : Défi n°{{.Defi_actuel.Num}}<br>
-    {{if .Defi_sent}}
-        Vous avez déjà rendu un script pour ce défi<br>
-        {{if eq .Resultat_defi.Etat 1}}
-            Votre script est correcte
-        {{else}}
-            Votre script est incorrecte
-        {{end}}
-    <br>
-        Vous pouvez le modifier jusqu'au {{.Defi_actuel.Date_fin}}
+<div class="main">
+    <div id="user">
+        <h2>Profil</h2>
+        <p>{{.UserInfo.Login}} ({{.UserInfo.Prenom}} {{.UserInfo.Nom}})<br>
+        Mot de passe : {{.UserInfo.Password}}
+        </p>
+        <p class="italic">{{.UserInfo.Mail}}</p>
+    </div>
+    <div id="content">
+    {{if eq .Defi_actuel.Num -1}}
+            Il n'y a pas défi en cours.
     {{else}}
-        Vous n'avez pas encore envoyé de script pour ce défi<br>
-        Vous avez jusqu'au {{.Defi_actuel.Date_fin}} pour le rendre.
-    {{end}}<br><br>
-</div>
-
-<br>
-<form   enctype="multipart/form-data"  action="/pageEtudiant?upload" method="post">
-    <input type="file" name="script_etu" required="required"/>
-    <input type="hidden" name="token" value=" " />
-    <input type="submit" value="upload"/>
-</form>
-
-<a href="/pageEtudiant?test">Tester son script</a><br>
-<div class="res">
-    <h1>{{.Msg_res}}</h1>
-    <p>
-        {{range .ResTest}}
-            Test : {{.Test}} <br>
-            {{if eq .Etat 1}}
-                Vous avez réussi ce test
-            {{else if eq .Etat 0}}
-                Vous avez échoué ce test
-            {{else if eq .Etat -1}}
-                Il y a eu une erreur durant ce test
-            {{end}}<br>
-            Résultat de la correction : <br>
-            {{range .Res_correction}}
-                {{.Nom}} contient <br>
-                {{.Contenu}}
-            {{end}}<br>
-            Résultat de de votre script : <br>
-
-            {{range .Res_etu}}
-                {{.}}<br>
-            {{end}}<br>
-            {{.Error_message}}
-        {{end}}
+        Défi actuel : Défi n°{{.Defi_actuel.Num}}<br>
+        {{if .Defi_sent}}
+            Vous avez déjà rendu un script pour ce défi<br>
+            {{if eq .Resultat_defi.Etat 1}}
+                Votre script est correcte
+            {{else}}
+                Votre script est incorrecte
+            {{end}}
         <br>
-    </p>
+            Vous pouvez le modifier jusqu'au {{.Defi_actuel.Date_fin}}
+        {{else}}
+            Vous n'avez pas encore envoyé de script pour ce défi<br>
+            Vous avez jusqu'au {{.Defi_actuel.Date_fin}} pour le rendre.
+        {{end}}<br><br>
+    </div>
+
+    <form   enctype="multipart/form-data"  action="/pageEtudiant?upload" method="post">
+        <input type="file" name="script_etu" required="required"/>
+        <input type="hidden" name="token" value=" " />
+        <input type="submit" value="upload"/>
+    </form>
+
+    <a href="/pageEtudiant?test">Tester son script</a><br>
+    <div class="res">
+        <h1>{{.Msg_res}}</h1>
+        <p>
+            {{range .ResTest}}
+                Test : {{.Test}} <br>
+                {{if eq .Etat 1}}
+                    Vous avez réussi ce test
+                {{else if eq .Etat 0}}
+                    Vous avez échoué ce test
+                {{else if eq .Etat -1}}
+                    Il y a eu une erreur durant ce test
+                {{end}}<br>
+                Résultat de la correction : <br>
+                {{range .Res_correction}}
+                    {{.Nom}} contient <br>
+                    {{.Contenu}}
+                {{end}}<br>
+                Résultat de de votre script : <br>
+
+                {{range .Res_etu}}
+                    {{.}}<br>
+                {{end}}<br>
+                {{.Error_message}}
+            {{end}}
+            <br>
+        </p>
+    </div>
+    {{end}}
 </div>
-{{end}}
 </body>
 </html>
