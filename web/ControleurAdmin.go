@@ -1,7 +1,6 @@
 package web
 
 import (
-	"archive/zip"
 	"bufio"
 	"fmt"
 	"github.com/aodin/date"
@@ -14,7 +13,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
+	"os/exec"
 	"strconv"
 	"strings"
 )
@@ -135,12 +134,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		}
 
 		r.ParseMultipartForm(10 << 20)
-		file, _, err := r.FormFile("upload")
-		fileHeader := make([]byte, 512)
-		if _, err := file.Read(fileHeader); err != nil {
-			log.Println(err.Error())
-		}
-
+		file, fileHeader, err := r.FormFile("upload")
 		defer file.Close()
 
 		defi_actuel := BDD.GetDefiActuel()
@@ -172,20 +166,47 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		} else if r.URL.Query()["form"][0] == "test" {
 
 			logs.WriteLog("Admin", "upload d'un test pour le défi n°"+strconv.Itoa(num_defi_actuel))
-			typeTest := http.DetectContentType(fileHeader)
+			typeTest := fileHeader.Header.Values("Content-Type")
 			fmt.Println(typeTest)
 			//application/zip , application/tar, text/plain; charset=utf-8
-			if typeTest == "application/zip" {
-				fichier, err := os.Create(config.Path_jeu_de_tests + "test.zip") // remplacer handler.Filename par le nom et on le place où on veut
-				defer fichier.Close()
-				_, err = io.Copy(fichier, file)
-				os.Chmod(fichier.Name(), 777)
-				_, err = Unzip(fichier.Name(), config.Path_jeu_de_tests)
-				if err != nil {
+
+			//if dossier de test existe déjà, on le supprime
+			pathTest := config.Path_jeu_de_tests + "test_defi_" + strconv.Itoa(num_defi_actuel)
+			if testeur.Contains(config.Path_jeu_de_tests, "test_defi_"+strconv.Itoa(num_defi_actuel)) {
+				os.RemoveAll(pathTest)
+			}
+			fichier, _ := os.Create(config.Path_jeu_de_tests + fileHeader.Filename) // remplacer handler.Filename par le nom et on le place où on veut
+			defer fichier.Close()
+			_, err = io.Copy(fichier, file)
+			os.Chmod(fichier.Name(), 777)
+
+			if typeTest[0] == "application/zip" {
+
+				cmd := exec.Command("unzip", "-d",
+					"test_defi_"+strconv.Itoa(num_defi_actuel),
+					fileHeader.Filename)
+				cmd.Dir = config.Path_jeu_de_tests
+				cmd.Run()
+				dosTest := testeur.GetFiles(pathTest)
+				fmt.Println(dosTest)
+				if len(dosTest) == 1 {
+					os.Rename(pathTest+"/"+dosTest[0], config.Path_jeu_de_tests+"temp")
+					os.RemoveAll(pathTest)
+					os.Rename(config.Path_jeu_de_tests+"temp", pathTest)
+				}
+			} else if typeTest[0] == "application/x-tar" {
+				cmd := exec.Command("tar", "tf", fileHeader.Filename)
+				cmd.Dir = config.Path_jeu_de_tests
+				output, _ := cmd.CombinedOutput()
+				nomArchive := strings.Split(string(output), "\n")[0]
+				cmd = exec.Command("tar", "xvf", fileHeader.Filename)
+				cmd.Dir = config.Path_jeu_de_tests
+				if err := cmd.Run(); err != nil {
 					fmt.Println(err.Error())
 				}
+				os.Rename(config.Path_jeu_de_tests+nomArchive, pathTest)
 			}
-
+			os.Remove(fichier.Name())
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 		}
@@ -207,61 +228,4 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 	}
 
-}
-
-// Unzip will decompress a zip archive, moving all files and folders
-// within the zip file (parameter 1) to an output directory (parameter 2).
-func Unzip(src string, dest string) ([]string, error) {
-
-	var filenames []string
-	r, err := zip.OpenReader(src)
-	if err != nil {
-		return filenames, err
-	}
-	defer r.Close()
-
-	for _, f := range r.File {
-
-		// Store filename/path for returning and using later on
-		fpath := filepath.Join(dest, f.Name)
-
-		// Check for ZipSlip. More Info: http://bit.ly/2MsjAWE
-		if !strings.HasPrefix(fpath, filepath.Clean(dest)+string(os.PathSeparator)) {
-			return filenames, fmt.Errorf("%s: illegal file path", fpath)
-		}
-
-		filenames = append(filenames, fpath)
-
-		if f.FileInfo().IsDir() {
-			// Make Folder
-			os.MkdirAll(fpath, os.ModePerm)
-			continue
-		}
-
-		// Make File
-		if err = os.MkdirAll(filepath.Dir(fpath), os.ModePerm); err != nil {
-			return filenames, err
-		}
-
-		outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
-		if err != nil {
-			return filenames, err
-		}
-
-		rc, err := f.Open()
-		if err != nil {
-			return filenames, err
-		}
-
-		_, err = io.Copy(outFile, rc)
-
-		// Close the file without defer to close before next iteration of loop
-		outFile.Close()
-		rc.Close()
-
-		if err != nil {
-			return filenames, err
-		}
-	}
-	return filenames, nil
 }
