@@ -10,11 +10,12 @@ import (
 
 // Structure a réutiliser un peu partout
 type Etudiant struct {
-	Login    string
-	Password string
-	Prenom   string
-	Nom      string
-	Mail     string
+	Login      string
+	Password   string
+	Prenom     string
+	Nom        string
+	Mail       string
+	Correcteur bool
 }
 
 type ResBDD struct {
@@ -46,7 +47,8 @@ func InitBDD() {
 		"password TEXT NOT NULL, " +
 		"prenom TEXT NOT NULL," +
 		"nom TEXT NOT NULL," +
-		"mail TEXT NOT NULL" +
+		"mail TEXT NOT NULL," +
+		"correcteur BOOLEAN NOT NULL" +
 		");")
 	if err != nil {
 		fmt.Println("prblm table Etudiant" + err.Error())
@@ -93,12 +95,12 @@ func InitBDD() {
 Enregistre un étudiant dans la table Etudiant
 */
 func Register(etu Etudiant) bool {
-	stmt, err := db.Prepare("INSERT INTO Etudiant values(?,?,?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO Etudiant values(?,?,?,?,?,?)")
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	_, err = stmt.Exec(etu.Login, etu.Password, etu.Prenom, etu.Nom, etu.Mail)
+	_, err = stmt.Exec(etu.Login, etu.Password, etu.Prenom, etu.Nom, etu.Mail, false)
 	if err != nil {
 		fmt.Println(err)
 		return false
@@ -126,25 +128,12 @@ func LoginCorrect(id string, password string) bool {
 récupère les informations personnelles d'un étudiant
 */
 func GetEtudiant(id string) Etudiant {
-	var (
-		login    string
-		password string
-		prenom   string
-		nom      string
-		mail     string
-	)
+	var etu Etudiant
 	row := db.QueryRow("SELECT * FROM Etudiant WHERE login = $1", id)
-	err := row.Scan(&login, &password, &prenom, &nom, &mail)
+	err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur)
 
 	if err != nil {
 		fmt.Printf("problme row scan \n", err)
-	}
-	etu := Etudiant{
-		Login:    login,
-		Password: password,
-		Prenom:   prenom,
-		Nom:      nom,
-		Mail:     mail,
 	}
 	return etu
 }
@@ -210,6 +199,7 @@ func ResetToken() {
 /**
 admin == true : fonction lancé par l'admin pour modifier les valeurs
 admin == false : fonction lancé par un étudiant lors d'une nouvelle tentative de test
+(si c'est false, tentative++)
 */
 func SaveResultat(lelogin string, lenum_defi int, letat int, admin bool) {
 
@@ -249,7 +239,7 @@ func GetEtudiants() []Etudiant {
 		fmt.Printf(err.Error())
 	}
 	for row.Next() {
-		row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail)
+		row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur)
 		etudiants = append(etudiants, etu)
 	}
 	return etudiants

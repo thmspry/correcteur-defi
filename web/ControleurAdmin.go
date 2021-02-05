@@ -1,6 +1,7 @@
 package web
 
 import (
+	"archive/zip"
 	"bufio"
 	"fmt"
 	"github.com/aodin/date"
@@ -13,7 +14,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 type data_pageAdmin struct {
@@ -133,11 +136,11 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 		r.ParseMultipartForm(10 << 20)
 		file, _, err := r.FormFile("upload")
-		if err != nil {
-			fmt.Println("Error Retrieving the File")
-			fmt.Println(err)
-			return
+		fileHeader := make([]byte, 512)
+		if _, err := file.Read(fileHeader); err != nil {
+			log.Println(err.Error())
 		}
+
 		defer file.Close()
 
 		defi_actuel := BDD.GetDefiActuel()
@@ -169,18 +172,24 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		} else if r.URL.Query()["form"][0] == "test" {
 
 			logs.WriteLog("Admin", "upload d'un test pour le défi n°"+strconv.Itoa(num_defi_actuel))
-			path = config.Path_jeu_de_tests + "test_defi_" + strconv.Itoa(num_defi_actuel) + "/"
-			num_test := testeur.Nb_test(path)
-			path = config.Path_jeu_de_tests + "test_defi_" + strconv.Itoa(num_defi_actuel) + "/test_" + strconv.Itoa(num_test)
-		}
+			typeTest := http.DetectContentType(fileHeader)
+			fmt.Println(typeTest)
+			//application/zip , application/tar, text/plain; charset=utf-8
+			if typeTest == "application/zip" {
+				fichier, err := os.Create(config.Path_jeu_de_tests + "test.zip") // remplacer handler.Filename par le nom et on le place où on veut
+				defer fichier.Close()
+				_, err = io.Copy(fichier, file)
+				os.Chmod(fichier.Name(), 777)
+				_, err = Unzip(fichier.Name(), config.Path_jeu_de_tests)
+				if err != nil {
+					fmt.Println(err.Error())
+				}
+			}
 
+			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
+			return
+		}
 		script, err := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
-
-		if err != nil {
-			fmt.Println("Internal Error")
-			fmt.Println(err)
-		}
-
 		defer script.Close()
 
 		_, err = io.Copy(script, file)
@@ -198,4 +207,61 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 	}
 
+}
+
+// Unzip will decompress a zip archive, moving all files and folders
+// within the zip file (parameter 1) to an output directory (parameter 2).
+func Unzip(src string, dest string) ([]string, error) {
+
+	var filenames []string
+	r, err := zip.OpenReader(src)
+	if err != nil {
+		return filenames, err
+	}
+	defer r.Close()
+
+	for _, f := range r.File {
+
+		// Store filename/path for returning and using later on
+		fpath := filepath.Join(dest, f.Name)
+
+		// Check for ZipSlip. More Info: http://bit.ly/2MsjAWE
+		if !strings.HasPrefix(fpath, filepath.Clean(dest)+string(os.PathSeparator)) {
+			return filenames, fmt.Errorf("%s: illegal file path", fpath)
+		}
+
+		filenames = append(filenames, fpath)
+
+		if f.FileInfo().IsDir() {
+			// Make Folder
+			os.MkdirAll(fpath, os.ModePerm)
+			continue
+		}
+
+		// Make File
+		if err = os.MkdirAll(filepath.Dir(fpath), os.ModePerm); err != nil {
+			return filenames, err
+		}
+
+		outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+		if err != nil {
+			return filenames, err
+		}
+
+		rc, err := f.Open()
+		if err != nil {
+			return filenames, err
+		}
+
+		_, err = io.Copy(outFile, rc)
+
+		// Close the file without defer to close before next iteration of loop
+		outFile.Close()
+		rc.Close()
+
+		if err != nil {
+			return filenames, err
+		}
+	}
+	return filenames, nil
 }
