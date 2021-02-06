@@ -24,7 +24,7 @@ type ResBDD struct {
 	Etat      int
 	Tentative int
 }
-type ResultatCSV struct {
+type ParticipantDefi struct {
 	Etudiant Etudiant
 	Resultat ResBDD
 }
@@ -342,9 +342,9 @@ func GetAllResultat(login string) []ResBDD {
 /**
 Récupère tous les résultats de tous les étudiants pour un défi spécifique
 */
-func GetResultCSV(num_defi int) []ResultatCSV {
-	var res ResultatCSV
-	resT := make([]ResultatCSV, 0)
+func GetParticipant(num_defi int) []ParticipantDefi {
+	var res ParticipantDefi
+	resT := make([]ParticipantDefi, 0)
 
 	row, err := db.Query("SELECT * FROM Etudiant e, Resultat r WHERE e.login = r.login AND r.defi = ? ORDER BY nom", num_defi)
 	defer row.Close()
@@ -352,10 +352,9 @@ func GetResultCSV(num_defi int) []ResultatCSV {
 		fmt.Println(err.Error())
 	}
 	for row.Next() {
-		row.Scan(&res.Etudiant.Login, &res.Etudiant.Password, &res.Etudiant.Prenom, &res.Etudiant.Nom, &res.Etudiant.Mail, &res.Resultat.Login, &res.Resultat.Defi,
+		row.Scan(&res.Etudiant.Login, &res.Etudiant.Password, &res.Etudiant.Prenom, &res.Etudiant.Nom, &res.Etudiant.Mail, &res.Etudiant.Correcteur, &res.Resultat.Login, &res.Resultat.Defi,
 			&res.Resultat.Etat, &res.Resultat.Tentative)
 		resT = append(resT, res)
 	}
-
 	return resT
 }

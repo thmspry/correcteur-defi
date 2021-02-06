@@ -45,51 +45,42 @@
     <h3>Liste des défis enregistrés : </h3>
     {{range .ListeDefis}}
         <p class="{{if eq $.Defi_actuel.Num .Num}}red{{end}}">
-        Défi n°{{.Num}} du {{.Date_debut}} au {{.Date_fin}}</p>
+        Défi n°{{.Num}} du {{.Date_debut}} au {{.Date_fin}}
+    <a href="pageAdmin?Defi={{.Num}}">Afficher les participants</a></p>
     {{end}}
 </div>
 <br>
-<h3>Récupérer les résultats d'un défi au format CSV : </h3>
-<form enctype="multipart/form-data" action="/pageAdmin?form=getResult" method="post">
-    Numéro du défi :<input type="number" name="num" min="0" max="100" value="0"><br>
-    <input type="submit" value="télécharger" name="submit">
-</form>
-<br>
-Liste des étudiants :
-<div id="etudiants">
-    {{range .Etudiants}}
-        <a href="pageAdmin?Etudiant={{.Login}}">{{.Nom}} {{.Prenom}}</a><br>
-    {{end}}
-    <br>
-    <a href="pageAdmin">désélectionner</a>
-</div>
-Info de l'étudiant :
-<div id="etudiant">
-    {{range .Res_etu}}
-        Defi n°{{.Defi}}
-        Etat :  {{if eq .Etat 1}}
-                Réussi
-                {{else if eq .Etat 0}}
-                Échoué
-                {{end}}
-        Nombre de tentative : {{.Tentative}}
-        <a href="pageAdmin?Etudiant={{$.Etu_select}}&Script={{.Defi}}">
+{{if .Participants}}
+    <h4>Liste des participants au défi {{$.DefiNumSelect}}</h4>
+    {{range .Participants}}
+        {{.Etudiant.Login}}
+        Etat :  {{if eq .Resultat.Etat 1}}
+        Réussi
+        {{else if eq .Resultat.Etat 0}}
+        Échoué
+        {{end}}
+        Nombre de tentative : {{.Resultat.Tentative}}
+        <a href="pageAdmin?Defi={{$.DefiNumSelect}}&Etudiant={{.Etudiant.Login}}">
             Afficher le script
         </a>
-        <a href="pageAdmin?Etudiant={{$.Etu_select}}&Script={{.Defi}}&Etat={{.Etat}}">
-            Modifier l'état de la partie
+        <a href="pageAdmin?Defi={{$.DefiNumSelect}}&Etudiant={{.Etudiant.Login}}&Etat={{.Resultat.Etat}}">
+            Modifier l'état
         </a>
     <br>
     {{end}}
+    Récupérer le résultat au format CSV : <button><a href="pageAdmin?Defi={{.DefiNumSelect}}&getResult">téléchager</a></button>
+{{end}}
+<br>
+{{if .File}}
+<div>
+    Contenu du script :
+    <div id="file">
+        {{range .File}}
+            {{.}} <br>
+        {{end}}
+    </div>
 </div>
-
-Contenu du script :
-<div id="file">
-    {{range .File}}
-        {{.}} <br>
-    {{end}}
-</div>
-
+{{end}}
 <h3>Logs :</h3>
 <div>
     {{range .Logs}}

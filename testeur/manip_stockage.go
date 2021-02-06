@@ -103,7 +103,7 @@ func rename(pathFile string, name string, newName string) {
 
 // https://golangcode.com/write-data-to-a-csv-file/
 func CreateCSV(file_name string, num int) {
-	ResultatCSV := BDD.GetResultCSV(num)
+	ResultatCSV := BDD.GetParticipant(num)
 
 	file, _ := os.Create(file_name)
 	defer file.Close()
