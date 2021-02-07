@@ -1,0 +1,14 @@
+#etudiants {
+    border-style: solid;
+}
+body {
+    background: antiquewhite;
+}
+#file {
+    border-style: solid;
+    background: aliceblue;
+}
+.red {
+    font-weight: bold;
+    color: red;
+}

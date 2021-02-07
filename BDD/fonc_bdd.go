@@ -10,11 +10,12 @@ import (
 
 // Structure a réutiliser un peu partout
 type Etudiant struct {
-	Login    string
-	Password string
-	Prenom   string
-	Nom      string
-	Mail     string
+	Login      string
+	Password   string
+	Prenom     string
+	Nom        string
+	Mail       string
+	Correcteur bool
 }
 
 type ResBDD struct {
@@ -23,7 +24,7 @@ type ResBDD struct {
 	Etat      int
 	Tentative int
 }
-type ResultatCSV struct {
+type ParticipantDefi struct {
 	Etudiant Etudiant
 	Resultat ResBDD
 }
@@ -34,7 +35,7 @@ type Defi struct {
 	Date_fin   date.Date
 }
 
-var db, _ = sql.Open("sqlite3", "./BDD/projS3.db")
+var db, _ = sql.Open("sqlite3", "./BDD/database.db")
 
 /**
 Fonction qui initialise les tables vides
@@ -46,7 +47,8 @@ func InitBDD() {
 		"password TEXT NOT NULL, " +
 		"prenom TEXT NOT NULL," +
 		"nom TEXT NOT NULL," +
-		"mail TEXT NOT NULL" +
+		"mail TEXT NOT NULL," +
+		"correcteur BOOLEAN NOT NULL" +
 		");")
 	if err != nil {
 		fmt.Println("prblm table Etudiant" + err.Error())
@@ -93,12 +95,12 @@ func InitBDD() {
 Enregistre un étudiant dans la table Etudiant
 */
 func Register(etu Etudiant) bool {
-	stmt, err := db.Prepare("INSERT INTO Etudiant values(?,?,?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO Etudiant values(?,?,?,?,?,?)")
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	_, err = stmt.Exec(etu.Login, etu.Password, etu.Prenom, etu.Nom, etu.Mail)
+	_, err = stmt.Exec(etu.Login, etu.Password, etu.Prenom, etu.Nom, etu.Mail, false)
 	if err != nil {
 		fmt.Println(err)
 		return false
@@ -126,25 +128,12 @@ func LoginCorrect(id string, password string) bool {
 récupère les informations personnelles d'un étudiant
 */
 func GetEtudiant(id string) Etudiant {
-	var (
-		login    string
-		password string
-		prenom   string
-		nom      string
-		mail     string
-	)
+	var etu Etudiant
 	row := db.QueryRow("SELECT * FROM Etudiant WHERE login = $1", id)
-	err := row.Scan(&login, &password, &prenom, &nom, &mail)
+	err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur)
 
 	if err != nil {
 		fmt.Printf("problme row scan \n", err)
-	}
-	etu := Etudiant{
-		Login:    login,
-		Password: password,
-		Prenom:   prenom,
-		Nom:      nom,
-		Mail:     mail,
 	}
 	return etu
 }
@@ -188,8 +177,13 @@ func DeleteToken(login string) {
 }
 
 func TokenExiste(token string) bool {
-	row := db.QueryRow("SELECT * FROM token WHERE token = ?")
-	if row.Err() != nil {
+	var (
+		log string
+		tok string
+	)
+	row := db.QueryRow("SELECT * FROM token WHERE token = $1", token)
+	err := row.Scan(&log, &tok)
+	if err != nil {
 		return false
 	}
 	return true
@@ -205,6 +199,7 @@ func ResetToken() {
 /**
 admin == true : fonction lancé par l'admin pour modifier les valeurs
 admin == false : fonction lancé par un étudiant lors d'une nouvelle tentative de test
+(si c'est false, tentative++)
 */
 func SaveResultat(lelogin string, lenum_defi int, letat int, admin bool) {
 
@@ -244,7 +239,7 @@ func GetEtudiants() []Etudiant {
 		fmt.Printf(err.Error())
 	}
 	for row.Next() {
-		row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail)
+		row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur)
 		etudiants = append(etudiants, etu)
 	}
 	return etudiants
@@ -260,36 +255,6 @@ func GetResult(login string, defi int) ResBDD {
 		fmt.Println("erreur GetResult")
 	}
 	return res
-}
-
-/**
-Récupère le dernier défi enregistrer dans la table Defis
-*/
-func GetDefiActuel() Defi {
-	var (
-		num   int
-		debut string
-		fin   string
-	)
-	row := db.QueryRow("SELECT * FROM Defis ORDER BY numero DESC")
-	err := row.Scan(&num, &debut, &fin)
-	if err != nil {
-		return Defi{
-			Num:        -1,
-			Date_debut: date.Date{},
-			Date_fin:   date.Date{},
-		}
-	}
-	d := Defi{
-		Num:        num,
-		Date_debut: date.Date{},
-		Date_fin:   date.Date{},
-	}
-	d.Date_debut, _ = date.Parse(debut)
-	d.Date_fin, _ = date.Parse(fin)
-	//Pas besoin de check si le date.Parse retourne une erreur car le string date enregistré dans la BDD est forcément correcte
-	//étant donné qu'on vérifie qu'il soit correcte avant de l'enregistrer
-	return d
 }
 
 /**
@@ -318,6 +283,43 @@ func ModifyDefi(num int, dateD date.Date, dateF date.Date) {
 	stmt.Close()
 }
 
+func GetDefis() []Defi {
+	var (
+		debutString string
+		finString   string
+		defi        Defi
+	)
+	defis := make([]Defi, 0)
+	row, err := db.Query("SELECT * FROM Defis")
+	defer row.Close()
+	if err != nil {
+		fmt.Printf(err.Error())
+	}
+	for row.Next() {
+		row.Scan(&defi.Num, &debutString, &finString)
+		defi.Date_debut, _ = date.Parse(debutString)
+		defi.Date_fin, _ = date.Parse(finString)
+		defis = append(defis, defi)
+	}
+	return defis
+}
+
+func GetDefiActuel() Defi {
+	defis := GetDefis()
+
+	defiActuel := Defi{
+		Num:        -1,
+		Date_debut: date.Date{},
+		Date_fin:   date.Date{},
+	}
+	for _, d := range defis {
+		if date.Today().Within(date.NewRange(d.Date_debut, d.Date_fin)) {
+			defiActuel = d
+		}
+	}
+	return defiActuel
+}
+
 /**
 Récupère tous les résultats d'un étudiant à tous les défis auquel il a participé
 */
@@ -340,9 +342,9 @@ func GetAllResultat(login string) []ResBDD {
 /**
 Récupère tous les résultats de tous les étudiants pour un défi spécifique
 */
-func GetAllResult(num_defi int) []ResultatCSV {
-	var res ResultatCSV
-	resT := make([]ResultatCSV, 0)
+func GetParticipant(num_defi int) []ParticipantDefi {
+	var res ParticipantDefi
+	resT := make([]ParticipantDefi, 0)
 
 	row, err := db.Query("SELECT * FROM Etudiant e, Resultat r WHERE e.login = r.login AND r.defi = ? ORDER BY nom", num_defi)
 	defer row.Close()
@@ -350,10 +352,9 @@ func GetAllResult(num_defi int) []ResultatCSV {
 		fmt.Println(err.Error())
 	}
 	for row.Next() {
-		row.Scan(&res.Etudiant.Login, &res.Etudiant.Password, &res.Etudiant.Prenom, &res.Etudiant.Nom, &res.Etudiant.Mail, &res.Resultat.Login, &res.Resultat.Defi,
+		row.Scan(&res.Etudiant.Login, &res.Etudiant.Password, &res.Etudiant.Prenom, &res.Etudiant.Nom, &res.Etudiant.Mail, &res.Etudiant.Correcteur, &res.Resultat.Login, &res.Resultat.Defi,
 			&res.Resultat.Etat, &res.Resultat.Tentative)
 		resT = append(resT, res)
 	}
-
 	return resT
 }

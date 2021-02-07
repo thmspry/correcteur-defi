@@ -1,75 +1,91 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Profile Étudiant</title>
-    <link rel="stylesheet" href="./web/css/pageEtudiant.css">
+    <title>Profil Étudiant | {{.UserInfo.Login}}</title>
+    <link rel="stylesheet" href="./web/assets/css/pageEtudiant.css">
+    <link rel="icon" type="image/png" href="./web/assets/images/logo.png" />
 </head>
 <body>
-<div id="user">
-
-    étudiant : {{.UserInfo.Login}}<br>
-    mdp : {{.UserInfo.Password}}<br>
-    prénom : {{.UserInfo.Prenom}}  nom : {{.UserInfo.Nom}}<br>
-    mail : {{.UserInfo.Mail}}<br>
+<div id="header">
+    <h1>Page Etudiant</h1>
+    <div id="logout">
+        <a href="pageEtudiant?logout">Logout</a>
+    </div>
 </div>
-<br>
-<div>
-{{if eq .Defi_actuel.Num -1}}
-        Il n'y a pas défi en cours.
-{{else}}
-    Défi actuel numéro {{.Defi_actuel.Num}}<br>
-    {{if .Defi_sent}}
-        Vous avez déjà rendu un script pour ce défi<br>
-        {{if eq .Resultat_defi.Etat 1}}
-            Votre script est correcte
-        {{else}}
-            Votre script est incorrecte
-        {{end}}
-    <br>
-        Vous pouvez le modifier jusqu'au {{.Defi_actuel.Date_fin}}
+<div class="main">
+    <div id="user">
+        <h2>Profil</h2>
+        <p>{{.UserInfo.Prenom}} {{.UserInfo.Nom}} ({{.UserInfo.Login}})<br>
+        Mot de passe : {{.UserInfo.Password}}
+        </p>
+        <p class="italic">{{.UserInfo.Mail}}</p>
+    </div>
+    <div id="content">
+    {{if eq .Defi_actuel.Num -1}}
+        <p>Il n'y a pas défi en cours.</p>
     {{else}}
-        Vous n'avez pas encore envoyé de script<br>
-        Vous avez jusqu'au {{.Defi_actuel.Date_fin}} pour le rendre.
-    {{end}}<br><br>
-</div>
-<button>
-    <a href="pageEtudiant?logout">logout</a>
-</button>
-<br>
-<form   enctype="multipart/form-data"  action="/pageEtudiant?upload" method="post">
-    <input type="file" name="script_etu"/>
-    <input type="hidden" name="token" value=" " />
-    <input type="submit" value="upload"/>
-</form>
-
-<a href="/pageEtudiant?test">Tester son script</a><br>
-<div class="res">
-    <h1>{{.Msg_res}}</h1>
-    <p>
-        {{range .ResTest}}
-            Test : {{.Test}} <br>
-            {{if eq .Etat 1}}
-                Vous avez réussi ce test
-            {{else if eq .Etat 0}}
-                Vous avez échoué ce test
-            {{else if eq .Etat -1}}
-                Il y a eu une erreur durant ce test
-            {{end}}<br>
-            Résultat de la correction : <br>
-            {{range .Res_correction}}
-                {{.Nom}} contient <br>
-                {{.Contenu}}
-            {{end}}<br>
-            Résultat de de votre script : <br>
-            {{range .Res_etu}}
-                {{.}}<br>
-            {{end}}<br>
-            {{.Error_message}}
+        <p>Défi actuel : Défi n°{{.Defi_actuel.Num}}</p>
+        {{if .Defi_sent}}
+            <p>Vous avez déjà rendu un script pour ce défi.</p>
+            {{if eq .Resultat_defi.Etat 1}}
+                <p>Votre script est correct.</p>
+            {{else}}
+                <p>Votre script est incorrect.</p>
+            {{end}}
+            <p>Vous pouvez le modifier jusqu'au {{.Defi_actuel.Date_fin}}.</p>
+        {{else}}
+            <p>Vous n'avez pas encore envoyé de script pour ce défi. <br>
+                Vous avez jusqu'au {{.Defi_actuel.Date_fin}} pour le rendre.</p>
         {{end}}
-        <br>
-    </p>
+    </div>
+
+    <div id="file">
+        <form enctype="multipart/form-data" action="/pageEtudiant?upload" method="post">
+            <div class="chose-file">
+                <img src="./web/assets/images/upload.png">
+                <label for="input-file">Choisir un fichier</label>
+                <input type="hidden" name="token" value=" " />
+                <input type="file" name="script_etu" id="input-file" required="required"/>
+            </div>
+            <input type="submit" value="Upload"/>
+        </form>
+    </div>
+
+    <a href="/pageEtudiant?test" id="test-script">
+        <img src="./web/assets/images/play-triangle.png">
+        <p>Tester son script</p>
+    </a>
+
+    <div class="res">
+        <h1 id="message-res" class="">{{.Msg_res}}</h1>
+        <p>
+            {{range .ResTest}}
+                Test : {{.Test}} <br>
+                {{if eq .Etat 1}}
+                    Vous avez réussi ce test
+                {{else if eq .Etat 0}}
+                    Vous avez échoué ce test
+                {{else if eq .Etat -1}}
+                    Il y a eu une erreur durant ce test
+                {{end}}<br>
+                Résultat de la correction : <br>
+                {{range .Res_correction}}
+                    {{.Nom}} contient <br>
+                    {{.Contenu}}
+                {{end}}<br>
+                Résultat de de votre script : <br>
+
+                {{range .Res_etu}}
+                    {{.}}<br>
+                {{end}}<br>
+                {{.Error_message}}
+            {{end}}
+            <br>
+        </p>
+    </div>
+    {{end}}
 </div>
-{{end}}
+<script src="./web/assets/js/pageEtudiant.js"></script>
 </body>
 </html>

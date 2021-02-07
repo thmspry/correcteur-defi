@@ -33,7 +33,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	num_defi_actuel := BDD.GetDefiActuel().Num
 
 	//Si il y a n'y a pas de token dans les cookies alors l'utilisateur est redirigé vers la page de login
-	if _, err := r.Cookie("token"); err != nil {
+	if token, err := r.Cookie("token"); err != nil || !BDD.TokenExiste(token.Value) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
@@ -50,7 +50,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if data.Defi_actuel.Num != -1 {
-		if date.Today().Within(date.NewRange(data.Defi_actuel.Date_debut, data.Defi_actuel.Date_fin)) {
+		if !date.Today().Within(date.NewRange(data.Defi_actuel.Date_debut, data.Defi_actuel.Date_fin)) {
 			data.Defi_actuel.Num = -1
 		}
 	}
@@ -119,6 +119,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			os.Chmod(config.Path_scripts+"script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel)+".sh", 770)
 
 			logs.WriteLog(etu.Login, "upload de script du défis "+strconv.Itoa(num_defi_actuel))
+			data.Msg_res, data.ResTest = testeur.Test(etu.Login)
 			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 		}
 	}

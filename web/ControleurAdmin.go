@@ -13,35 +13,42 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
+	"strings"
 )
 
 type data_pageAdmin struct {
-	Etu_select  string
-	Etudiants   []BDD.Etudiant
-	Res_etu     []BDD.ResBDD
-	File        []string
-	Defi_actuel BDD.Defi
-	Logs        []string
-	Log         []string
-	LogDate     string
+	EtuSelect     string
+	DefiNumSelect string
+	Etudiants     []BDD.Etudiant
+	Res_etu       []BDD.ResBDD
+	ListeDefis    []BDD.Defi
+	File          []string
+	Defi_actuel   BDD.Defi
+	Participants  []BDD.ParticipantDefi
+
+	Logs    []string
+	Log     []string
+	LogDate string
 }
 
 func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	data := data_pageAdmin{
 		Etudiants:   BDD.GetEtudiants(),
 		Defi_actuel: BDD.GetDefiActuel(),
+		ListeDefis:  BDD.GetDefis(),
 		Logs:        testeur.GetFiles(config.Path_log),
 	}
 	data.Logs = data.Logs[:len(data.Logs)-1]
 
 	//if date actuelle > defi actel.datefin alors defiactuel.num = -1
 	if data.Defi_actuel.Num != -1 {
-		if date.Today().Within(date.NewRange(data.Defi_actuel.Date_debut, data.Defi_actuel.Date_fin)) {
+		if !date.Today().Within(date.NewRange(data.Defi_actuel.Date_debut, data.Defi_actuel.Date_fin)) {
 			data.Defi_actuel.Num = -1
 		}
 	}
-
+	fmt.Println(r.URL.String())
 	if r.Method == "GET" {
 
 		//Permet d'afficher les logs d'une date précise
@@ -59,26 +66,13 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		//Permet d'afficher les résultats correspondant à un étudiant en particulier
-		if r.URL.Query()["Etudiant"] != nil {
-			etu := r.URL.Query()["Etudiant"][0]
-			data.Etu_select = etu
-
-			//Permet de changer l'état de la du défis
-			if r.URL.Query()["Script"] != nil && r.URL.Query()["Etat"] != nil {
-				etat := r.URL.Query()["Etat"][0]
-				num, _ := strconv.Atoi(r.URL.Query()["Script"][0])
-				if etat == "1" {
-					BDD.SaveResultat(etu, num, 0, true)
-				} else {
-					BDD.SaveResultat(etu, num, 1, true)
-				}
-
-				//Permet d'afficher le contenu du script envoyé par l'étudiant pour le défi séléctionné
-			} else if r.URL.Query()["Script"] != nil {
-				num := r.URL.Query()["Script"][0]
-
-				f, err := os.Open(config.Path_scripts + "script_" + etu + "_" + num + ".sh")
+		if r.URL.Query()["Defi"] != nil {
+			num, _ := strconv.Atoi(r.URL.Query()["Defi"][0])
+			data.DefiNumSelect = r.URL.Query()["Defi"][0]
+			data.Participants = BDD.GetParticipant(num)
+			if etu := r.URL.Query()["Etudiant"]; etu != nil {
+				fmt.Println(etu)
+				f, err := os.Open(config.Path_scripts + "script_" + etu[0] + "_" + data.DefiNumSelect + ".sh")
 				if err != nil {
 					data.File[0] = "erreur pour récupérer le script de l'étudiant"
 				} else {
@@ -87,8 +81,26 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 						data.File = append(data.File, scanner.Text())
 					}
 				}
+				if etat := r.URL.Query()["Etat"]; etat != nil {
+
+					if etat[0] == "1" {
+						BDD.SaveResultat(etu[0], num, 0, true)
+					} else {
+						BDD.SaveResultat(etu[0], num, 1, true)
+					}
+				}
 			}
-			data.Res_etu = BDD.GetAllResultat(etu)
+
+			if r.URL.Query()["getResult"] != nil {
+				fileName := "resultat_" + strconv.Itoa(num) + ".csv"
+				testeur.CreateCSV(fileName, num)
+				w.Header().Set("Content-Disposition", "attachment; filename="+fileName)
+				w.Header().Set("Content-Type", "application/octet-stream")
+				http.ServeFile(w, r, fileName)
+				os.Remove(fileName)
+				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
+				return
+			}
 		}
 
 		t := template.Must(template.ParseFiles("./web/html/pageAdmin.html"))
@@ -112,7 +124,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 		}
-
+		//Permet de récupérer les résultats de tous les étudiants ainsi que leurs informations pour un défi donné
 		if r.URL.Query()["form"][0] == "getResult" {
 			num := r.FormValue("num")
 			n, err := strconv.Atoi(num)
@@ -120,27 +132,17 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(err.Error())
 			}
 			file_name := "resultat_" + num + ".csv"
-
 			testeur.CreateCSV(file_name, n)
-
 			w.Header().Set("Content-Disposition", "attachment; filename="+file_name)
 			w.Header().Set("Content-Type", "application/octet-stream")
 			http.ServeFile(w, r, file_name)
-
 			os.Remove(file_name)
-
-			//http.Redirect(w, r, "/pageAdmin", http.StatusFound)
-
+			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 		}
 
 		r.ParseMultipartForm(10 << 20)
-		file, _, err := r.FormFile("defi")
-		if err != nil {
-			fmt.Println("Error Retrieving the File")
-			fmt.Println(err)
-			return
-		}
+		file, fileHeader, err := r.FormFile("upload")
 		defer file.Close()
 
 		defi_actuel := BDD.GetDefiActuel()
@@ -172,18 +174,50 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		} else if r.URL.Query()["form"][0] == "test" {
 
 			logs.WriteLog("Admin", "upload d'un test pour le défi n°"+strconv.Itoa(num_defi_actuel))
-			path = config.Path_jeu_de_tests + "test_defi_" + strconv.Itoa(num_defi_actuel) + "/"
-			num_test := testeur.Nb_test(path)
-			path = config.Path_jeu_de_tests + "test_defi_" + strconv.Itoa(num_defi_actuel) + "/test_" + strconv.Itoa(num_test)
-		}
+			typeTest := fileHeader.Header.Values("Content-Type")
+			fmt.Println(typeTest)
+			//application/zip , application/tar, text/plain; charset=utf-8
 
+			//if dossier de test existe déjà, on le supprime
+			pathTest := config.Path_jeu_de_tests + "test_defi_" + strconv.Itoa(num_defi_actuel)
+			if testeur.Contains(config.Path_jeu_de_tests, "test_defi_"+strconv.Itoa(num_defi_actuel)) {
+				os.RemoveAll(pathTest)
+			}
+			fichier, _ := os.Create(config.Path_jeu_de_tests + fileHeader.Filename) // remplacer handler.Filename par le nom et on le place où on veut
+			defer fichier.Close()
+			_, err = io.Copy(fichier, file)
+			os.Chmod(fichier.Name(), 777)
+
+			if typeTest[0] == "application/zip" {
+
+				cmd := exec.Command("unzip", "-d",
+					"test_defi_"+strconv.Itoa(num_defi_actuel),
+					fileHeader.Filename)
+				cmd.Dir = config.Path_jeu_de_tests
+				cmd.Run()
+				dosTest := testeur.GetFiles(pathTest)
+				if len(dosTest) == 1 {
+					os.Rename(pathTest+"/"+dosTest[0], config.Path_jeu_de_tests+"temp")
+					os.RemoveAll(pathTest)
+					os.Rename(config.Path_jeu_de_tests+"temp", pathTest)
+				}
+			} else if typeTest[0] == "application/x-tar" {
+				cmd := exec.Command("tar", "tf", fileHeader.Filename)
+				cmd.Dir = config.Path_jeu_de_tests
+				output, _ := cmd.CombinedOutput()
+				nomArchive := strings.Split(string(output), "\n")[0]
+				cmd = exec.Command("tar", "xvf", fileHeader.Filename)
+				cmd.Dir = config.Path_jeu_de_tests
+				if err := cmd.Run(); err != nil {
+					fmt.Println(err.Error())
+				}
+				os.Rename(config.Path_jeu_de_tests+nomArchive, pathTest)
+			}
+			os.Remove(fichier.Name())
+			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
+			return
+		}
 		script, err := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
-
-		if err != nil {
-			fmt.Println("Internal Error")
-			fmt.Println(err)
-		}
-
 		defer script.Close()
 
 		_, err = io.Copy(script, file)

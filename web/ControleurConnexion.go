@@ -14,31 +14,15 @@ import (
 	"net/http"
 )
 
-/**
-Fonction pour lancer l'interface web
-*/
-func InitWeb() {
-
-	http.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web")))) // compliqué à expliquer
-	http.HandleFunc("/login", accueil)                                                // Page d'acceuil : http://localhost:8080/login
-	http.HandleFunc("/pageEtudiant", pageEtudiant)                                    // Page étudiant : http://localhost:8080/pageEtudiant
-	http.HandleFunc("/pageAdmin", pageAdmin)                                          // Page admin : http://localhost:8080/pageAdmin
-	err := http.ListenAndServe(":8192", nil)                                          // port utilisé
-	if err != nil {
-		fmt.Printf("ListenAndServe: ", err)
-	}
-}
-
 func accueil(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method de accueil :", r.Method)
 
-	if token, err := r.Cookie("token"); err == nil {
-		if BDD.TokenExiste(token.Value) {
+	if tk, err := r.Cookie("token"); err == nil {
+		if BDD.TokenExiste(tk.Value) {
 			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 			return
 		}
 	}
-
 	if r.Method == "GET" {
 
 		t, err := template.ParseFiles("./web/html/accueil.html")
@@ -56,9 +40,9 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("tentative de co avec :", login, " ", password)
 			existe := BDD.LoginCorrect(login, password)
 			if existe {
-				// crée un go routine qui envoie le token, voir si on peut faire ça en même temps que la redirection.
+				//Création du token
 				token := tokenGenerator()
-				temps := 5 * time.Minute // défini le temps d'attente
+				temps := 1 * time.Minute // défini le temps d'attente
 				expiration := time.Now().Add(temps)
 				cookie := http.Cookie{Name: "token", Value: token, Expires: expiration}
 				http.SetCookie(w, &cookie)
@@ -71,7 +55,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				go DeleteToken(login, temps)
 				return
 			} else {
-				fmt.Println("login incorrecte")
+				fmt.Println("login '" + login + "' incorrecte")
 				http.Redirect(w, r, "/login", http.StatusFound)
 			}
 		} else if r.URL.String() == "/login?register" {
@@ -111,8 +95,4 @@ func tokenGenerator() string {
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
-}
-
-func password() {
-	fmt.Print()
 }

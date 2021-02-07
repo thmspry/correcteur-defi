@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Profile Étudiant</title>
-    <link rel="stylesheet" href="/web/css/pageAdmin.css">
+    <title>Page Admin</title>
+    <link rel="stylesheet" href="/web/assets/css/pageAdmin.css">
+    <link rel="icon" type="image/png" href="./web/assets/images/logo.png" />
 </head>
 <body>
 <h1>Page admin</h1>
@@ -26,7 +27,7 @@
 <br>
 <h3>Formulaire pour enregistrer un défis avec sa correction,<br> sa date de début et de fin. Il peut aussi servir à modifier la correction du défi actuel.</h3>
 <form   enctype="multipart/form-data"  action="/pageAdmin?form=defi" method="post">
-    Dépot de la correction : <input type="file" name="defi"><br>
+    Dépot de la correction : <input type="file" name="upload" required="required"><br>
     Format date : "YYYY-MM-DD" <br>
     Date de début : <input type="text" name="date_debut" value="{{.Defi_actuel.Date_debut}}"> <br>
     Date de fin : <input type="text" name="date_fin" value="{{.Defi_actuel.Date_fin}}"> <br>
@@ -36,52 +37,50 @@
 
 <h3>Formulaire pour upload des tests : </h3>
 <form enctype="multipart/form-data" action="/pageAdmin?form=test" method="post">
-    Dépot du test : <input type="file" name="test"><br>
+    Dépot du test : <input type="file" name="upload" required="required"><br>
     <input type="submit" value="déposer" name="submit">
 </form>
 <br>
-
-<h3>Formulaire pour get resultat : </h3>
-<form enctype="multipart/form-data" action="/pageAdmin?form=getResult" method="post">
-    Numéro du défi :<input type="number" name="num" min="10" max="100" value="0"><br>
-    <input type="submit" value="télécharger" name="submit">
-</form>
-<br>
-Liste des étudiants :
-<div id="etudiants">
-    {{range .Etudiants}}
-        <a href="pageAdmin?Etudiant={{.Login}}">{{.Nom}} {{.Prenom}}</a><br>
+<div>
+    <h3>Liste des défis enregistrés : </h3>
+    {{range .ListeDefis}}
+        <p class="{{if eq $.Defi_actuel.Num .Num}}red{{end}}">
+        Défi n°{{.Num}} du {{.Date_debut}} au {{.Date_fin}}
+    <a href="pageAdmin?Defi={{.Num}}">Afficher les participants</a></p>
     {{end}}
-    <br>
-    <a href="pageAdmin">désélectionner</a>
 </div>
-Info de l'étudiant :
-<div id="etudiant">
-    {{range .Res_etu}}
-        Defi n°{{.Defi}}
-        Etat :  {{if eq .Etat 1}}
-                Réussi
-                {{else if eq .Etat 0}}
-                Échoué
-                {{end}}
-        Nombre de tentative : {{.Tentative}}
-        <a href="pageAdmin?Etudiant={{$.Etu_select}}&Script={{.Defi}}">
+<br>
+{{if .Participants}}
+    <h4>Liste des participants au défi {{$.DefiNumSelect}}</h4>
+    {{range .Participants}}
+        {{.Etudiant.Login}}
+        Etat :  {{if eq .Resultat.Etat 1}}
+        Réussi
+        {{else if eq .Resultat.Etat 0}}
+        Échoué
+        {{end}}
+        Nombre de tentative : {{.Resultat.Tentative}}
+        <a href="pageAdmin?Defi={{$.DefiNumSelect}}&Etudiant={{.Etudiant.Login}}">
             Afficher le script
         </a>
-        <a href="pageAdmin?Etudiant={{$.Etu_select}}&Script={{.Defi}}&Etat={{.Etat}}">
-            Modifier l'état de la partie
+        <a href="pageAdmin?Defi={{$.DefiNumSelect}}&Etudiant={{.Etudiant.Login}}&Etat={{.Resultat.Etat}}">
+            Modifier l'état
         </a>
     <br>
     {{end}}
+    Récupérer le résultat au format CSV : <button><a href="pageAdmin?Defi={{.DefiNumSelect}}&getResult">téléchager</a></button>
+{{end}}
+<br>
+{{if .File}}
+<div>
+    Contenu du script :
+    <div id="file">
+        {{range .File}}
+            {{.}} <br>
+        {{end}}
+    </div>
 </div>
-
-Contenu du script :
-<div id="file">
-    {{range .File}}
-        {{.}} <br>
-    {{end}}
-</div>
-
+{{end}}
 <h3>Logs :</h3>
 <div>
     {{range .Logs}}
