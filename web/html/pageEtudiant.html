@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Profil Étudiant | {{.UserInfo.Login}}</title>
-    <link rel="stylesheet" href="./web/css/pageEtudiant.css">
-    <link rel="icon" type="image/png" href="./web/logo.png" />
+    <link rel="stylesheet" href="./web/assets/css/pageEtudiant.css">
+    <link rel="icon" type="image/png" href="./web/assets/images/logo.png" />
 </head>
 <body>
 <div id="header">
@@ -16,40 +16,49 @@
 <div class="main">
     <div id="user">
         <h2>Profil</h2>
-        <p>{{.UserInfo.Login}} ({{.UserInfo.Prenom}} {{.UserInfo.Nom}})<br>
+        <p>{{.UserInfo.Prenom}} {{.UserInfo.Nom}} ({{.UserInfo.Login}})<br>
         Mot de passe : {{.UserInfo.Password}}
         </p>
         <p class="italic">{{.UserInfo.Mail}}</p>
     </div>
     <div id="content">
     {{if eq .Defi_actuel.Num -1}}
-            Il n'y a pas défi en cours.
+        <p>Il n'y a pas défi en cours.</p>
     {{else}}
-        Défi actuel : Défi n°{{.Defi_actuel.Num}}<br>
+        <p>Défi actuel : Défi n°{{.Defi_actuel.Num}}</p>
         {{if .Defi_sent}}
-            Vous avez déjà rendu un script pour ce défi<br>
+            <p>Vous avez déjà rendu un script pour ce défi.</p>
             {{if eq .Resultat_defi.Etat 1}}
-                Votre script est correcte
+                <p>Votre script est correct.</p>
             {{else}}
-                Votre script est incorrecte
+                <p>Votre script est incorrect.</p>
             {{end}}
-        <br>
-            Vous pouvez le modifier jusqu'au {{.Defi_actuel.Date_fin}}
+            <p>Vous pouvez le modifier jusqu'au {{.Defi_actuel.Date_fin}}.</p>
         {{else}}
-            Vous n'avez pas encore envoyé de script pour ce défi<br>
-            Vous avez jusqu'au {{.Defi_actuel.Date_fin}} pour le rendre.
-        {{end}}<br><br>
+            <p>Vous n'avez pas encore envoyé de script pour ce défi. <br>
+                Vous avez jusqu'au {{.Defi_actuel.Date_fin}} pour le rendre.</p>
+        {{end}}
     </div>
 
-    <form   enctype="multipart/form-data"  action="/pageEtudiant?upload" method="post">
-        <input type="file" name="script_etu" required="required"/>
-        <input type="hidden" name="token" value=" " />
-        <input type="submit" value="upload"/>
-    </form>
+    <div id="file">
+        <form enctype="multipart/form-data" action="/pageEtudiant?upload" method="post">
+            <div class="chose-file">
+                <img src="./web/assets/images/upload.png">
+                <label for="input-file">Choisir un fichier</label>
+                <input type="hidden" name="token" value=" " />
+                <input type="file" name="script_etu" id="input-file" required="required"/>
+            </div>
+            <input type="submit" value="Upload"/>
+        </form>
+    </div>
 
-    <a href="/pageEtudiant?test">Tester son script</a><br>
+    <a href="/pageEtudiant?test" id="test-script">
+        <img src="./web/assets/images/play-triangle.png">
+        <p>Tester son script</p>
+    </a>
+
     <div class="res">
-        <h1>{{.Msg_res}}</h1>
+        <h1 id="message-res" class="">{{.Msg_res}}</h1>
         <p>
             {{range .ResTest}}
                 Test : {{.Test}} <br>
@@ -77,5 +86,6 @@
     </div>
     {{end}}
 </div>
+<script src="./web/assets/js/pageEtudiant.js"></script>
 </body>
 </html>

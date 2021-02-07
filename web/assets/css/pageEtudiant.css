@@ -1,0 +1,133 @@
+* {
+    font-family: Roboto, serif;
+    padding: 0;
+    margin: 0;
+}
+
+.main {
+    width: 80%;
+    margin: auto;
+    padding:0.5%;
+    display: flex;
+    flex-direction: column;
+}
+
+
+#header {
+    background-color: #a2a2a2;
+    display: flex;
+    padding: 10px;
+}
+
+#header > * {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+#logout {
+    border-radius: 5px;
+    box-shadow: none;
+    background-color: rgb(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+}
+
+#logout a {
+    text-decoration: none;
+    color: white;
+    width: 100%;
+    height: 100%;
+}
+
+#user {
+   background-color: #ececec;
+   padding: 1%;
+}
+
+#file form {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+}
+
+#file form > * {
+    margin-right: 30px;
+
+}
+
+#file form .chose-file input#input-file {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+    cursor: pointer;
+}
+
+#file form .chose-file {
+    display: flex;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    background-color: #50a969;
+    width: fit-content;
+    height:50px;
+    cursor: pointer;
+}
+
+#file form .chose-file:hover {
+    background-color: #377249;
+}
+
+#file form .chose-file label {
+    margin: 10px;
+}
+
+#file .chose-file img {
+    height: 30px;
+    margin: 10px;
+}
+
+a#test-script {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: black;
+    margin-top:30px;
+    width: 13%;
+    padding: 1%;
+    text-decoration: none;
+    color :white;
+
+}
+
+#test-script img {
+    height: 20px;
+}
+
+
+
+#content {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    background-color: rgba(177, 177, 177, 0.94);
+    padding: 1%;
+}
+
+#content p {
+    margin:1%;
+}
+
+.res {
+    border-style: solid;
+    font-family: consolas, "Liberation Mono", courier, monospace;
+}
+
+
+.italic {
+    font-style: italic;
+}
