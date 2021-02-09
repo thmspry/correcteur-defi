@@ -1,6 +1,7 @@
 package BDD
 
 import (
+	"crypto/rand"
 	"database/sql"
 	"fmt"
 	"github.com/aodin/date"
@@ -326,6 +327,27 @@ func GetDefiActuel() Defi {
 		}
 	}
 	return defiActuel
+}
+
+//selectionne quel étudiant sera correcteur en fonction de si il a réussi et si il a déjà été correcteur
+func GetEtudiantCorrecteur(num_defi int) string {
+	var t = make([]string, 0)
+	var res string
+	var aleatoire int
+	var logfinal string
+	row, err := db.Query("Select Login FROM Resultat WHERE Defi =", num_defi, " AND Etat = 1")
+	defer row.Close()
+	if err != nil {
+		fmt.Printf(err.Error())
+	} else {
+		for row.Next() {
+			row.Scan(&res)
+			t = append(t, res)
+		}
+		aleatoire, _ = rand.Int(len(t))
+	}
+	logfinal = t[aleatoire]
+	return logfinal
 }
 
 /**
