@@ -1,7 +1,6 @@
 package BDD
 
 import (
-	"crypto/rand"
 	"database/sql"
 	"fmt"
 	"github.com/aodin/date"
@@ -330,7 +329,7 @@ func GetDefiActuel() Defi {
 }
 
 //selectionne quel étudiant sera correcteur en fonction de si il a réussi et si il a déjà été correcteur
-func GetEtudiantCorrecteur(num_defi int) string {
+/*func GetEtudiantCorrecteur(num_defi int) string {
 	var t = make([]string, 0)
 	var res string
 	var aleatoire int
@@ -348,7 +347,7 @@ func GetEtudiantCorrecteur(num_defi int) string {
 	}
 	logfinal = t[aleatoire]
 	return logfinal
-}
+}*/
 
 /**
 Récupère tous les résultats d'un étudiant à tous les défis auquel il a participé

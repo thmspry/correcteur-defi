@@ -1,6 +1,7 @@
 package testeur
 
 import (
+	"bufio"
 	"encoding/csv"
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
@@ -9,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 )
 
 /**
@@ -125,4 +127,21 @@ func CreateCSV(file_name string, num int) {
 			fmt.Println(err.Error())
 		}
 	}
+}
+
+func GetConfigTest(path string) JeuDeTest {
+	var Jeu JeuDeTest
+	var testUnique CasTest
+
+	f, err := os.Open(path + "/config")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		testUnique.nom = scanner.Text()
+		testUnique.arguments = strings.Split(scanner.Text(), " ")
+		Jeu.CasDeTest = append(Jeu.CasDeTest, testUnique)
+	}
+	return Jeu
 }

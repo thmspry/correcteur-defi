@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"runtime"
 	"strconv"
-	"strings"
 )
 
 type Resultat struct {
@@ -21,6 +20,15 @@ type Resultat struct {
 type Retour struct {
 	Nom     string
 	Contenu string
+}
+
+type JeuDeTest struct {
+	CasDeTest []CasTest
+}
+
+type CasTest struct {
+	nom       string
+	arguments []string
 }
 
 /*
@@ -53,54 +61,58 @@ func Test(etudiant string) (string, []Resultat) {
 	clear(config.Path_dir_test)
 
 	//Récupérer le défi actuel
-	num_defi := BDD.GetDefiActuel().Num
-	//num_defi = BDD.Defi_actuel()
-	correction := "correction_" + strconv.Itoa(num_defi)
-	script_etu := "script_" + etudiant + "_" + strconv.Itoa(num_defi) + ".sh"
-	config.Path_jeu_de_tests = config.Path_jeu_de_tests + "test_defi_" + strconv.Itoa(num_defi) + "/"
-
+	numDefi := BDD.GetDefiActuel().Num
+	//numDefi = BDD.Defi_actuel()
+	correction := "correction_" + strconv.Itoa(numDefi)
+	scriptEtu := "script_" + etudiant + "_" + strconv.Itoa(numDefi) + ".sh"
+	PathJeuDeTestDuDefi := config.Path_jeu_de_tests + "test_defi_" + strconv.Itoa(numDefi) + "/"
 	var resTest = make([]Resultat, 0)
 
 	// Début du testUnique
 
 	// Donne les droits d'accès et de modifications à l'étudiant
-	exec.Command("sudo", "chown", etudiant, config.Path_scripts+script_etu).Run()
+	exec.Command("sudo", "chown", etudiant, config.Path_scripts+scriptEtu).Run()
 	exec.Command("sudo", "chown", etudiant, config.Path_dir_test).Run()
 
-	//On récupère le nombre de Test pour faire la boucle
-	tests, _ := exec.Command("find", config.Path_jeu_de_tests, "-type", "f").CombinedOutput()
-	nbJeuDeTest := len(strings.Split(string(tests), "\n")) - 1
+	var configTest JeuDeTest
+	if Contains(PathJeuDeTestDuDefi, "config") {
+		configTest = GetConfigTest(PathJeuDeTestDuDefi)
+		fmt.Println(configTest)
+	} else {
+		fmt.Println("pas de fichier de config")
+		return "pas de fichier de config", nil
+	}
 
-	for i := 0; i < nbJeuDeTest; i++ {
+	for i := 0; i < len(configTest.CasDeTest); i++ {
 		deplacer(config.Path_defis+correction, config.Path_dir_test)
-		deplacer(config.Path_scripts+script_etu, config.Path_dir_test)
+		deplacer(config.Path_scripts+scriptEtu, config.Path_dir_test)
 		test := "test_" + strconv.Itoa(i)
-		deplacer(config.Path_jeu_de_tests+test, config.Path_dir_test)
+		deplacer(PathJeuDeTestDuDefi+test, config.Path_dir_test)
 		exec.Command("chmod", "444", config.Path_dir_test+test).Run()
 		rename(config.Path_dir_test, test, "Test")
 
-		res := testeurUnique(correction, script_etu, etudiant)
+		res := testeurUnique(correction, scriptEtu, etudiant)
 		f, _ := ioutil.ReadFile(config.Path_dir_test + test)
 		res.Test = string(f)
 		resTest = append(resTest, res)
 
 		rename(config.Path_dir_test, "Test", test)
-		deplacer(config.Path_dir_test+test, config.Path_jeu_de_tests)
+		deplacer(config.Path_dir_test+test, PathJeuDeTestDuDefi)
 		deplacer(config.Path_dir_test+correction, config.Path_defis)
-		deplacer(config.Path_dir_test+script_etu, config.Path_scripts)
+		deplacer(config.Path_dir_test+scriptEtu, config.Path_scripts)
 		clear(config.Path_dir_test)
 
 		if res.Etat == 0 {
-			BDD.SaveResultat(etudiant, num_defi, 0, false)
-			i = nbJeuDeTest
+			BDD.SaveResultat(etudiant, numDefi, 0, false)
 			messageDeRetour = "Le Test n°" + strconv.Itoa(i) + " n'est pas passé"
 			etatTestGlobal = 0
+			break
 		}
 		if res.Etat == -1 {
-			BDD.SaveResultat(etudiant, num_defi, 0, false)
-			i = nbJeuDeTest
+			BDD.SaveResultat(etudiant, numDefi, 0, false)
 			messageDeRetour = "Il y a eu un erreur lors du Test n°" + strconv.Itoa(i)
 			etatTestGlobal = -1
+			break
 		}
 	}
 
@@ -114,7 +126,7 @@ func Test(etudiant string) (string, []Resultat) {
 		fmt.Println("error sudo rm -rf /home/EXXX : ", err)
 	}
 
-	BDD.SaveResultat(etudiant, num_defi, 1, false)
+	BDD.SaveResultat(etudiant, numDefi, 1, false)
 
 	if etatTestGlobal == 0 || etatTestGlobal == -1 {
 		return messageDeRetour, resTest
