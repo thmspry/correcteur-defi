@@ -41,6 +41,8 @@ type SenderData struct {
 	FromMail string `json:"fromMail"`
 	Username string `json:"username"`
 	Password string `json:"password"`
+	SmtpHost string `json:"smtphost"`
+	SmtpPort string `json:"smtpPort"`
 }
 
 func pageAdmin(w http.ResponseWriter, r *http.Request) {
@@ -136,6 +138,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if r.URL.Query()["form"][0] == "sendMail" {
+
 			etudiants := BDD.GetEtudiantsMail()
 			nbDefis := len(BDD.GetDefis())
 
@@ -147,99 +150,24 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				fmt.Println(err)
 			}
-			var sender SenderData
-			err = json.Unmarshal(byteValue, &sender)
+			var configSender SenderData
+			err = json.Unmarshal(byteValue, &configSender)
 			if err != nil {
 				fmt.Println(err)
 			}
 			defer file.Close()
 
-			fromMail := sender.FromMail
-			password := sender.Password
-			username := sender.Username
-
-			for _, etu := range etudiants {
-
-				// Receiver email address.
-				to := []string{
-					etu.Mail,
-				}
-
-				smtpHost := "smtp.etu.univ-nantes.fr"
-				smtpPort := "587"
-
-				header := make(map[string]string)
-				header["From"] = fromMail
-				header["To"] = to[0]
-				header["Subject"] = "Defis du lundi"
-				header["MIME-Version"] = "1.0"
-				header["Content-Type"] = "text/plain; charset= utf-8"
-				header["Content-Transfer-Encoding"] = "base64"
-
-				message := ""
-				for k, v := range header {
-					message += fmt.Sprintf("%s : %s\r\n", k, v)
-				}
-
-				body := string("Résultats des défis du lundi\n\n" +
-					"Bonjour " + etu.Prenom + " " + etu.Nom + "\n" +
-					"A ce jour vous avez réalisé " + strconv.Itoa(len(etu.Defis)) + " défis sur " + strconv.Itoa(nbDefis) + "\n\n")
-
-				nbDefisReussi := 0
-
-				if len(etu.Defis) > 0 {
-					for _, defi := range etu.Defis {
-						defiStr := ""
-						if defi.Etat == 1 {
-							defiStr = defiStr + "Vous avez réussi "
-							nbDefisReussi++
-						} else {
-							defiStr = defiStr + "Vous n'avez pas réussi "
-						}
-						defiStr = defiStr + "le défi n°" + strconv.Itoa(defi.Defi) + ", vous avez fait " + strconv.Itoa(defi.Tentative) + " tentatives\n"
-						body = body + defiStr
-					}
-				}
-
-				pointsBonus := 0.0
-
-				if nbDefisReussi == 0 {
-					pointsBonus = 0.0
-				} else if nbDefisReussi <= 2 {
-					pointsBonus = 0.1
-				} else if nbDefisReussi <= 4 {
-					pointsBonus = 0.25
-				} else if nbDefisReussi <= 6 {
-					pointsBonus = 0.5
-				} else if nbDefisReussi <= 9 {
-					pointsBonus = 1
-				} else if nbDefisReussi >= 10 {
-					pointsBonus = 2
-				}
-
-				pointsBonusStr := fmt.Sprintf("%0.2f", pointsBonus)
-
-				body = body + "\nAinsi vous avez réussi " + strconv.Itoa(nbDefisReussi) + " défis ce qui donne un bonus de " + pointsBonusStr + " points sur la moyenne d'ISI\n"
-
-				//messageBytes := []byte(message)
-				message += base64.StdEncoding.EncodeToString([]byte(body))
-
-				fmt.Println(message)
-
-				// Authentication.
-				auth := smtp.PlainAuth("", username, password, smtpHost)
-
-				// Sending email.
-				err := smtp.SendMail(smtpHost+":"+smtpPort, auth, fromMail, to, []byte(message))
-				if err != nil {
-					fmt.Println(err)
-					return
-				}
-				fmt.Println("Email Sent Successfully!")
+			sendOk := sendMail(etudiants, nbDefis, configSender)
+			if sendOk == false {
+				fmt.Println("Erreur lors de l'envoi de mails")
+			} else {
+				fmt.Println("Mail envoyés !")
 			}
+
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 		}
+
 		//Permet de récupérer les résultats de tous les étudiants ainsi que leurs informations pour un défi donné
 		if r.URL.Query()["form"][0] == "getResult" {
 			num := r.FormValue("num")
@@ -350,5 +278,84 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		//os.Rename(handler.Filename, "script_E1000.sh")
 		http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 	}
+}
 
+func sendMail(etudiants []BDD.EtudiantMail, nbDefis int, config SenderData) bool {
+	for _, etu := range etudiants {
+
+		// adresse du destinataire
+		to := []string{
+			etu.Mail,
+		}
+
+		// En-tête du mail
+		header := make(map[string]string)
+		header["From"] = config.FromMail
+		header["To"] = to[0]
+		header["Subject"] = "Defis du lundi"
+		header["MIME-Version"] = "1.0"
+		header["Content-Type"] = "text/plain; charset= utf-8"
+		header["Content-Transfer-Encoding"] = "base64"
+
+		// Création du contenu du mail
+		message := ""
+		for champ, valeur := range header {
+			message += fmt.Sprintf("%s : %s\r\n", champ, valeur)
+		}
+
+		body := "Résultats des défis du lundi\n\n" +
+			"Bonjour " + etu.Prenom + " " + etu.Nom + "\n" +
+			"A ce jour vous avez réalisé " + strconv.Itoa(len(etu.Defis)) +
+			" défis sur " + strconv.Itoa(nbDefis) + "\n\n"
+
+		nbDefisReussi := 0
+
+		if len(etu.Defis) > 0 {
+			for _, defi := range etu.Defis {
+				defiStr := ""
+				if defi.Etat == 1 {
+					defiStr = defiStr + "Vous avez réussi "
+					nbDefisReussi++
+				} else {
+					defiStr = defiStr + "Vous n'avez pas réussi "
+				}
+				defiStr = defiStr + "le défi n°" + strconv.Itoa(defi.Defi) + ", vous avez fait " + strconv.Itoa(defi.Tentative) + " tentatives\n"
+				body = body + defiStr
+			}
+		}
+
+		pointsBonus := 0.0
+
+		if nbDefisReussi == 0 {
+			pointsBonus = 0.0
+		} else if nbDefisReussi <= 2 {
+			pointsBonus = 0.1
+		} else if nbDefisReussi <= 4 {
+			pointsBonus = 0.25
+		} else if nbDefisReussi <= 6 {
+			pointsBonus = 0.5
+		} else if nbDefisReussi <= 9 {
+			pointsBonus = 1
+		} else if nbDefisReussi >= 10 {
+			pointsBonus = 2
+		}
+
+		pointsBonusStr := fmt.Sprintf("%0.2f", pointsBonus)
+
+		body = body + "\nAinsi vous avez réussi " + strconv.Itoa(nbDefisReussi) + " défis ce qui donne un bonus de " + pointsBonusStr + " points sur la moyenne d'ISI\n"
+
+		// encodage du contenu en UTF-8 pour que les caractères spéciaux s'affichent
+		message += base64.StdEncoding.EncodeToString([]byte(body))
+
+		// Authentication sur le serveur de mail
+		auth := smtp.PlainAuth("", config.Username, config.Password, config.SmtpHost)
+
+		// Envoi du mail
+		err := smtp.SendMail(config.SmtpHost+":"+config.SmtpPort, auth, config.FromMail, to, []byte(message))
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
+	}
+	return true
 }

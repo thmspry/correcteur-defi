@@ -1,5 +1,7 @@
 {
-  "fromMail" : "",
-  "username" : "",
-  "password" : ""
+  "fromMail" : "matteo.ordrenneau@univ-nantes.fr",
+  "username" : "E195739K",
+  "password" : "Surfanddestroy44$",
+  "smtpHost" : "smtp.etu.univ-nantes.fr",
+  "smtpPort" : "587"
 }
