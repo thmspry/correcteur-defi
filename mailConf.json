@@ -1,7 +1,7 @@
 {
-  "fromMail" : "",
-  "username" : "",
-  "password" : "",
+  "fromMail" : "remplir",
+  "username" : "remplir",
+  "password" : "rempli",
   "smtpHost" : "smtp.etu.univ-nantes.fr",
   "smtpPort" : "587"
 }
