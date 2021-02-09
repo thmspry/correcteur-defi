@@ -18,6 +18,14 @@ type Etudiant struct {
 	Correcteur bool
 }
 
+type EtudiantMail struct {
+	Login  string
+	Prenom string
+	Nom    string
+	Mail   string
+	Defis  []ResBDD
+}
+
 type ResBDD struct {
 	Login     string
 	Defi      int
@@ -355,6 +363,30 @@ func GetParticipant(num_defi int) []ParticipantDefi {
 		row.Scan(&res.Etudiant.Login, &res.Etudiant.Password, &res.Etudiant.Prenom, &res.Etudiant.Nom, &res.Etudiant.Mail, &res.Etudiant.Correcteur, &res.Resultat.Login, &res.Resultat.Defi,
 			&res.Resultat.Etat, &res.Resultat.Tentative)
 		resT = append(resT, res)
+	}
+	return resT
+}
+
+func GetEtudiantsMail() []EtudiantMail {
+	var res EtudiantMail
+	resT := make([]EtudiantMail, 0)
+
+	row, err := db.Query("SELECT  login, prenom, nom, mail FROM Etudiant;")
+	if err != nil {
+		fmt.Println(err.Error())
+	} else if row != nil {
+		for row.Next() {
+			err = row.Scan(&res.Login, &res.Prenom, &res.Nom, &res.Mail)
+			if err != nil {
+				panic(err)
+			}
+			resT = append(resT, res)
+		}
+	}
+
+	for i, etu := range resT {
+		etu.Defis = GetAllResultat(etu.Login)
+		resT[i] = etu
 	}
 	return resT
 }

@@ -2,6 +2,8 @@ package web
 
 import (
 	"bufio"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/aodin/date"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
@@ -10,8 +12,10 @@ import (
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/testeur"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"net/smtp"
 	"os"
 	"os/exec"
 	"strconv"
@@ -31,6 +35,12 @@ type data_pageAdmin struct {
 	Logs    []string
 	Log     []string
 	LogDate string
+}
+
+type SenderData struct {
+	FromMail string `json:"fromMail"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 func pageAdmin(w http.ResponseWriter, r *http.Request) {
@@ -120,6 +130,112 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				fmt.Println("Erreur de format dans les dates entrés pour modifier la date")
 			} else {
 				BDD.ModifyDefi(BDD.GetDefiActuel().Num, debut, fin)
+			}
+			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
+			return
+		}
+
+		if r.URL.Query()["form"][0] == "sendMail" {
+			etudiants := BDD.GetEtudiantsMail()
+			nbDefis := len(BDD.GetDefis())
+
+			file, err := os.Open("mailConf.json")
+			if err != nil {
+				fmt.Println(err)
+			}
+			byteValue, err := ioutil.ReadAll(file)
+			if err != nil {
+				fmt.Println(err)
+			}
+			var sender SenderData
+			err = json.Unmarshal(byteValue, &sender)
+			if err != nil {
+				fmt.Println(err)
+			}
+			defer file.Close()
+
+			fromMail := sender.FromMail
+			password := sender.Password
+			username := sender.Username
+
+			for _, etu := range etudiants {
+
+				// Receiver email address.
+				to := []string{
+					etu.Mail,
+				}
+
+				smtpHost := "smtp.etu.univ-nantes.fr"
+				smtpPort := "587"
+
+				header := make(map[string]string)
+				header["From"] = fromMail
+				header["To"] = to[0]
+				header["Subject"] = "Defis du lundi"
+				header["MIME-Version"] = "1.0"
+				header["Content-Type"] = "text/plain; charset= utf-8"
+				header["Content-Transfer-Encoding"] = "base64"
+
+				message := ""
+				for k, v := range header {
+					message += fmt.Sprintf("%s : %s\r\n", k, v)
+				}
+
+				body := string("Résultats des défis du lundi\n\n" +
+					"Bonjour " + etu.Prenom + " " + etu.Nom + "\n" +
+					"A ce jour vous avez réalisé " + strconv.Itoa(len(etu.Defis)) + " défis sur " + strconv.Itoa(nbDefis) + "\n\n")
+
+				nbDefisReussi := 0
+
+				if len(etu.Defis) > 0 {
+					for _, defi := range etu.Defis {
+						defiStr := ""
+						if defi.Etat == 1 {
+							defiStr = defiStr + "Vous avez réussi "
+							nbDefisReussi++
+						} else {
+							defiStr = defiStr + "Vous n'avez pas réussi "
+						}
+						defiStr = defiStr + "le défi n°" + strconv.Itoa(defi.Defi) + ", vous avez fait " + strconv.Itoa(defi.Tentative) + " tentatives\n"
+						body = body + defiStr
+					}
+				}
+
+				pointsBonus := 0.0
+
+				if nbDefisReussi == 0 {
+					pointsBonus = 0.0
+				} else if nbDefisReussi <= 2 {
+					pointsBonus = 0.1
+				} else if nbDefisReussi <= 4 {
+					pointsBonus = 0.25
+				} else if nbDefisReussi <= 6 {
+					pointsBonus = 0.5
+				} else if nbDefisReussi <= 9 {
+					pointsBonus = 1
+				} else if nbDefisReussi >= 10 {
+					pointsBonus = 2
+				}
+
+				pointsBonusStr := fmt.Sprintf("%0.2f", pointsBonus)
+
+				body = body + "\nAinsi vous avez réussi " + strconv.Itoa(nbDefisReussi) + " défis ce qui donne un bonus de " + pointsBonusStr + " points sur la moyenne d'ISI\n"
+
+				//messageBytes := []byte(message)
+				message += base64.StdEncoding.EncodeToString([]byte(body))
+
+				fmt.Println(message)
+
+				// Authentication.
+				auth := smtp.PlainAuth("", username, password, smtpHost)
+
+				// Sending email.
+				err := smtp.SendMail(smtpHost+":"+smtpPort, auth, fromMail, to, []byte(message))
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+				fmt.Println("Email Sent Successfully!")
 			}
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
