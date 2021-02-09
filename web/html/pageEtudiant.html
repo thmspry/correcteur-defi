@@ -16,16 +16,16 @@
 <div class="main">
     <div id="user">
         <h2>Profil</h2>
-        <p>{{.UserInfo.Prenom}} {{.UserInfo.Nom}} ({{.UserInfo.Login}})<br>
+        <p>{{.UserInfo.Prenom}} {{.UserInfo.Nom}} (<span id="id-etu">{{.UserInfo.Login}}</span>)<br>
         Mot de passe : {{.UserInfo.Password}}
         </p>
         <p class="italic">{{.UserInfo.Mail}}</p>
     </div>
     <div id="content">
     {{if eq .Defi_actuel.Num -1}}
-        <p>Il n'y a pas défi en cours.</p>
+        <h2>Il n'y a pas défi en cours.</h2>
     {{else}}
-        <p>Défi actuel : Défi n°{{.Defi_actuel.Num}}</p>
+        <h2>Défi actuel : Défi n°{{.Defi_actuel.Num}}</h2>
         {{if .Defi_sent}}
             <p>Vous avez déjà rendu un script pour ce défi.</p>
             {{if eq .Resultat_defi.Etat 1}}
@@ -48,7 +48,7 @@
                 <input type="hidden" name="token" value=" " />
                 <input type="file" name="script_etu" id="input-file" required="required"/>
             </div>
-            <input type="submit" value="Upload"/>
+            <input type="submit" id="upload" value="Upload"/>
         </form>
     </div>
 
@@ -58,31 +58,34 @@
     </a>
 
     <div class="res">
+        <p id="ligne-commande"></p>
         <h1 id="message-res" class="">{{.Msg_res}}</h1>
-        <p>
+        <div id="res-test">
             {{range .ResTest}}
-                Test : {{.Test}} <br>
+                <p>Test {{.Test}} :
                 {{if eq .Etat 1}}
-                    Vous avez réussi ce test
+                    <span class="win-text">Vous avez réussi ce test</span>
                 {{else if eq .Etat 0}}
-                    Vous avez échoué ce test
+                    <span class="fail-text">Vous avez échoué ce test</span>
                 {{else if eq .Etat -1}}
-                    Il y a eu une erreur durant ce test
-                {{end}}<br>
-                Résultat de la correction : <br>
+                    <span class="error-text">Il y a eu une erreur durant ce test</span>
+                {{end}}</p>
+            <div id="res-correction">
+                <p>Résultat de la correction</p>
                 {{range .Res_correction}}
                     {{.Nom}} contient <br>
                     {{.Contenu}}
                 {{end}}<br>
-                Résultat de de votre script : <br>
-
+            </div>
+            <div id="res-etu">
+                <p>Résultat de votre script</p>
                 {{range .Res_etu}}
                     {{.}}<br>
                 {{end}}<br>
                 {{.Error_message}}
+            </div>
             {{end}}
-            <br>
-        </p>
+        </div>
     </div>
     {{end}}
 </div>

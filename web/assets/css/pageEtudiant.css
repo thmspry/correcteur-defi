@@ -17,6 +17,7 @@
     background-color: #a2a2a2;
     display: flex;
     padding: 10px;
+    border-bottom: solid 5px #50a969;
 }
 
 #header > * {
@@ -92,11 +93,37 @@
     margin: 10px;
 }
 
+#file #upload {
+    background-color: white;
+    border: 1px solid black;
+    padding:15px;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+#file #upload:hover {
+    border: 1px solid #2d2d2d;
+    color: #2d2d2d;
+    cursor: pointer;
+
+}
+
+#content {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    background-color: rgba(177, 177, 177, 0.94);
+    padding: 1%;
+}
+
+#content p {
+    margin:1%;
+}
+
 a#test-script {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    background-color: black;
+    background-color: #151515;
     margin-top:30px;
     width: 13%;
     padding: 1%;
@@ -110,24 +137,41 @@ a#test-script {
 }
 
 
-
-#content {
-    margin-top: 30px;
-    margin-bottom: 30px;
-    background-color: rgba(177, 177, 177, 0.94);
-    padding: 1%;
-}
-
-#content p {
-    margin:1%;
-}
-
 .res {
-    border-style: solid;
     font-family: consolas, "Liberation Mono", courier, monospace;
+    background-color: #151515;
+    color: white;
+    padding: 20px;
+    border: 2px #151515 solid ;
 }
+
+.res #res-test {
+
+}
+
+.res #res-test #res-correction {
+    border: 2px solid white;
+}
+
+
 
 
 .italic {
     font-style: italic;
+}
+
+.green-text {
+    color: #07ff00;
+}
+
+.win-text {
+    color: #39911e;
+}
+
+.fail-text {
+    color: #ba0000;
+}
+
+.error-text {
+    color: #ff8c00;
 }
