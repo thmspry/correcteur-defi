@@ -322,6 +322,8 @@ func sendMail(etudiants []BDD.EtudiantMail, nbDefis int, config SenderData) bool
 				defiStr = defiStr + "le défi n°" + strconv.Itoa(defi.Defi) + ", vous avez fait " + strconv.Itoa(defi.Tentative) + " tentatives\n"
 				body = body + defiStr
 			}
+		} else {
+			body = body + "Vous n'avez participé à aucun défis \n"
 		}
 
 		pointsBonus := 0.0
