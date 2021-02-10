@@ -32,21 +32,28 @@ func Nb_test(path string) int {
 /*
 Fonction qui delete tous les fichiers d'un répertoire
 */
-func clear(path string) bool {
+func Clear(path string, exception []string) bool {
 	dirRead, _ := os.Open(path)
 	dirFiles, _ := dirRead.Readdir(0)
-
+	var excp bool
+	fmt.Println(exception)
 	// Loop over the directory's files.
 	for index := range dirFiles {
+		excp = false
 		fileHere := dirFiles[index]
 
 		// Get name of file and its full path.
 		nameHere := fileHere.Name()
 		fullPath := path + nameHere
-
+		for _, name := range exception {
+			if name == nameHere {
+				excp = true
+			}
+		}
 		// Remove the file.
-		os.Remove(fullPath)
-		//fmt.Println("Removed file:", fullPath)
+		if !excp {
+			os.Remove(fullPath)
+		}
 	}
 	return true
 }
@@ -95,11 +102,11 @@ func Contains(path string, fileName string) bool {
 /*
 Renome un fichier "name" par un nouveau nom "newName" qui se trouve dans le repertoire "pathFile"
 */
-func rename(pathFile string, name string, newName string) {
+func Rename(pathFile string, name string, newName string) {
 	name = pathFile + name
 	newName = pathFile + newName
 	if _, err := exec.Command("sudo", "mv", name, newName).CombinedOutput(); err != nil {
-		fmt.Println("error rename\n", err)
+		fmt.Println("error Rename\n", err)
 	}
 }
 
@@ -129,19 +136,52 @@ func CreateCSV(file_name string, num int) {
 	}
 }
 
+//testé
 func GetConfigTest(path string) JeuDeTest {
 	var Jeu JeuDeTest
 	var testUnique CasTest
-
-	f, err := os.Open(path + "/config")
+	var arg Retour
+	f, err := os.Open(path + "config")
 	if err != nil {
 		fmt.Println(err.Error())
+	} else {
+		fmt.Println("os.Open = ", f)
 	}
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		testUnique.nom = scanner.Text()
-		testUnique.arguments = strings.Split(scanner.Text(), " ")
+		for _, args := range strings.Split(scanner.Text(), " ") {
+			arg.Nom = args
+			arg.Contenu = contenu(path + args) // changer le path
+			testUnique.arguments = append(testUnique.arguments, arg)
+		}
+
 		Jeu.CasDeTest = append(Jeu.CasDeTest, testUnique)
 	}
 	return Jeu
+}
+
+func contenu(path string) string {
+	//retourne soit le contenu du fichier, soit l'arborescence
+	f, err := os.Open(path)
+	if err != nil {
+		fmt.Println(err.Error())
+		return "pas de fichier"
+	}
+	fmt.Println(f)
+	fileStat, _ := f.Stat()
+	if fileStat.IsDir() {
+		output, err := exec.Command("tree", "-A", path).CombinedOutput()
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		return string(output)
+	} else {
+		output, err := exec.Command("cat", path).CombinedOutput()
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		return string(output)
+	}
+	return ""
 }

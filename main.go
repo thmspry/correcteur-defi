@@ -1,16 +1,18 @@
 package main
 
 import (
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/testeur"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
 	"os"
 )
 
 func main() {
 
+	t := testeur.GetConfigTest("./ressource/jeu_de_test/test_defi_0/")
+	fmt.Println(t)
 	/*
 		set GOOS=linux
 		set GOARCH=amd64
@@ -24,7 +26,7 @@ func main() {
 		} else {
 			web.InitWeb()
 		}*/
-	web.InitWeb()
+	//web.InitWeb()
 }
 
 func Init() {
