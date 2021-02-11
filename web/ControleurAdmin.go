@@ -280,84 +280,87 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func sendMail(etudiants []BDD.EtudiantMail, nbDefis int, config SenderData) bool {
+func sendMail(etudiants []BDD.EtudiantMail, nbDefis int, config SenderData) bool { // Authentication sur le serveur de mail
+
+	auth := smtp.PlainAuth("", config.Username, config.Password, config.SmtpHost)
+
 	for _, etu := range etudiants {
 
-		// adresse du destinataire
-		to := []string{
-			etu.Mail,
-		}
+		etudiant := etu
+		go func() {
 
-		// En-tête du mail
-		header := make(map[string]string)
-		header["From"] = config.FromMail
-		header["To"] = to[0]
-		header["Subject"] = "Defis du lundi"
-		header["MIME-Version"] = "1.0"
-		header["Content-Type"] = "text/plain; charset= utf-8"
-		header["Content-Transfer-Encoding"] = "base64"
-
-		// Création du contenu du mail
-		message := ""
-		for champ, valeur := range header {
-			message += fmt.Sprintf("%s : %s\r\n", champ, valeur)
-		}
-
-		body := "Résultats des défis du lundi\n\n" +
-			"Bonjour " + etu.Prenom + " " + etu.Nom + "\n" +
-			"A ce jour vous avez réalisé " + strconv.Itoa(len(etu.Defis)) +
-			" défis sur " + strconv.Itoa(nbDefis) + "\n\n"
-
-		nbDefisReussi := 0
-
-		if len(etu.Defis) > 0 {
-			for _, defi := range etu.Defis {
-				defiStr := ""
-				if defi.Etat == 1 {
-					defiStr = defiStr + "Vous avez réussi "
-					nbDefisReussi++
-				} else {
-					defiStr = defiStr + "Vous n'avez pas réussi "
-				}
-				defiStr = defiStr + "le défi n°" + strconv.Itoa(defi.Defi) + ", vous avez fait " + strconv.Itoa(defi.Tentative) + " tentatives\n"
-				body = body + defiStr
+			// adresse du destinataire
+			to := []string{
+				etudiant.Mail,
 			}
-		} else {
-			body = body + "Vous n'avez participé à aucun défis \n"
-		}
 
-		pointsBonus := 0.0
+			// En-tête du mail
+			header := make(map[string]string)
+			header["From"] = config.FromMail
+			header["To"] = to[0]
+			header["Subject"] = "Defis du lundi"
+			header["MIME-Version"] = "1.0"
+			header["Content-Type"] = "text/plain; charset= utf-8"
+			header["Content-Transfer-Encoding"] = "base64"
 
-		if nbDefisReussi == 0 {
-			pointsBonus = 0.0
-		} else if nbDefisReussi <= 2 {
-			pointsBonus = 0.1
-		} else if nbDefisReussi <= 4 {
-			pointsBonus = 0.25
-		} else if nbDefisReussi <= 6 {
-			pointsBonus = 0.5
-		} else if nbDefisReussi <= 9 {
-			pointsBonus = 1
-		} else if nbDefisReussi >= 10 {
-			pointsBonus = 2
-		}
+			// Création du contenu du mail
+			message := ""
+			for champ, valeur := range header {
+				message += fmt.Sprintf("%s : %s\r\n", champ, valeur)
+			}
 
-		pointsBonusStr := fmt.Sprintf("%0.2f", pointsBonus)
+			body := "Résultats des défis du lundi\n\n" +
+				"Bonjour " + etudiant.Prenom + " " + etudiant.Nom + "\n" +
+				"A ce jour vous avez réalisé " + strconv.Itoa(len(etudiant.Defis)) +
+				" défis sur " + strconv.Itoa(nbDefis) + "\n\n"
 
-		body = body + "\nAinsi vous avez réussi " + strconv.Itoa(nbDefisReussi) + " défis ce qui donne un bonus de " + pointsBonusStr + " points sur la moyenne d'ISI\n"
+			nbDefisReussi := 0
 
-		// encodage du contenu en UTF-8 pour que les caractères spéciaux s'affichent
-		message += base64.StdEncoding.EncodeToString([]byte(body))
+			if len(etudiant.Defis) > 0 {
+				for _, defi := range etudiant.Defis {
+					defiStr := ""
+					if defi.Etat == 1 {
+						defiStr = defiStr + "Vous avez réussi "
+						nbDefisReussi++
+					} else {
+						defiStr = defiStr + "Vous n'avez pas réussi "
+					}
+					defiStr = defiStr + "le défi n°" + strconv.Itoa(defi.Defi) + ", vous avez fait " + strconv.Itoa(defi.Tentative) + " tentatives\n"
+					body = body + defiStr
+				}
+			} else {
+				body = body + "Vous n'avez participé à aucun défis \n"
+			}
 
-		// Authentication sur le serveur de mail
-		auth := smtp.PlainAuth("", config.Username, config.Password, config.SmtpHost)
+			pointsBonus := 0.0
 
-		// Envoi du mail
-		err := smtp.SendMail(config.SmtpHost+":"+config.SmtpPort, auth, config.FromMail, to, []byte(message))
-		if err != nil {
-			fmt.Println(err)
-			return false
-		}
+			if nbDefisReussi == 0 {
+				pointsBonus = 0.0
+			} else if nbDefisReussi <= 2 {
+				pointsBonus = 0.1
+			} else if nbDefisReussi <= 4 {
+				pointsBonus = 0.25
+			} else if nbDefisReussi <= 6 {
+				pointsBonus = 0.5
+			} else if nbDefisReussi <= 9 {
+				pointsBonus = 1
+			} else if nbDefisReussi >= 10 {
+				pointsBonus = 2
+			}
+
+			pointsBonusStr := fmt.Sprintf("%0.2f", pointsBonus)
+
+			body = body + "\nAinsi vous avez réussi " + strconv.Itoa(nbDefisReussi) + " défis ce qui donne un bonus de " + pointsBonusStr + " points sur la moyenne d'ISI\n"
+
+			// encodage du contenu en UTF-8 pour que les caractères spéciaux s'affichent
+			message += base64.StdEncoding.EncodeToString([]byte(body))
+
+			// Envoi du mail
+			err := smtp.SendMail(config.SmtpHost+":"+config.SmtpPort, auth, config.FromMail, to, []byte(message))
+			if err != nil {
+				fmt.Println(err)
+			}
+		}()
 	}
 	return true
 }
