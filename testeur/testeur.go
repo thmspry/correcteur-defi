@@ -18,7 +18,7 @@ type Resultat struct {
 	Res_correction []Retour
 	Error_message  string
 }
-type Retour struct { // changer le nom --> dossier/fichier
+type Retour struct { // changer le Nom --> dossier/fichier
 	Nom     string
 	Contenu string
 }
@@ -28,7 +28,7 @@ type JeuDeTest struct {
 }
 
 type CasTest struct {
-	nom       string
+	Nom       string
 	arguments []Retour
 }
 
@@ -139,7 +139,7 @@ Fonctionnement du testeur unique :
 - stock le résultat de celui-ci
 - regarde si il y a eu des nouveaux fichiers qui ont été crée ou non
 Si oui :
-	- stock le contenu des nouveaux fichiers et leurs nom dans une map
+	- stock le contenu des nouveaux fichiers et leurs Nom dans une map
 	- lance le script etu
 	- stock le contenu des fichiers et leurs noms dans une map étudiant
 	- compare le contenu des fichiers
@@ -180,7 +180,7 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 	arboApres := GetFiles(config.Path_dir_test)
 	if len(arboAvant) != len(arboApres) {
 		//modif dans un new fichier
-		//trouver le fichier / nom du fichier modifié
+		//trouver le fichier / Nom du fichier modifié
 		diff := difference(arboAvant, arboApres)
 		mapCorrection := make(map[string]string)
 		mapEtu := make(map[string]string)
@@ -288,4 +288,59 @@ func difference(slice1 []string, slice2 []string) []string {
 		}
 	}
 	return diff
+}
+
+func TestArtificiel(login string) (string, []Resultat) {
+
+	var resTests = make([]Resultat, 0) // Resultats
+	res := Resultat{
+		Etat:           0,
+		Res_etu:        make([]Retour, 0),
+		Res_correction: make([]Retour, 0),
+		Error_message:  "",
+	}
+
+	var retoursEtu = make([]Retour, 0) // Retours
+	ret11 := Retour{
+		Nom:     "grp1",
+		Contenu: "François\nPatrice\nDaniel",
+	}
+	ret21 := Retour{
+		Nom:     "grp2",
+		Contenu: "Paul\nThomas\nGabriel",
+	}
+	retoursEtu = append(retoursEtu, ret11)
+	retoursEtu = append(retoursEtu, ret21)
+	res.Res_etu = retoursEtu
+
+	var retoursCor = make([]Retour, 0) // Retours
+	ret12 := Retour{
+		Nom:     "grp1",
+		Contenu: "François\nPatrice\nPaul",
+	}
+	ret22 := Retour{
+		Nom:     "grp2",
+		Contenu: "Daniel\nThomas\nGabriel",
+	}
+	retoursCor = append(retoursCor, ret12)
+	retoursCor = append(retoursCor, ret22)
+	res.Res_correction = retoursCor
+
+	resTests = append(resTests, res)
+
+	retCasTest := Retour{
+		Nom:     "Retour cas de test",
+		Contenu: "le contenu du retour du cas test",
+	}
+
+	var retoursCasTest = make([]Retour, 0)
+	retoursCasTest = append(retoursCasTest, retCasTest)
+	casTest := CasTest{
+		Nom:       "Le nom du cas de test",
+		arguments: retoursCasTest,
+	}
+
+	res.CasTest = casTest
+
+	return "Vous avez passé tous les tests avec succès", resTests
 }

@@ -73,7 +73,8 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if r.URL.Query()["test"] != nil {
-			data.Msg_res, data.ResTest = testeur.Test(etu.Login)
+			//data.Msg_res, data.ResTest = testeur.Test(etu.Login)
+			data.Msg_res, data.ResTest = testeur.TestArtificiel(etu.Login)
 		}
 
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
@@ -119,7 +120,8 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			os.Chmod(config.Path_scripts+"script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel)+".sh", 770)
 
 			logs.WriteLog(etu.Login, "upload de script du défis "+strconv.Itoa(num_defi_actuel))
-			data.Msg_res, data.ResTest = testeur.Test(etu.Login)
+			//data.Msg_res, data.ResTest = testeur.Test(etu.Login)
+			data.Msg_res, data.ResTest = testeur.TestArtificiel(etu.Login)
 			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 		}
 	}

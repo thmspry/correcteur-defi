@@ -14,7 +14,7 @@ import (
 )
 
 /**
-retourne le numéro  et le nom du dernier défi enregistré
+retourne le numéro  et le Nom du dernier défi enregistré
 */
 
 func Nb_test(path string) int {
@@ -90,7 +90,7 @@ func Contains(path string, fileName string) bool {
 }
 
 /*
-Renome un fichier "name" par un nouveau nom "newName" qui se trouve dans le repertoire "pathFile"
+Renome un fichier "name" par un nouveau Nom "newName" qui se trouve dans le repertoire "pathFile"
 */
 func Rename(pathFile string, name string, newName string) {
 	name = pathFile + name
@@ -139,7 +139,7 @@ func GetConfigTest(path string) JeuDeTest {
 	}
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		testUnique.nom = scanner.Text()
+		testUnique.Nom = scanner.Text()
 		for _, args := range strings.Split(scanner.Text(), " ") {
 			arg.Nom = args
 			arg.Contenu = contenu(path + args) // changer le path

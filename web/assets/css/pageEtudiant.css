@@ -145,14 +145,58 @@ a#test-script {
     border: 2px #151515 solid ;
 }
 
-.res #res-test {
-
+.res .res-test > p {
+    margin: 15px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 30%;
 }
 
-.res #res-test #res-correction {
+.res .res-test p span {
+    font-weight: bold;
+}
+
+.res .res-test p img {
+    height: 30px;
+}
+
+.res .res-test .res-output {
+    display: flex;
+    justify-content: space-around;
+}
+
+.res .res-test .res-output .res-individuel {
     border: 2px solid white;
+    background-color: #1f1f23;
+    display: flex;
+    flex-flow: column;
+    width: 46%;
 }
 
+.res-individuel {
+    padding: 10px;
+}
+
+.res-individuel > p {
+    margin: 5px;
+}
+
+.box-gauche {
+    border-radius: 15px 0 0 15px;
+}
+
+.box-droite {
+    border-radius:  0 15px 15px 0 ;
+}
+
+.title-res{
+    display: flex;
+    justify-content: center;
+    background-color: #18181b;
+    padding: 10px;
+}
 
 
 

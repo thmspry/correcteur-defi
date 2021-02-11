@@ -60,29 +60,39 @@
     <div class="res">
         <p id="ligne-commande"></p>
         <h1 id="message-res" class="">{{.Msg_res}}</h1>
-        <div id="res-test">
+        <div class="res-test">
             {{range .ResTest}}
-                <p>Test {{.Test}} :
+                <p>Test {{.CasTest.Nom}} :
                 {{if eq .Etat 1}}
                     <span class="win-text">Vous avez réussi ce test</span>
+                    <img src="./web/assets/images/green-light.png">
                 {{else if eq .Etat 0}}
                     <span class="fail-text">Vous avez échoué ce test</span>
+                    <img src="./web/assets/images/red-light.png">
                 {{else if eq .Etat -1}}
                     <span class="error-text">Il y a eu une erreur durant ce test</span>
+                    <img src="./web/assets/images/yellow-light.png">
                 {{end}}</p>
-            <div id="res-correction">
-                <p>Résultat de la correction</p>
-                {{range .Res_correction}}
-                    {{.Nom}} contient <br>
-                    {{.Contenu}}
-                {{end}}<br>
-            </div>
-            <div id="res-etu">
-                <p>Résultat de votre script</p>
-                {{range .Res_etu}}
-                    {{.}}<br>
-                {{end}}<br>
-                {{.Error_message}}
+            <div class="res-output">
+                <div class="res-individuel box-gauche">
+                    <div class="title-res box-gauche">
+                        <p>Résultat de la correction</p>
+                    </div>
+                    {{range .Res_correction}}
+                        <p> - {{.Nom}} contient : </p>
+                        <p>{{.Contenu}}</p>
+                    {{end}}
+                </div>
+                <div class="res-individuel box-droite">
+                    <div class="title-res box-droite">
+                        <p>Résultat de votre script</p>
+                    </div>
+                    {{range .Res_etu}}
+                        <p> - {{.Nom}} contient</p>
+                        <p>{{.Contenu}}</p>
+                    {{end}}
+                    {{.Error_message}}
+                </div>
             </div>
             {{end}}
         </div>
