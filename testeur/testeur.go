@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
+	"os"
 	"os/exec"
 	"runtime"
 	"strconv"
@@ -74,9 +75,9 @@ func Test(login string) (string, []Resultat) {
 	exec.Command("sudo", "chown", login, config.Path_scripts+scriptEtu).Run()
 	exec.Command("sudo", "chown", login, config.Path_dir_test).Run()
 
-	deplacer(config.Path_defis+correction, config.Path_dir_test)
-	deplacer(config.Path_scripts+scriptEtu, config.Path_dir_test)
-	deplacer(config.Path_jeu_de_tests+jeuDeTest, config.Path_dir_test)
+	os.Rename(config.Path_defis+correction, config.Path_dir_test+correction)
+	os.Rename(config.Path_scripts+scriptEtu, config.Path_dir_test+scriptEtu)
+	os.Rename(config.Path_jeu_de_tests+jeuDeTest, config.Path_dir_test+jeuDeTest)
 	exec.Command("chmod", "-R", "444", config.Path_dir_test+jeuDeTest)
 
 	var configTest JeuDeTest
@@ -90,13 +91,13 @@ func Test(login string) (string, []Resultat) {
 
 	for i := 0; i < len(configTest.CasDeTest); i++ {
 
-		Rename(config.Path_dir_test, jeuDeTest, "test")
+		os.Rename(config.Path_dir_test+jeuDeTest, config.Path_dir_test+"test")
 
 		res := testeurUnique(correction, scriptEtu, login, configTest.CasDeTest[i])
 		res.CasTest = configTest.CasDeTest[i]
 		resTest = append(resTest, res)
 
-		Rename(config.Path_dir_test, "CasTest", jeuDeTest)
+		os.Rename(config.Path_dir_test+"test", config.Path_dir_test+jeuDeTest)
 
 		Clear(config.Path_dir_test, []string{jeuDeTest, correction, scriptEtu})
 
@@ -113,10 +114,9 @@ func Test(login string) (string, []Resultat) {
 			i = len(configTest.CasDeTest)
 		}
 	}
-
-	deplacer(config.Path_dir_test+correction, config.Path_defis)
-	deplacer(config.Path_dir_test+scriptEtu, config.Path_scripts)
-	deplacer(config.Path_dir_test+jeuDeTest, config.Path_jeu_de_tests)
+	os.Rename(config.Path_dir_test+correction, config.Path_defis+correction)
+	os.Rename(config.Path_dir_test+scriptEtu, config.Path_defis+scriptEtu)
+	os.Rename(config.Path_dir_test+jeuDeTest, config.Path_defis+jeuDeTest)
 
 	//supprime l'user et son dossier
 	if err := exec.Command("sudo", "userdel", login).Run(); err != nil {
@@ -258,10 +258,6 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 			return res
 		}
 	}
-}
-
-func finDuTest() {
-
 }
 
 /*

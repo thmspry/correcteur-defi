@@ -58,16 +58,6 @@ func Clear(path string, exception []string) bool {
 	return true
 }
 
-// fonction qui déplace un fichier (en ayant précisé son chemin pour le trouver) dans un nouveau dossier
-func deplacer(file string, path_out string) bool {
-	fmt.Println("deplacer :" + file + " vers " + path_out)
-	if _, err := exec.Command("sudo", "mv", file, path_out).CombinedOutput(); err != nil {
-		fmt.Println(file, " not found\n", err.Error())
-		return false
-	}
-	return true
-}
-
 /**
 Fonction qui retourne un tableau contenant tous les noms des fichiers du répertoire entré en paramètre
 */
