@@ -10,9 +10,6 @@ import (
 )
 
 func main() {
-
-	/*t := testeur.GetConfigTest("./ressource/jeu_de_test/test_defi_0/")
-	fmt.Println(t)*/
 	/*
 		set GOOS=linux
 		set GOARCH=amd64

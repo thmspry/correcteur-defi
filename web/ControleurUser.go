@@ -55,8 +55,8 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if data.Defi_actuel.Num == -1 {
-		data.Defi_sent = testeur.Contains(config.Path_scripts, "script_"+etu.Login+"_"+strconv.Itoa(data.Defi_actuel.Num)+".sh")
+	if data.Defi_actuel.Num != -1 {
+		data.Defi_sent = testeur.Contains(config.Path_scripts, "script_"+etu.Login+"_"+strconv.Itoa(data.Defi_actuel.Num))
 		if data.Defi_sent {
 			data.Resultat_defi = BDD.GetResult(etu.Login, data.Defi_actuel.Num)
 		}
@@ -73,8 +73,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if r.URL.Query()["test"] != nil {
-			//data.Msg_res, data.ResTest = testeur.Test(etu.Login)
-			data.Msg_res, data.ResTest = testeur.TestArtificiel(etu.Login)
+			data.Msg_res, data.ResTest = testeur.Test(etu.Login)
 		}
 
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
@@ -99,7 +98,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			}
 			defer file.Close()
 
-			script, err := os.Create(config.Path_scripts + "script_" + etu.Login + "_" + strconv.Itoa(num_defi_actuel) + ".sh") // remplacer handler.Filename par le nom et on le place où on veut
+			script, err := os.Create(config.Path_scripts + "script_" + etu.Login + "_" + strconv.Itoa(num_defi_actuel)) // remplacer handler.Filename par le nom et on le place où on veut
 
 			BDD.SaveResultat(etu.Login, num_defi_actuel, -1, false)
 			if err != nil {
@@ -117,11 +116,10 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			os.Chmod(config.Path_scripts+"script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel)+".sh", 770)
+			os.Chmod(config.Path_scripts+"script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel), 770)
 
 			logs.WriteLog(etu.Login, "upload de script du défis "+strconv.Itoa(num_defi_actuel))
-			//data.Msg_res, data.ResTest = testeur.Test(etu.Login)
-			data.Msg_res, data.ResTest = testeur.TestArtificiel(etu.Login)
+			data.Msg_res, data.ResTest = testeur.Test(etu.Login)
 			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 		}
 	}

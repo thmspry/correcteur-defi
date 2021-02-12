@@ -84,7 +84,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			data.Participants = BDD.GetParticipant(num)
 			if etu := r.URL.Query()["Etudiant"]; etu != nil {
 				fmt.Println(etu)
-				f, err := os.Open(config.Path_scripts + "script_" + etu[0] + "_" + data.DefiNumSelect + ".sh")
+				f, err := os.Open(config.Path_scripts + "script_" + etu[0] + "_" + data.DefiNumSelect)
 				if err != nil {
 					data.File[0] = "erreur pour récupérer le script de l'étudiant"
 				} else {
@@ -206,14 +206,14 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			if submit == "modifier" {
 				logs.WriteLog("Admin", "modification de la correction")
 				BDD.ModifyDefi(BDD.GetDefiActuel().Num, date_debut, date_fin)
-				path = config.Path_defis + "correction_" + strconv.Itoa(num_defi_actuel) + ".sh"
+				path = config.Path_defis + "correction_" + strconv.Itoa(num_defi_actuel)
 			} else {
 				logs.WriteLog("Admin", "ajout d'un nouveau défis")
 				// ajouter a la table défis
 				BDD.AddDefi(num_defi_actuel+1, date_debut, date_fin)
 				os.Mkdir(config.Path_jeu_de_tests+"test_defi_"+strconv.Itoa(num_defi_actuel+1), os.ModePerm)
 				num_defi_actuel = num_defi_actuel + 1
-				path = config.Path_defis + "correction_" + strconv.Itoa(num_defi_actuel) + ".sh"
+				path = config.Path_defis + "correction_" + strconv.Itoa(num_defi_actuel)
 			}
 		} else if r.URL.Query()["form"][0] == "test" {
 

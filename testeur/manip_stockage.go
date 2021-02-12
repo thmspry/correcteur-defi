@@ -36,7 +36,6 @@ func Clear(path string, exception []string) bool {
 	dirRead, _ := os.Open(path)
 	dirFiles, _ := dirRead.Readdir(0)
 	var excp bool
-	fmt.Println(exception)
 	// Loop over the directory's files.
 	for index := range dirFiles {
 		excp = false
@@ -127,26 +126,26 @@ func CreateCSV(file_name string, num int) {
 }
 
 //testé
-func GetConfigTest(path string) JeuDeTest {
+func GetConfigTest(path string, jt string) JeuDeTest {
 	var Jeu JeuDeTest
 	var testUnique CasTest
 	var arg Retour
 	f, err := os.Open(path + "config")
 	if err != nil {
 		fmt.Println(err.Error())
-	} else {
-		fmt.Println("os.Open = ", f)
 	}
 	scanner := bufio.NewScanner(f)
+	i := 0
 	for scanner.Scan() {
-		testUnique.Nom = scanner.Text()
+		testUnique.Nom = "Test N°" + strconv.Itoa(i)
 		for _, args := range strings.Split(scanner.Text(), " ") {
-			arg.Nom = args
+			arg.Nom = jt + args
 			arg.Contenu = contenu(path + args) // changer le path
-			testUnique.arguments = append(testUnique.arguments, arg)
+			testUnique.Arguments = append(testUnique.Arguments, arg)
 		}
 
 		Jeu.CasDeTest = append(Jeu.CasDeTest, testUnique)
+		i++
 	}
 	return Jeu
 }
@@ -174,4 +173,13 @@ func contenu(path string) string {
 		return string(output)
 	}
 	return ""
+}
+
+func AfficherArbo(path string) {
+	output, err := exec.Command("tree", "-A", path).CombinedOutput()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Print("Arbo de ")
+	fmt.Println(string(output))
 }
