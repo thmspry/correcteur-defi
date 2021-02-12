@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/aodin/date"
 	_ "github.com/aodin/date"
+	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
@@ -122,6 +123,19 @@ func Register(etu Etudiant) bool {
 vérifie que le couple login,password existe dans la table Etudiant
 */
 func LoginCorrect(id string, password string) bool {
+	var passwordHashed string
+	row := db.QueryRow("SELECT password FROM Etudiant WHERE login = $1", id)
+	if row == nil { // pas de compte avec ce login
+		return false
+	}
+	errScan := row.Scan(&passwordHashed) // cast/parse du res de la requète en string dans passwordHashed
+	if errScan != nil {
+		fmt.Printf("Problème de row.Scan() : ", errScan)
+	}
+	errCompare := bcrypt.CompareHashAndPassword([]byte(passwordHashed), []byte(password)) // comparaison du hashé et du clair
+	return errCompare == nil                                                              // si nil -> ça match, sinon non
+
+	/* Ancient système
 	stmt := "SELECT * FROM Etudiant WHERE login = ? AND password = ?"
 	row, _ := db.Query(stmt, id, password)
 	if row.Next() {
@@ -129,7 +143,7 @@ func LoginCorrect(id string, password string) bool {
 		return true
 	}
 	row.Close()
-	return false
+	return false*/
 }
 
 /**
@@ -141,7 +155,7 @@ func GetEtudiant(id string) Etudiant {
 	err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur)
 
 	if err != nil {
-		fmt.Printf("problme row scan \n", err)
+		fmt.Printf("Problème de row.Scan() : ", err)
 	}
 	return etu
 }

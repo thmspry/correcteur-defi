@@ -36,9 +36,8 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			// request provient du formulaire pour se connecter
 			login := r.FormValue("login")
 			password := r.FormValue("password")
-
-			fmt.Println("tentative de co avec :", login, " ", password)
-			existe := BDD.LoginCorrect(login, password)
+			fmt.Println("Tentative de connexion avec :", login, " ", password)
+			existe := BDD.LoginCorrect(login, password) // on test le couple login/passwordHashé
 			if existe {
 				//Création du token
 				token := tokenGenerator()
@@ -68,11 +67,18 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				Nom:      r.FormValue("nom"),
 				Mail:     r.FormValue("mail"),
 			}
-			BDD.Register(etu) // ajouter l'etudiant dans la base de données.
+			passwordHashed, err := bcrypt.GenerateFromPassword([]byte(etu.Password), 14) // hashage du mot de passe
+			if err == nil {
+				etu.Password = string(passwordHashed) // le mot de passe à stocké est hashé
+				BDD.Register(etu)                     // ajouter l'etudiant dans la base de données.
 
-			logs.WriteLog(etu.Login, "création du compte : "+etu.Login+":"+etu.Password)
+				logs.WriteLog(etu.Login, "création du compte : "+etu.Login+":"+etu.Password)
 
-			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
+				http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
+			} else {
+				// renvoi vers un page error/signification d'une erreur
+			}
+
 		}
 	}
 }
