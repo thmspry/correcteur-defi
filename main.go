@@ -57,4 +57,6 @@ func resetBDD() {
 		Mail:     "testMail",
 	}
 	BDD.Register(etu)
+
+	//BDD.AddDefi(0,"2021-02-02", "2021-03-14")
 }

@@ -39,7 +39,7 @@ func Test(login string) (string, []Resultat) {
 
 	var resTest = make([]Resultat, 0) // Resultat
 	messageDeRetour := ""
-	etatTestGlobal := 0 // État du test des tests (1,0,-1)
+	etatTestGlobal := 1 // État du test des tests (1,0,-1)
 
 	OS := runtime.GOOS
 	if OS == "windows" || OS == "darwin" {
@@ -81,10 +81,7 @@ func Test(login string) (string, []Resultat) {
 
 	os.Chmod(Path_dir_test+scriptEtu, 0700) // script exécutable uniquement par l'utilisateur qui le possède
 	os.Chmod(Path_dir_test+correction, 0700)
-	err := exec.Command("chmod", "-R", "555", Path_dir_test+jeuDeTest).Run() //5 = r-x
-	if err != nil {
-		fmt.Println(err.Error())
-	}
+	exec.Command("chmod", "-R", "555", Path_dir_test+jeuDeTest).Run() //5 = r-x
 	// r pour que les scripts puissent lire le contenu des cas de test
 	// x pour qu'il puisse accéder/entrer dans le dossier de cas de test
 
@@ -209,8 +206,8 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 		}
 		//execution script étudiant
 
-		command := "'" + PathDirTest + script_user + " " + argsString + "'"
-		cmd := exec.Command("sudo", "-H", "-u", login, "bash", "-c", command)
+		cmdUser := PathDirTest + script_user + " " + argsString
+		cmd := exec.Command("sudo", "-H", "-u", login, "bash", "-c", cmdUser)
 		cmd.Dir = PathDirTest
 		_, err := cmd.CombinedOutput()
 		if err != nil {
@@ -243,7 +240,8 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 		retour.Nom = "sortie standart"
 		retour.Contenu = string(stdout_correction)
 		res.Res_correction = append(res.Res_correction, retour)
-		cmd := exec.Command("sudo", "-H", "-u", login, "bash", "-c", PathDirTest+script_user, argsString)
+		cmdUser := PathDirTest + script_user + " " + argsString
+		cmd := exec.Command("sudo", "-H", "-u", login, "bash", "-c", cmdUser)
 		cmd.Dir = PathDirTest
 		stdout_etu, err := cmd.CombinedOutput()
 		if err != nil {
