@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	web.InitWeb()
 	/*
 		set GOOS=linux
 		set GOARCH=amd64
@@ -23,7 +24,6 @@ func main() {
 		} else {
 			web.InitWeb()
 		}*/
-	web.InitWeb()
 }
 
 func Init() {
@@ -40,6 +40,10 @@ func Init() {
 	os.Mkdir(path+"/script_etudiants", 0755)
 	os.Mkdir(path+"/jeu_de_test", 0755)
 
+	resetBDD()
+}
+
+func resetBDD() {
 	if testeur.Contains("./BDD/", "database.db") {
 		os.Remove("./BDD/database.db")
 	}
