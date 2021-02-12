@@ -52,8 +52,6 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		ListeDefis:  BDD.GetDefis(),
 		Logs:        testeur.GetFiles(config.Path_log),
 	}
-	data.Logs = data.Logs[:len(data.Logs)-1]
-
 	//if date actuelle > defi actel.datefin alors defiactuel.num = -1
 	if data.Defi_actuel.Num != -1 {
 		if !date.Today().Within(date.NewRange(data.Defi_actuel.Date_debut, data.Defi_actuel.Date_fin)) {

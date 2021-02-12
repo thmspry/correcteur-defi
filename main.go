@@ -10,29 +10,25 @@ import (
 )
 
 func main() {
-	web.InitWeb()
+	//web.InitWeb()
 	/*
 		set GOOS=linux
 		set GOARCH=amd64
 	*/
-	/*
-		mode := os.Args[1]
-		if mode == "0" {
-			Init()
-		} else if mode == "1" {
-			web.InitWeb()
-		} else {
-			web.InitWeb()
-		}*/
+
+	mode := os.Args[1]
+	if mode == "0" {
+		Init()
+	} else if mode == "1" {
+		web.InitWeb()
+	} else {
+		web.InitWeb()
+	}
 }
 
 func Init() {
 	os.Mkdir("./logs", 0755)
 	os.Mkdir("./BDD", 0755)
-	/*os.Mkdir("./web", 0755)
-	os.Mkdir("./web/html", 0755)
-	os.Mkdir("./web/css", 0755)
-	*/
 
 	path := config.Path_root + "/ressource"
 	os.Mkdir(path, 0755)
@@ -58,5 +54,4 @@ func resetBDD() {
 	}
 	BDD.Register(etu)
 
-	//BDD.AddDefi(0,"2021-02-02", "2021-03-14")
 }
