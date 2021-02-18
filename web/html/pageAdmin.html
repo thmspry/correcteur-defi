@@ -3,104 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <title>Page Admin</title>
-    <link rel="stylesheet" href="/web/assets/css/pageAdmin.css">
     <link rel="icon" type="image/png" href="./web/assets/images/logo.png" />
+    <link rel="stylesheet" href="./web/assets/css/materialize.min.css">
+    <link rel="stylesheet" href="./web/assets/css/pageAdmin.css">
 </head>
 <body>
-<h1>Page admin</h1>
-{{if eq .Defi_actuel.Num -1}}
-    Il n'y a pas de défi en cours
-{{else}}
-    Défi actuel : défi n°{{.Defi_actuel.Num}}<br>
-    Il a commencé le {{.Defi_actuel.Date_debut}}
-    et se termine le {{.Defi_actuel.Date_fin}}
-<br>
-<h3>Formumaire pour modifier uniquement la date :</h3>
-<form action="/pageAdmin?form=modify_date" method="post">
-    Format date : "YYYY-MM-DD" <br>
-    Date de début : <input type="text" name="date_debut" value="{{.Defi_actuel.Date_debut}}"> <br>
-    Date de fin : <input type="text" name="date_fin" value="{{.Defi_actuel.Date_fin}}"> <br>
-    <input type="submit">
-</form>
-{{end}}
-
-<br>
-<h3>Formulaire pour enregistrer un défis avec sa correction,<br> sa date de début et de fin. Il peut aussi servir à modifier la correction du défi actuel.</h3>
-<form   enctype="multipart/form-data"  action="/pageAdmin?form=defi" method="post">
-    Dépot de la correction : <input type="file" name="upload" required="required"><br>
-    Format date : "YYYY-MM-DD" <br>
-    Date de début : <input type="text" name="date_debut" value="{{.Defi_actuel.Date_debut}}"> <br>
-    Date de fin : <input type="text" name="date_fin" value="{{.Defi_actuel.Date_fin}}"> <br>
-    <input type="submit" value="déposer" name="submit"/>
-    <input type="submit" value="modifier" name="submit"/>
-</form>
-
-<h3>Formulaire pour upload des tests : </h3>
-<form enctype="multipart/form-data" action="/pageAdmin?form=test" method="post">
-    Dépot du test : <input type="file" name="upload" required="required"><br>
-    <input type="submit" value="déposer" name="submit">
-</form>
-<br>
-<div>
-    <h3>Liste des défis enregistrés : </h3>
-    {{range .ListeDefis}}
-        <p class="{{if eq $.Defi_actuel.Num .Num}}red{{end}}">
-        Défi n°{{.Num}} du {{.Date_debut}} au {{.Date_fin}}
-    <a href="pageAdmin?Defi={{.Num}}">Afficher les participants</a></p>
-    {{end}}
-</div>
-<br>
-{{if .Participants}}
-    <h4>Liste des participants au défi {{$.DefiNumSelect}}</h4>
-    {{range .Participants}}
-        {{.Etudiant.Login}}
-        Etat :  {{if eq .Resultat.Etat 1}}
-        Réussi
-        {{else if eq .Resultat.Etat 0}}
-        Échoué
-        {{end}}
-        Nombre de tentative : {{.Resultat.Tentative}}
-        <a href="pageAdmin?Defi={{$.DefiNumSelect}}&Etudiant={{.Etudiant.Login}}">
-            Afficher le script
-        </a>
-        <a href="pageAdmin?Defi={{$.DefiNumSelect}}&Etudiant={{.Etudiant.Login}}&Etat={{.Resultat.Etat}}">
-            Modifier l'état
-        </a>
-    <br>
-    {{end}}
-    Récupérer le résultat au format CSV : <button><a href="pageAdmin?Defi={{.DefiNumSelect}}&getResult">téléchager</a></button>
-{{end}}
-<br>
-{{if .File}}
-<div>
-    Contenu du script :
-    <div id="file">
-        {{range .File}}
-            {{.}} <br>
-        {{end}}
+<div id="header">
+    <h1>Page Admin</h1>
+    <div id="logout">
+        <a href="login">Logout</a>
     </div>
 </div>
-{{end}}
-<h3>Logs :</h3>
-<div>
-    {{range .Logs}}
-        <a href="pageAdmin?Log={{.}}">{{.}}</a><br>
-    {{end}}
-    <a href="pageAdmin">désélectionner</a>
-</div>
-{{if .Log}}
-    Contenu des logs du {{.LogDate}} : <br>
-    <div>
-        {{range .Log}}
-            {{.}}<br>
+<div class="main">
+    <div class="title">
+        {{if eq .Defi_actuel.Num -1}}
+        <h2>Il n'y a pas de défi en cours</h2>
+        {{else}}
+        Défi actuel : défi n°{{.Defi_actuel.Num}}<br>
+        <h2>Il a commencé le {{.Defi_actuel.Date_debut}}
+            et se termine le {{.Defi_actuel.Date_fin}}</h2>
         {{end}}
     </div>
-{{end}}
-<div>
+    <div class="separator"></div>
+    <div class="row">
+        <div class="col s12">
+            <ul class="tabs">
+                <li class="tab col s3"><a class="active {{if eq .Defi_actuel.Num -1}} disabled {{end}}" href="#up-defi">Déposer un défi</a></li>
+                <li class="tab col s3"><a class="{{if eq .Defi_actuel.Num -1}} disabled {{end}}" href="#modif-date">Modifier la date</a></li>
+                <li class="tab col s3"><a class="{{if eq .Defi_actuel.Num -1}} disabled {{end}}" href="#up-test">Déposer des test</a></li>
+                <li class="tab col s3"><a href="#liste-defi">Liste des défis</a></li>
+                <li class="tab col s3"><a href="#logs">Logs</a></li>
+            </ul>
+        </div>
+        <div id="up-defi" class="col s12">
+            <h3>Formulaire pour enregistrer un défis avec sa correction, sa date de début et de fin. Il peut aussi servir à modifier la correction du défi actuel.</h3>
+            <form   enctype="multipart/form-data"  action="/pageAdmin?form=defi" method="post">
+                <p>Dépot de la correction : <input type="file" name="upload" required="required"></p>
+                <p>Date de début : <input type="text" class="datepicker" name="date_debut" value="{{.Defi_actuel.Date_debut}}"></p>
+                <p>Date de fin : <input type="text" class="datepicker" name="date_fin" value="{{.Defi_actuel.Date_fin}}"></p>
+                <input type="submit" value="déposer" name="submit"/>
+                <input type="submit" value="modifier" name="submit"/>
+            </form>
+        </div>
+        <div id="modif-date" class="col s12">
+            <h3>Formumaire pour modifier uniquement la date :</h3>
+            <form action="/pageAdmin?form=modify_date" method="post">
+                Format date : "YYYY-MM-DD" <br>
+                Date de début : <input type="text" class="datepicker" name="date_debut" value="{{.Defi_actuel.Date_debut}}"> <br>
+                Date de fin : <input type="text" class="datepicker" name="date_fin" value="{{.Defi_actuel.Date_fin}}"> <br>
+                <input type="submit">
+            </form>
+        </div>
+        <div id="up-test" class="col s12">
+            <h3>Formulaire pour upload des tests : </h3>
+            <form enctype="multipart/form-data" action="/pageAdmin?form=test" method="post">
+                Dépot du test : <input type="file" name="upload" required="required"><br>
+                <input type="submit" value="déposer" name="submit">
+            </form>
+        </div>
+        <div id="liste-defi" class="col s12">
+            <h3>Liste des défis enregistrés : </h3>
+            {{range .ListeDefis}}
+            <p class="{{if eq $.Defi_actuel.Num .Num}}red{{end}}">
+                Défi n°{{.Num}} du {{.Date_debut}} au {{.Date_fin}}
+                <a href="pageAdmin?Defi={{.Num}}">Afficher les participants</a></p>
+            {{end}}
+            {{if .Participants}}
+            <h4>Liste des participants au défi {{$.DefiNumSelect}}</h4>
+            {{range .Participants}}
+            {{.Etudiant.Login}}
+            Etat :  {{if eq .Resultat.Etat 1}}
+            Réussi
+            {{else if eq .Resultat.Etat 0}}
+            Échoué
+            {{end}}
+            Nombre de tentative : {{.Resultat.Tentative}}
+            <a href="pageAdmin?Defi={{$.DefiNumSelect}}&Etudiant={{.Etudiant.Login}}">
+                Afficher le script
+            </a>
+            <a href="pageAdmin?Defi={{$.DefiNumSelect}}&Etudiant={{.Etudiant.Login}}&Etat={{.Resultat.Etat}}">
+                Modifier l'état
+            </a>
+            <br>
+            {{end}}
+            Récupérer le résultat au format CSV : <button><a href="pageAdmin?Defi={{.DefiNumSelect}}&getResult">téléchager</a></button>
+            {{end}}
+            <br>
+            {{if .File}}
+            <div>
+                Contenu du script :
+                <div id="file">
+                    {{range .File}}
+                    {{.}} <br>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+        </div>
+        <div id="logs" class="col s12">
+            <h3>Logs :</h3>
+            <div>
+                {{range .Logs}}
+                <a href="pageAdmin?Log={{.}}">{{.}}</a><br>
+                {{end}}
+                <a href="pageAdmin">désélectionner</a>
+            </div>
+            {{if .Log}}
+            Contenu des logs du {{.LogDate}} : <br>
+            <div>
+                {{range .Log}}
+                {{.}}<br>
+                {{end}}
+            </div>
+            {{end}}
+        </div>
+    </div>
+<div id="mail">
     <form action="/pageAdmin?form=sendMail" method="post">
         <input type="submit" value="Envoyer Mail" name="submit">
     </form>
 </div>
-
+</div>
+<script src="./web/assets/js/materialize.min.js"></script>
+<script src="./web/assets/js/pageAdmin.js"></script>
 </body>
 </html>
