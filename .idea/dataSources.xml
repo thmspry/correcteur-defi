@@ -38,5 +38,12 @@
         </library>
       </libraries>
     </data-source>
+    <data-source source="LOCAL" name="last" uuid="9fa3e7e1-3fee-4778-8fe2-499b17c12045">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/BDD/database.db</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

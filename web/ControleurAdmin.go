@@ -20,11 +20,13 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type data_pageAdmin struct {
 	EtuSelect     string
 	DefiNumSelect string
+	AdminInfo     BDD.Admin
 	Etudiants     []BDD.Etudiant
 	Res_etu       []BDD.ResBDD
 	ListeDefis    []BDD.Defi
@@ -45,8 +47,24 @@ type SenderData struct {
 	SmtpPort string `json:"smtpPort"`
 }
 
+type ResultMail struct {
+	adress string
+	send   bool
+}
+
 func pageAdmin(w http.ResponseWriter, r *http.Request) {
+	//Si il y a n'y a pas de token dans les cookies alors l'utilisateur est redirigé vers la page de login
+	if token, err := r.Cookie("token"); err != nil || !BDD.TokenExiste(token.Value) {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	token, _ := r.Cookie("token")            //récupère le token du cookie
+	login := BDD.GetNameByToken(token.Value) // récupère le login correspondant au token
+	admin := BDD.GetAdmin(login)             // récupère les informations de l'étudiant grâce au login
+
 	data := data_pageAdmin{
+		AdminInfo:   admin,
 		Etudiants:   BDD.GetEtudiants(),
 		Defi_actuel: BDD.GetDefiActuel(),
 		ListeDefis:  BDD.GetDefis(),
@@ -113,6 +131,13 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		if r.URL.Query()["logout"] != nil {
+			fmt.Println("logout " + admin.Login)
+			DeleteToken(admin.Login, time.Second*0)
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
+
 		t := template.Must(template.ParseFiles("./web/html/pageAdmin.html"))
 
 		if err := t.Execute(w, data); err != nil {
@@ -155,11 +180,11 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			}
 			defer file.Close()
 
-			sendOk := sendMail(etudiants, nbDefis, configSender)
-			if sendOk == false {
-				fmt.Println("Erreur lors de l'envoi de mails")
-			} else {
-				fmt.Println("Mail envoyés !")
+			resultatsEnvois := sendMail(etudiants, nbDefis, configSender)
+			for _, res := range resultatsEnvois {
+				if res.send == false {
+					logs.WriteLog("Envoi de mails : ", "Erreur lors de l'envoi de mails à l'adresse : "+res.adress)
+				}
 			}
 
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
@@ -278,9 +303,11 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func sendMail(etudiants []BDD.EtudiantMail, nbDefis int, config SenderData) bool { // Authentication sur le serveur de mail
+func sendMail(etudiants []BDD.EtudiantMail, nbDefis int, config SenderData) []ResultMail { // Authentication sur le serveur de mail
 
 	auth := smtp.PlainAuth("", config.Username, config.Password, config.SmtpHost)
+	c := make(chan ResultMail)
+	var resultatsEnvois []ResultMail
 
 	for _, etu := range etudiants {
 
@@ -356,9 +383,12 @@ func sendMail(etudiants []BDD.EtudiantMail, nbDefis int, config SenderData) bool
 			// Envoi du mail
 			err := smtp.SendMail(config.SmtpHost+":"+config.SmtpPort, auth, config.FromMail, to, []byte(message))
 			if err != nil {
-				fmt.Println(err)
+				c <- ResultMail{adress: etudiant.Mail, send: false}
+			} else {
+				c <- ResultMail{adress: etudiant.Mail, send: true}
 			}
 		}()
+		resultatsEnvois = append(resultatsEnvois, <-c)
 	}
-	return true
+	return resultatsEnvois
 }

@@ -19,17 +19,34 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 
 	if tk, err := r.Cookie("token"); err == nil {
 		if BDD.TokenExiste(tk.Value) {
-			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
+			role := BDD.TokenRole(tk.Value)
+			fmt.Println(role)
+			if role == "etudiants" {
+				http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
+			} else if role == "administrateur" {
+				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
+			}
 			return
 		}
 	}
 	if r.Method == "GET" {
 
-		t, err := template.ParseFiles("./web/html/accueil.html")
-		if err != nil {
-			fmt.Print("erreur chargement accueil.html")
+		if r.URL.Query()["connexion"] != nil && r.URL.Query()["connexion"][0] == "admin" {
+
+			t, err := template.ParseFiles("./web/html/connexionAdmin.html")
+			if err != nil {
+				fmt.Print("erreur chargement connexionAdmin.html")
+			}
+			_ = t.Execute(w, nil)
+		} else {
+
+			t, err := template.ParseFiles("./web/html/accueil.html")
+			if err != nil {
+				fmt.Print("erreur chargement accueil.html")
+			}
+			_ = t.Execute(w, nil)
 		}
-		_ = t.Execute(w, nil)
+
 	} else if r.Method == "POST" {
 
 		if r.URL.String() == "/login?login" {
@@ -78,7 +95,33 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			} else {
 				// renvoi vers un page error/signification d'une erreur
 			}
+		} else if r.URL.String() == "/login?loginAdmin" {
 
+			login := r.FormValue("login")
+			password := r.FormValue("password")
+			fmt.Println("Tentative de connexion avec :", login, " ", password)
+			existe := BDD.LoginCorrectAdmin(login, password) // on test le couple login/passwordHashé
+			if existe {
+				//Création du token
+				token := tokenGenerator()
+				temps := 5 * time.Minute // défini le temps d'attente
+				expiration := time.Now().Add(temps)
+				cookie := http.Cookie{Name: "token", Value: token, Expires: expiration}
+				http.SetCookie(w, &cookie)
+				fmt.Println("(login=", login, ",token=", token)
+				BDD.InsertToken(login, token)
+
+				logs.WriteLog(login, "connexion admin")
+				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
+
+				go DeleteToken(login, temps)
+				return
+			} else {
+				fmt.Println("login '" + login + "' incorrecte")
+				http.Redirect(w, r, "/loginAdmin", http.StatusFound)
+			}
+
+			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 		}
 	}
 }

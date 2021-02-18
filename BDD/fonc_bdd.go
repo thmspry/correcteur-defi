@@ -19,6 +19,11 @@ type Etudiant struct {
 	Correcteur bool
 }
 
+type Admin struct {
+	Login    string
+	Password string
+}
+
 type EtudiantMail struct {
 	Login  string
 	Prenom string
@@ -120,6 +125,27 @@ func Register(etu Etudiant) bool {
 }
 
 /**
+Enregistre un admin dans la table Administrateur
+*/
+func RegisterAdmin(admin Admin) bool {
+	stmt, err := db.Prepare("INSERT INTO Administrateur values(?,?)")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	passwordHashed, err := bcrypt.GenerateFromPassword([]byte(admin.Password), 14)
+
+	_, err = stmt.Exec(admin.Login, passwordHashed)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	fmt.Println("l'admin de login : " + admin.Login + " a été enregistré dans la bdd\n")
+	stmt.Close()
+	return true
+}
+
+/**
 vérifie que le couple login,password existe dans la table Etudiant
 */
 func LoginCorrect(id string, password string) bool {
@@ -147,6 +173,23 @@ func LoginCorrect(id string, password string) bool {
 }
 
 /**
+vérifie que le couple login,password existe dans la table Administrateur
+*/
+func LoginCorrectAdmin(id string, password string) bool {
+	var passwordHashed string
+	row := db.QueryRow("SELECT password FROM Administrateur WHERE login = $1", id)
+	if row == nil { // pas de compte avec ce login
+		return false
+	}
+	errScan := row.Scan(&passwordHashed) // cast/parse du res de la requète en string dans passwordHashed
+	if errScan != nil {
+		fmt.Printf("Problème de row.Scan() : ", errScan)
+	}
+	errCompare := bcrypt.CompareHashAndPassword([]byte(passwordHashed), []byte(password)) // comparaison du hashé et du clair
+	return errCompare == nil                                                              // si nil -> ça match, sinon non
+}
+
+/**
 récupère les informations personnelles d'un étudiant
 */
 func GetEtudiant(id string) Etudiant {
@@ -158,6 +201,20 @@ func GetEtudiant(id string) Etudiant {
 		fmt.Printf("Problème de row.Scan() : ", err)
 	}
 	return etu
+}
+
+/**
+récupère les informations personnelles d'un admin
+*/
+func GetAdmin(id string) Admin {
+	var admin Admin
+	row := db.QueryRow("SELECT * FROM Administrateur WHERE login = $1", id)
+	err := row.Scan(&admin.Login, &admin.Password)
+
+	if err != nil {
+		fmt.Printf("Problème de row.Scan() : ", err)
+	}
+	return admin
 }
 
 // testé
@@ -210,6 +267,36 @@ func TokenExiste(token string) bool {
 	}
 	return true
 }
+
+func TokenRole(token string) string {
+	var (
+		login string
+	)
+	row := db.QueryRow("SELECT login FROM token WHERE token = $1", token)
+	err := row.Scan(&login)
+	if err != nil {
+		return ""
+	}
+
+	var nb int
+	row = db.QueryRow("SELECT  count(*) FROM etudiants WHERE login = $1", login)
+	err = row.Scan(&nb)
+	if err != nil {
+
+	}
+	if nb == 1 {
+		return "etudiants"
+	}
+
+	row = db.QueryRow("SELECT  count(*) FROM administrateur WHERE login = $1", login)
+	err = row.Scan(&nb)
+	if nb == 1 {
+		return "administrateur"
+	}
+
+	return ""
+}
+
 func ResetToken() {
 	stmt, _ := db.Prepare("TRUNCATE TABLE token;")
 	if _, err := stmt.Exec(); err != nil {
