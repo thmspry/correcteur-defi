@@ -7,6 +7,8 @@ import (
 	_ "github.com/aodin/date"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
 	"golang.org/x/crypto/bcrypt"
+	"math/rand"
+	"time"
 )
 
 // Structure a réutiliser un peu partout
@@ -132,6 +134,15 @@ func LoginCorrect(id string, password string) bool {
 	errCompare := bcrypt.CompareHashAndPassword([]byte(passwordHashed), []byte(password)) // comparaison du hashé et du clair
 	return errCompare == nil                                                              // si nil -> ça match, sinon non
 
+	/* Ancient système
+	stmt := "SELECT * FROM Etudiant WHERE login = ? AND password = ?"
+	row, _ := db.Query(stmt, id, password)
+	if row.Next() {
+		row.Close()
+		return true
+	}
+	row.Close()
+	return false*/
 }
 
 /**
@@ -315,6 +326,27 @@ func GetDefiActuel() Defi {
 		}
 	}
 	return defiActuel
+}
+
+//selectionne quel étudiant sera correcteur en fonction de si il a réussi et si il a déjà été correcteur
+func GetEtudiantCorrecteur(num_defi int) string {
+	var t = make([]string, 0)
+	var res string
+	var aleatoire int
+	var logfinal string
+	row, err := db.Query("Select Login FROM Resultat r, Etudiant e WHERE r.Defi =", num_defi, " AND r.Etat = 1 AND e.Correcteur= 0 AND r.Login =e.Login")
+	defer row.Close()
+	if err != nil {
+		fmt.Printf(err.Error())
+	} else {
+		for row.Next() {
+			row.Scan(&res)
+			t = append(t, res)
+		}
+		aleatoire = rand.Intn(len(t))
+	}
+	logfinal = t[aleatoire]
+	return logfinal
 }
 
 /**
