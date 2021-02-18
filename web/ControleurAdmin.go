@@ -8,8 +8,8 @@ import (
 	"github.com/aodin/date"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/logs"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/testeur"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/manipStockage"
 	"html/template"
 	"io"
 	"io/ioutil"
@@ -68,7 +68,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		Etudiants:   BDD.GetEtudiants(),
 		Defi_actuel: BDD.GetDefiActuel(),
 		ListeDefis:  BDD.GetDefis(),
-		Logs:        testeur.GetFiles(config.Path_log),
+		Logs:        manipStockage.GetFiles(config.Path_log),
 	}
 	//if date actuelle > defi actel.datefin alors defiactuel.num = -1
 	if data.Defi_actuel.Num != -1 {
@@ -121,7 +121,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 			if r.URL.Query()["getResult"] != nil {
 				fileName := "resultat_" + strconv.Itoa(num) + ".csv"
-				testeur.CreateCSV(fileName, num)
+				manipStockage.CreateCSV(fileName, num)
 				w.Header().Set("Content-Disposition", "attachment; filename="+fileName)
 				w.Header().Set("Content-Type", "application/octet-stream")
 				http.ServeFile(w, r, fileName)
@@ -199,7 +199,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(err.Error())
 			}
 			file_name := "resultat_" + num + ".csv"
-			testeur.CreateCSV(file_name, n)
+			manipStockage.CreateCSV(file_name, n)
 			w.Header().Set("Content-Disposition", "attachment; filename="+file_name)
 			w.Header().Set("Content-Type", "application/octet-stream")
 			http.ServeFile(w, r, file_name)
@@ -247,7 +247,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 			//if dossier de test existe déjà, on le supprime
 			pathTest := config.Path_jeu_de_tests + "test_defi_" + strconv.Itoa(num_defi_actuel)
-			if testeur.Contains(config.Path_jeu_de_tests, "test_defi_"+strconv.Itoa(num_defi_actuel)) {
+			if manipStockage.Contains(config.Path_jeu_de_tests, "test_defi_"+strconv.Itoa(num_defi_actuel)) {
 				os.RemoveAll(pathTest)
 			}
 			fichier, _ := os.Create(config.Path_jeu_de_tests + fileHeader.Filename) // remplacer handler.Filename par le nom et on le place où on veut
@@ -262,7 +262,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 					fileHeader.Filename)
 				cmd.Dir = config.Path_jeu_de_tests
 				cmd.Run()
-				dosTest := testeur.GetFiles(pathTest)
+				dosTest := manipStockage.GetFiles(pathTest)
 				if len(dosTest) == 1 {
 					os.Rename(pathTest+"/"+dosTest[0], config.Path_jeu_de_tests+"temp")
 					os.RemoveAll(pathTest)

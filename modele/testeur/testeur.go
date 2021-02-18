@@ -1,9 +1,11 @@
 package testeur
 
 import (
-	"fmt"
+	"bufio"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/manipStockage"
 	"os"
 	"os/exec"
 	"runtime"
@@ -48,19 +50,21 @@ func Test(login string) (string, []Resultat) {
 
 	//Création du user
 	if err := exec.Command("useradd", login).Run(); err != nil {
-		fmt.Println("error create user : ", err)
+		logs.WriteLog("testeur", "Erreur création de l'utilisateur "+login)
+		return "Erreur création de l'utilisateur", nil
 	}
 
 	//Associe le dossier à l'user
 	if err := exec.Command("mkhomedir_helper", login).Run(); err != nil {
-		fmt.Println("error create dir : ", err)
+		logs.WriteLog("testeur", "Erreur création dossier de l'utilisateur "+login)
+		return "Erreur création du dossier de l'utilisateur", nil
 	}
 	//Associe le chemin de CasTest au dossier créé
 	Path_dir_test := "/home/" + login + "/"
 	if err := exec.Command("chmod", "770", Path_dir_test).Run(); err != nil {
-		fmt.Println("error chmod "+Path_dir_test, err)
+		logs.WriteLog("testeur", "Erreur chmod du dossier "+Path_dir_test)
 	}
-	Clear(Path_dir_test, nil)
+	manipStockage.Clear(Path_dir_test, nil)
 
 	//Récupérer le défi actuel
 	numDefi := BDD.GetDefiActuel().Num
@@ -86,11 +90,11 @@ func Test(login string) (string, []Resultat) {
 	// x pour qu'il puisse accéder/entrer dans le dossier de cas de test
 
 	var configTest JeuDeTest
-	if Contains(Path_dir_test+jeuDeTest, "config") {
-		configTest = GetConfigTest(Path_dir_test+jeuDeTest, jeuDeTest)
+	if manipStockage.Contains(Path_dir_test+jeuDeTest, "config") {
+		configTest = getConfigTest(Path_dir_test+jeuDeTest, jeuDeTest)
 	} else {
-		fmt.Println("pas de fichier de config")
-		return "pas de fichier de config", nil
+		logs.WriteLog("testeur", "pas de fichier config dans le dossier "+Path_dir_test+jeuDeTest)
+		return "Pas de fichier de config", nil
 	}
 
 	for i := 0; i < len(configTest.CasDeTest); i++ {
@@ -99,7 +103,7 @@ func Test(login string) (string, []Resultat) {
 		res.CasTest = configTest.CasDeTest[i]
 		resTest = append(resTest, res)
 
-		Clear(Path_dir_test, []string{jeuDeTest, correction, scriptEtu})
+		manipStockage.Clear(Path_dir_test, []string{jeuDeTest, correction, scriptEtu})
 
 		if res.Etat == 0 {
 			BDD.SaveResultat(login, numDefi, 0, false)
@@ -119,13 +123,8 @@ func Test(login string) (string, []Resultat) {
 	os.Rename(Path_dir_test+jeuDeTest, config.Path_jeu_de_tests+jeuDeTest)
 
 	//supprime l'user et son dossier
-	if err := exec.Command("sudo", "userdel", login).Run(); err != nil {
-		fmt.Println("error sudo userdel : ", err)
-	}
-	if err := exec.Command("sudo", "rm", "-rf", "/home/"+login).Run(); err != nil {
-		fmt.Println("error sudo rm -rf /home/EXXX : ", err)
-	}
-	fmt.Println("suppression de l'user effectué")
+	exec.Command("sudo", "userdel", login).Run()
+	exec.Command("sudo", "rm", "-rf", "/home/"+login).Run()
 
 	if etatTestGlobal == 0 || etatTestGlobal == -1 {
 		return messageDeRetour, resTest
@@ -152,8 +151,8 @@ Si non :
 	- retunr 1 si c'est pareil, 0 sinon
 */
 func testeurUnique(correction string, script_user string, login string, test CasTest, PathDirTest string) Resultat {
-	o, _ := exec.Command("ls", "-R", "-l", PathDirTest).CombinedOutput()
-	fmt.Println(string(o))
+	//o, _ := exec.Command("ls", "-R", "-l", PathDirTest).CombinedOutput()
+	//fmt.Println(string(o))
 	args := make([]string, 0)
 	for _, arg := range test.Arguments {
 		args = append(args, arg.Nom)
@@ -169,18 +168,18 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 		Nom:     "",
 		Contenu: "",
 	}
-	arboAvant := GetFiles(PathDirTest)
+	arboAvant := manipStockage.GetFiles(PathDirTest)
 
 	cmd := exec.Command(PathDirTest+correction, argsString)
 	cmd.Dir = PathDirTest
 	stdout_correction, err := cmd.CombinedOutput()
 	if err != nil {
-		fmt.Println("erreur execution script défis : ", err)
+		logs.WriteLog("testeur", "Erreur execution script de correction : "+err.Error())
 		res.Error_message = "erreur execution du script de correction"
 		res.Etat = -1
 		return res
 	}
-	arboApres := GetFiles(PathDirTest)
+	arboApres := manipStockage.GetFiles(PathDirTest)
 	if len(arboAvant) != len(arboApres) {
 		//modif dans un new fichier
 		//trouver le fichier / Nom du fichier modifié
@@ -193,8 +192,8 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 			exec.Command("chmod", "777", PathDirTest+name).Run()
 			f, err := exec.Command("cat", PathDirTest+name).CombinedOutput()
 			if err != nil {
-				fmt.Println("erreur execution cat : ", PathDirTest+name, "\n", err)
-				res.Error_message = "erreur lecture du fichier " + PathDirTest + name
+				logs.WriteLog("testeur", "Erreur lecture du fichier "+PathDirTest+name)
+				res.Error_message = "erreur lecture du fichier " + PathDirTest + name + " (correction)"
 				res.Etat = -1
 				return res
 			}
@@ -211,7 +210,7 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 		cmd.Dir = PathDirTest
 		_, err := cmd.CombinedOutput()
 		if err != nil {
-			fmt.Println("erreur execution script étudiant : ", err)
+			logs.WriteLog("testeur", "Erreur execution script etudiant "+login+": "+err.Error())
 			res.Error_message = "erreur execution du script de l'étudiant"
 			res.Etat = -1
 			return res
@@ -220,8 +219,8 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 		for _, name := range diff {
 			f, err := exec.Command("cat", PathDirTest+name).CombinedOutput()
 			if err != nil {
-				fmt.Println("erreur execution cat : ", PathDirTest+name, "\n", err)
-				res.Error_message = "erreur lecture du fichier " + PathDirTest + name
+				logs.WriteLog("testeur", "Erreur lecture du fichier "+PathDirTest+name)
+				res.Error_message = "erreur lecture du fichier " + PathDirTest + name + " (etudiant)"
 				res.Etat = -1
 				return res
 			}
@@ -245,13 +244,11 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 		cmd.Dir = PathDirTest
 		stdout_etu, err := cmd.CombinedOutput()
 		if err != nil {
-			fmt.Println("erreur execution du script étudiant ", err.Error())
+			logs.WriteLog("testeur", "Erreur execution du script étudiant "+login+": "+err.Error())
 			res.Error_message = "erreur execution du script étudiant"
 			res.Etat = -1
 			return res
 		}
-		fmt.Println(cmd.String())
-		fmt.Println("output : ", string(stdout_etu))
 		retour.Contenu = string(stdout_etu)
 		res.Res_etu = append(res.Res_etu, retour)
 		if res.Res_etu[0] == res.Res_correction[0] {
@@ -347,4 +344,26 @@ func TestArtificiel(login string) (string, []Resultat) {
 	res.CasTest = casTest
 
 	return "Vous avez passé tous les tests avec succès", resTests
+}
+
+//testé
+func getConfigTest(path string, jt string) JeuDeTest {
+	var Jeu JeuDeTest
+	var testUnique CasTest
+	var arg Retour
+	f, _ := os.Open(path + "config")
+	scanner := bufio.NewScanner(f)
+	i := 0
+	for scanner.Scan() {
+		testUnique.Nom = "Test N°" + strconv.Itoa(i)
+		for _, args := range strings.Split(scanner.Text(), " ") {
+			arg.Nom = jt + args
+			arg.Contenu = manipStockage.Contenu(path + args) // changer le path
+			testUnique.Arguments = append(testUnique.Arguments, arg)
+		}
+
+		Jeu.CasDeTest = append(Jeu.CasDeTest, testUnique)
+		i++
+	}
+	return Jeu
 }

@@ -1,33 +1,15 @@
-package testeur
+package manipStockage
 
 import (
-	"bufio"
 	"encoding/csv"
-	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"strconv"
-	"strings"
 )
-
-/**
-retourne le numéro  et le Nom du dernier défi enregistré
-*/
-
-func Nb_test(path string) int {
-	var files []string
-	fileInfo, err := ioutil.ReadDir(path)
-	if err != nil {
-		fmt.Print(err)
-	}
-	for _, file := range fileInfo {
-		files = append(files, file.Name())
-	}
-	return len(files)
-}
 
 /*
 Fonction qui delete tous les fichiers d'un répertoire
@@ -88,17 +70,6 @@ func Contains(path string, fileName string) bool {
 	return false
 }
 
-/*
-Renome un fichier "name" par un nouveau Nom "newName" qui se trouve dans le repertoire "pathFile"
-*/
-func Rename(pathFile string, name string, newName string) {
-	name = pathFile + name
-	newName = pathFile + newName
-	if _, err := exec.Command("sudo", "mv", name, newName).CombinedOutput(); err != nil {
-		fmt.Println("error Rename\n", err)
-	}
-}
-
 // https://golangcode.com/write-data-to-a-csv-file/
 func CreateCSV(file_name string, num int) {
 	ResultatCSV := BDD.GetParticipant(num)
@@ -120,66 +91,24 @@ func CreateCSV(file_name string, num int) {
 			strconv.Itoa(value.Resultat.Tentative)}
 
 		if err := writer.Write(line); err != nil {
-			fmt.Println(err.Error())
+			logs.WriteLog("func CreateCSV", "Erreur écriture de la ligne")
 		}
 	}
 }
 
-//testé
-func GetConfigTest(path string, jt string) JeuDeTest {
-	var Jeu JeuDeTest
-	var testUnique CasTest
-	var arg Retour
-	f, err := os.Open(path + "config")
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	scanner := bufio.NewScanner(f)
-	i := 0
-	for scanner.Scan() {
-		testUnique.Nom = "Test N°" + strconv.Itoa(i)
-		for _, args := range strings.Split(scanner.Text(), " ") {
-			arg.Nom = jt + args
-			arg.Contenu = contenu(path + args) // changer le path
-			testUnique.Arguments = append(testUnique.Arguments, arg)
-		}
-
-		Jeu.CasDeTest = append(Jeu.CasDeTest, testUnique)
-		i++
-	}
-	return Jeu
-}
-
-func contenu(path string) string {
+func Contenu(path string) string {
 	//retourne soit le contenu du fichier, soit l'arborescence
 	f, err := os.Open(path)
 	if err != nil {
-		fmt.Println(err.Error())
+		logs.WriteLog("fonction contenu", "Erreur fichier "+path+" introuvable")
 		return "pas de fichier"
 	}
-	fmt.Println(f)
 	fileStat, _ := f.Stat()
 	if fileStat.IsDir() {
-		output, err := exec.Command("tree", "-A", path).CombinedOutput()
-		if err != nil {
-			fmt.Println(err.Error())
-		}
+		output, _ := exec.Command("tree", "-A", path).CombinedOutput()
 		return string(output)
 	} else {
-		output, err := exec.Command("cat", path).CombinedOutput()
-		if err != nil {
-			fmt.Println(err.Error())
-		}
+		output, _ := exec.Command("cat", path).CombinedOutput()
 		return string(output)
 	}
-	return ""
-}
-
-func AfficherArbo(path string) {
-	output, err := exec.Command("tree", "-A", path).CombinedOutput()
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	fmt.Print("Arbo de ")
-	fmt.Println(string(output))
 }

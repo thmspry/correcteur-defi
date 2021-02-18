@@ -3,7 +3,7 @@ package web
 import (
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/logs"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
