@@ -4,26 +4,26 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/testeur"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/manipStockage"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
 	"os"
 )
 
 func main() {
-	//web.InitWeb()
+	web.InitWeb()
 	/*
 		set GOOS=linux
 		set GOARCH=amd64
 	*/
-
-	mode := os.Args[1]
-	if mode == "0" {
-		Init()
-	} else if mode == "1" {
-		web.InitWeb()
-	} else {
-		web.InitWeb()
-	}
+	/*
+		mode := os.Args[1]
+		if mode == "0" {
+			Init()
+		} else if mode == "1" {
+			web.InitWeb()
+		} else {
+			web.InitWeb()
+		}*/
 }
 
 func Init() {
@@ -40,7 +40,7 @@ func Init() {
 }
 
 func resetBDD() {
-	if testeur.Contains("./BDD/", "database.db") {
+	if manipStockage.Contains("./BDD/", "database.db") {
 		os.Remove("./BDD/database.db")
 	}
 
@@ -53,5 +53,4 @@ func resetBDD() {
 		Mail:     "testMail",
 	}
 	BDD.Register(etu)
-
 }

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/aodin/date"
 	_ "github.com/aodin/date"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
 	"golang.org/x/crypto/bcrypt"
-	"time"
 )
 
 // Structure a réutiliser un peu partout
@@ -104,17 +104,14 @@ func InitBDD() {
 Enregistre un étudiant dans la table Etudiant
 */
 func Register(etu Etudiant) bool {
-	stmt, err := db.Prepare("INSERT INTO Etudiant values(?,?,?,?,?,?)")
-	if err != nil {
-		fmt.Println(err)
-	}
+	stmt, _ := db.Prepare("INSERT INTO Etudiant values(?,?,?,?,?,?)")
 
-	_, err = stmt.Exec(etu.Login, etu.Password, etu.Prenom, etu.Nom, etu.Mail, false)
+	_, err := stmt.Exec(etu.Login, etu.Password, etu.Prenom, etu.Nom, etu.Mail, false)
 	if err != nil {
-		fmt.Println(err)
+		logs.WriteLog("BDD.Register", err.Error())
 		return false
 	}
-	fmt.Println("l'étudiant de login : " + string(etu.Login) + " a été enregistré dans la bdd\n")
+	logs.WriteLog("Register", etu.Login+" est enregistré")
 	stmt.Close()
 	return true
 }
@@ -128,22 +125,13 @@ func LoginCorrect(id string, password string) bool {
 	if row == nil { // pas de compte avec ce login
 		return false
 	}
-	errScan := row.Scan(&passwordHashed) // cast/parse du res de la requète en string dans passwordHashed
-	if errScan != nil {
-		fmt.Printf("Problème de row.Scan() : ", errScan)
+	err := row.Scan(&passwordHashed) // cast/parse du res de la requète en string dans passwordHashed
+	if err != nil {
+		logs.WriteLog("BDD.LoginCorrect", err.Error())
 	}
 	errCompare := bcrypt.CompareHashAndPassword([]byte(passwordHashed), []byte(password)) // comparaison du hashé et du clair
 	return errCompare == nil                                                              // si nil -> ça match, sinon non
 
-	/* Ancient système
-	stmt := "SELECT * FROM Etudiant WHERE login = ? AND password = ?"
-	row, _ := db.Query(stmt, id, password)
-	if row.Next() {
-		row.Close()
-		return true
-	}
-	row.Close()
-	return false*/
 }
 
 /**
@@ -155,7 +143,7 @@ func GetEtudiant(id string) Etudiant {
 	err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur)
 
 	if err != nil {
-		fmt.Printf("Problème de row.Scan() : ", err)
+		logs.WriteLog("BDD.GetEtudiant", err.Error())
 	}
 	return etu
 }
@@ -166,7 +154,7 @@ func GetNameByToken(token string) string {
 	row := db.QueryRow("SELECT * FROM token WHERE token = $1", token)
 	err := row.Scan(&login, &token)
 	if err != nil {
-		fmt.Printf("problme GetNameByToken \n", err)
+		logs.WriteLog("BDD.GetNameByToken", err.Error())
 	}
 	return login
 }
@@ -179,9 +167,7 @@ func InsertToken(login string, token string) {
 	stmt, _ = db.Prepare("INSERT INTO Token values(?,?)")
 	_, err := stmt.Exec(login, token)
 	if err != nil {
-		fmt.Println("probleme InsertToken", err)
-	} else {
-		fmt.Println("Ajout token : ", token, " pour ", login, " à ", time.Now(), "\n")
+		logs.WriteLog("BDD.InsertToken", err.Error())
 	}
 	stmt.Close()
 }
@@ -191,9 +177,7 @@ func DeleteToken(login string) {
 	stmt, _ := db.Prepare("DELETE FROM token WHERE login = ?")
 	_, err := stmt.Exec(login)
 	if err != nil {
-		fmt.Println("probleme DeleteToken", err)
-	} else {
-		fmt.Println("delete token du login, ", login, " à ", time.Now(), "\n")
+		logs.WriteLog("BDD.DeleteToken", err.Error())
 	}
 	stmt.Close()
 }
@@ -224,25 +208,19 @@ admin == false : fonction lancé par un étudiant lors d'une nouvelle tentative 
 (si c'est false, tentative++)
 */
 func SaveResultat(lelogin string, lenum_defi int, letat int, admin bool) {
-
-	var (
-		login     string
-		defi      int
-		etat      int
-		tentative int
-	)
+	var res ResBDD
 	row := db.QueryRow("SELECT * FROM Resultat WHERE login = $1 AND defi = $2", lelogin, lenum_defi)
 
-	if err := row.Scan(&login, &defi, &etat, &tentative); err != nil {
+	if err := row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative); err != nil {
 		stmt, _ := db.Prepare("INSERT INTO Resultat values(?,?,?,?)")
 		_, err = stmt.Exec(lelogin, lenum_defi, letat, 1)
 		stmt.Close()
 	} else {
 		stmt, _ := db.Prepare("UPDATE Resultat SET etat = ?, tentative = ? WHERE login = ? AND defi = ?")
 		if admin {
-			stmt.Exec(letat, tentative, login, defi)
+			stmt.Exec(res.Etat, res.Tentative, res.Login, res.Defi)
 		} else {
-			stmt.Exec(letat, tentative+1, login, defi)
+			stmt.Exec(res.Etat, res.Tentative+1, res.Login, res.Defi)
 		}
 		stmt.Close()
 	}
@@ -258,7 +236,7 @@ func GetEtudiants() []Etudiant {
 	row, err := db.Query("SELECT * FROM Etudiant")
 	defer row.Close()
 	if err != nil {
-		fmt.Printf(err.Error())
+		logs.WriteLog("BDD.GetEtudiants", err.Error())
 	}
 	for row.Next() {
 		row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur)
@@ -274,7 +252,7 @@ func GetResult(login string, defi int) ResBDD {
 	var res ResBDD
 	row := db.QueryRow("SELECT * FROM Resultat WHERE login = $1 AND defi = $2", login, defi)
 	if err := row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative); err != nil {
-		fmt.Println("erreur GetResult")
+		logs.WriteLog("BDD.GetResult", err.Error())
 	}
 	return res
 }
@@ -286,7 +264,7 @@ func AddDefi(num int, dateD date.Date, dateF date.Date) {
 	stmt, err := db.Prepare("INSERT INTO Defis values(?,?,?)")
 	_, err = stmt.Exec(num, dateD.String(), dateF.String())
 	if err != nil {
-		fmt.Println("erreur add défi " + err.Error())
+		logs.WriteLog("BDD.AddDefi", err.Error())
 	}
 	stmt.Close()
 }
@@ -295,12 +273,9 @@ func AddDefi(num int, dateD date.Date, dateF date.Date) {
 Modifie le défi de numéro num
 */
 func ModifyDefi(num int, dateD date.Date, dateF date.Date) {
-	stmt, err := db.Prepare("UPDATE Defis SET date_debut = ?, date_fin = ? where numero = ?")
-	if err != nil {
-		fmt.Println(err)
-	}
+	stmt, _ := db.Prepare("UPDATE Defis SET date_debut = ?, date_fin = ? where numero = ?")
 	if _, err := stmt.Exec(dateD.String(), dateF.String(), num); err != nil {
-		fmt.Println("erreur modify defi " + err.Error())
+		logs.WriteLog("BDD.ModifyDefi", err.Error())
 	}
 	stmt.Close()
 }
@@ -315,7 +290,7 @@ func GetDefis() []Defi {
 	row, err := db.Query("SELECT * FROM Defis")
 	defer row.Close()
 	if err != nil {
-		fmt.Printf(err.Error())
+		logs.WriteLog("BDD.GetDefis", err.Error())
 	}
 	for row.Next() {
 		row.Scan(&defi.Num, &debutString, &finString)
@@ -342,27 +317,6 @@ func GetDefiActuel() Defi {
 	return defiActuel
 }
 
-//selectionne quel étudiant sera correcteur en fonction de si il a réussi et si il a déjà été correcteur
-/*func GetEtudiantCorrecteur(num_defi int) string {
-	var t = make([]string, 0)
-	var res string
-	var aleatoire int
-	var logfinal string
-	row, err := db.Query("Select Login FROM Resultat WHERE Defi =", num_defi, " AND Etat = 1")
-	defer row.Close()
-	if err != nil {
-		fmt.Printf(err.Error())
-	} else {
-		for row.Next() {
-			row.Scan(&res)
-			t = append(t, res)
-		}
-		aleatoire, _ = rand.Int(len(t))
-	}
-	logfinal = t[aleatoire]
-	return logfinal
-}*/
-
 /**
 Récupère tous les résultats d'un étudiant à tous les défis auquel il a participé
 */
@@ -372,7 +326,7 @@ func GetAllResultat(login string) []ResBDD {
 	row, err := db.Query("SELECT * FROM Resultat WHERE login = ? ORDER BY defi ASC", login)
 	defer row.Close()
 	if err != nil {
-		fmt.Printf(err.Error())
+		logs.WriteLog("BDD.GetAllResultat", err.Error())
 	}
 	for row.Next() {
 		row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative)
@@ -392,7 +346,7 @@ func GetParticipant(num_defi int) []ParticipantDefi {
 	row, err := db.Query("SELECT * FROM Etudiant e, Resultat r WHERE e.login = r.login AND r.defi = ? ORDER BY nom", num_defi)
 	defer row.Close()
 	if err != nil {
-		fmt.Println(err.Error())
+		logs.WriteLog("BDD.GetParticipant", err.Error())
 	}
 	for row.Next() {
 		row.Scan(&res.Etudiant.Login, &res.Etudiant.Password, &res.Etudiant.Prenom, &res.Etudiant.Nom, &res.Etudiant.Mail, &res.Etudiant.Correcteur, &res.Resultat.Login, &res.Resultat.Defi,
@@ -408,7 +362,7 @@ func GetEtudiantsMail() []EtudiantMail {
 
 	row, err := db.Query("SELECT  login, prenom, nom, mail FROM Etudiant;")
 	if err != nil {
-		fmt.Println(err.Error())
+		logs.WriteLog("BDD.GetEtudiantsMail", err.Error())
 	} else if row != nil {
 		for row.Next() {
 			err = row.Scan(&res.Login, &res.Prenom, &res.Nom, &res.Mail)

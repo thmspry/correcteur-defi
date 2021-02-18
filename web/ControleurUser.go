@@ -5,8 +5,9 @@ import (
 	"github.com/aodin/date"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/logs"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/testeur"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/manipStockage"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/testeur"
 	"html/template"
 	"io"
 	"log"
@@ -56,7 +57,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if data.Defi_actuel.Num != -1 {
-		data.Defi_sent = testeur.Contains(config.Path_scripts, "script_"+etu.Login+"_"+strconv.Itoa(data.Defi_actuel.Num))
+		data.Defi_sent = manipStockage.Contains(config.Path_scripts, "script_"+etu.Login+"_"+strconv.Itoa(data.Defi_actuel.Num))
 		if data.Defi_sent {
 			data.Resultat_defi = BDD.GetResult(etu.Login, data.Defi_actuel.Num)
 		}
