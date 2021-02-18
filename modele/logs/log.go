@@ -3,7 +3,6 @@ package logs
 import (
 	"fmt"
 	date "github.com/aodin/date"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/manipStockage"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -18,7 +17,11 @@ func GetHoraire() string {
 
 func WriteLog(login string, msg string) {
 	d := date.Today()
-	if !manipStockage.Contains("./logs/", d.String()) {
+	/*if !manipStockage.Contains("./logs/", d.String()) {
+		ioutil.WriteFile("./logs/"+d.String(), nil, 0755)
+	}*/
+	_, err := os.Stat("./logs/" + d.String())
+	if os.IsNotExist(err) {
 		ioutil.WriteFile("./logs/"+d.String(), nil, 0755)
 	}
 

@@ -8,7 +8,6 @@ import (
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
 	"golang.org/x/crypto/bcrypt"
 	"math/rand"
-	"time"
 )
 
 // Structure a réutiliser un peu partout
@@ -274,7 +273,7 @@ func TokenRole(token string) string {
 	}
 
 	var nb int
-	row = db.QueryRow("SELECT  count(*) FROM etudiants WHERE login = $1", login)
+	row = db.QueryRow("SELECT  count(*) FROM etudiant WHERE login = $1", login)
 	err = row.Scan(&nb)
 	if err != nil {
 

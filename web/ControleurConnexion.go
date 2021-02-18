@@ -19,6 +19,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 
 	if tk, err := r.Cookie("token"); err == nil {
 		if BDD.TokenExiste(tk.Value) {
+			fmt.Println("Token existe : ", tk.Value)
 			role := BDD.TokenRole(tk.Value)
 			fmt.Println(role)
 			if role == "etudiants" {
