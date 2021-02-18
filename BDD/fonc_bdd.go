@@ -6,6 +6,7 @@ import (
 	"github.com/aodin/date"
 	_ "github.com/aodin/date"
 	"golang.org/x/crypto/bcrypt"
+	"math/rand"
 	"time"
 )
 
@@ -343,12 +344,12 @@ func GetDefiActuel() Defi {
 }
 
 //selectionne quel étudiant sera correcteur en fonction de si il a réussi et si il a déjà été correcteur
-/*func GetEtudiantCorrecteur(num_defi int) string {
+func GetEtudiantCorrecteur(num_defi int) string {
 	var t = make([]string, 0)
 	var res string
 	var aleatoire int
 	var logfinal string
-	row, err := db.Query("Select Login FROM Resultat WHERE Defi =", num_defi, " AND Etat = 1")
+	row, err := db.Query("Select Login FROM Resultat r, Etudiant e WHERE r.Defi =", num_defi, " AND r.Etat = 1 AND e.Correcteur= 0 AND r.Login =e.Login")
 	defer row.Close()
 	if err != nil {
 		fmt.Printf(err.Error())
@@ -357,11 +358,11 @@ func GetDefiActuel() Defi {
 			row.Scan(&res)
 			t = append(t, res)
 		}
-		aleatoire, _ = rand.Int(len(t))
+		aleatoire = rand.Intn(len(t))
 	}
 	logfinal = t[aleatoire]
 	return logfinal
-}*/
+}
 
 /**
 Récupère tous les résultats d'un étudiant à tous les défis auquel il a participé
