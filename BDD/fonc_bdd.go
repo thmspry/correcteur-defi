@@ -103,6 +103,15 @@ func InitBDD() {
 	}
 	stmt.Exec()
 
+	stmt, err = db.Prepare("CREATE TABLE IF NOT EXISTS Administrateur (" +
+		"login TEXT NOT NULL PRIMARY KEY ," +
+		"password TEXT NOT NULL" +
+		")")
+	if err != nil {
+		fmt.Println("Erreur dans la table Administrateur" + err.Error())
+	}
+	stmt.Exec()
+
 	stmt.Close()
 }
 

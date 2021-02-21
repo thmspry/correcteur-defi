@@ -6,10 +6,12 @@ import (
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/manipStockage"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
+	"golang.org/x/crypto/bcrypt"
 	"os"
 )
 
 func main() {
+
 	web.InitWeb()
 	/*
 		set GOOS=linux
@@ -52,5 +54,20 @@ func resetBDD() {
 		Nom:      "testNom",
 		Mail:     "testMail",
 	}
+	passwordHashed, err := bcrypt.GenerateFromPassword([]byte(etu.Password), 14) // hashage du mot de passe
+	if err == nil {
+		etu.Password = string(passwordHashed)
+	}
 	BDD.Register(etu)
+
+	admin := BDD.Admin{
+		Login:    "admin",
+		Password: "admin",
+	}
+	passwordHashed, err = bcrypt.GenerateFromPassword([]byte(admin.Password), 14) // hashage du mot de passe
+	if err == nil {
+		admin.Password = string(passwordHashed)
+	}
+	BDD.RegisterAdmin(admin)
+
 }
