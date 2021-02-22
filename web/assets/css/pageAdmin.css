@@ -58,19 +58,75 @@ h3 {
     font-size: 20px;
 }
 
+.separator {
+    width: 100%;
+    height: 1px;
+    background-color: #838383;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
 input[type=date] {
     width: min-content;
 }
 
 .row {
     width: 100%;
-    margin-top: 20px;
 }
 
-.separator {
-    width: 100%;
-    height: 1px;
-    background-color: #838383;
+.chose-file input#input-file-defi, input#input-file-test  {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+    cursor: pointer;
+}
+
+.chose-file {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    background-color: #50a969;
+    width: fit-content;
+    height:50px;
+    cursor: pointer;
+}
+
+.chose-file:hover {
+    background-color: #377249;
+}
+
+.chose-file label {
+    margin: 10px;
+    font-weight: bold;
+    color: white;
+}
+
+.chose-file img {
+    height: 30px;
+    margin: 10px;
+}
+
+.button {
+    background-color: white;
+    border: 1px solid black;
+    padding:15px;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+#mail .button {
+    border: 3px solid #50a969;
+    color: #50a969;
+}
+
+.button:hover {
+    border: 1px solid #2d2d2d;
+    color: #2d2d2d;
+    cursor: pointer;
+
 }
 
 /* Redefinition du framework pour adapter à la bonne couleur */

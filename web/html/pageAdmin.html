@@ -19,7 +19,7 @@
         {{if eq .Defi_actuel.Num -1}}
         <h2>Il n'y a pas de défi en cours</h2>
         {{else}}
-        Défi actuel : défi n°{{.Defi_actuel.Num}}<br>
+        <h2>Défi actuel : défi n°{{.Defi_actuel.Num}}</h2>
         <h2>Il a commencé le {{.Defi_actuel.Date_debut}}
             et se termine le {{.Defi_actuel.Date_fin}}</h2>
         {{end}}
@@ -36,29 +36,40 @@
             </ul>
         </div>
         <div id="up-defi" class="col s12">
-            <h3>Formulaire pour enregistrer un défis avec sa correction, sa date de début et de fin. Il peut aussi servir à modifier la correction du défi actuel.</h3>
-            <form   enctype="multipart/form-data"  action="/pageAdmin?form=defi" method="post">
-                <p>Dépot de la correction : <input type="file" name="upload" required="required"></p>
-                <p>Date de début : <input type="text" class="datepicker" name="date_debut" value="{{.Defi_actuel.Date_debut}}"></p>
-                <p>Date de fin : <input type="text" class="datepicker" name="date_fin" value="{{.Defi_actuel.Date_fin}}"></p>
-                <input type="submit" value="déposer" name="submit"/>
-                <input type="submit" value="modifier" name="submit"/>
+            <h3>Enregistrer un défis avec sa correction, sa date de début et de fin.</h3>
+            <h3>Il peut aussi servir à modifier le fichier de correction du défi actuel.</h3>
+            <form enctype="multipart/form-data"  action="/pageAdmin?form=defi" method="post">
+                <p>Dépot de la correction :</p>
+                <div class="chose-file" id="file-defi">
+                    <img src="./web/assets/images/upload.png">
+                    <label for="input-file-defi">Choisir un fichier</label>
+                    <input type="file" name="upload" id="input-file-defi" required="required">
+                </div>
+                <p>Date de début :<input type="text" class="datepicker" name="date_debut" value="{{.Defi_actuel.Date_debut}}"></p>
+                <p>Date de fin :<input type="text" class="datepicker" name="date_fin" value="{{.Defi_actuel.Date_fin}}"></p>
+                <input type="submit" class="button" value="déposer" name="submit"/>
+                <input type="submit" class="button" value="modifier" name="submit"/>
             </form>
         </div>
         <div id="modif-date" class="col s12">
-            <h3>Formumaire pour modifier uniquement la date :</h3>
+            <h3>Modifier uniquement la date :</h3>
             <form action="/pageAdmin?form=modify_date" method="post">
-                Format date : "YYYY-MM-DD" <br>
-                Date de début : <input type="text" class="datepicker" name="date_debut" value="{{.Defi_actuel.Date_debut}}"> <br>
-                Date de fin : <input type="text" class="datepicker" name="date_fin" value="{{.Defi_actuel.Date_fin}}"> <br>
+                <p>Format date : "YYYY-MM-DD"</p>
+                <p>Date de début :<input type="text" class="datepicker" name="date_debut" value="{{.Defi_actuel.Date_debut}}"></p>
+                <p>Date de fin : <input type="text" class="datepicker" name="date_fin" value="{{.Defi_actuel.Date_fin}}"></p>
                 <input type="submit">
             </form>
         </div>
         <div id="up-test" class="col s12">
             <h3>Formulaire pour upload des tests : </h3>
             <form enctype="multipart/form-data" action="/pageAdmin?form=test" method="post">
-                Dépot du test : <input type="file" name="upload" required="required"><br>
-                <input type="submit" value="déposer" name="submit">
+                <p>Dépot du test :</p>
+                <div class="chose-file" id="file-test">
+                    <img src="./web/assets/images/upload.png">
+                    <label for="input-file-test">Choisir un fichier</label>
+                    <input type="file" name="upload" id="input-file-test" required="required">
+                </div>
+                <input type="submit" class="button" value="déposer" name="submit">
             </form>
         </div>
         <div id="liste-defi" class="col s12">
@@ -118,13 +129,15 @@
             {{end}}
         </div>
     </div>
-<div id="mail">
-    <form action="/pageAdmin?form=sendMail" method="post">
-        <input type="submit" value="Envoyer Mail" name="submit">
-    </form>
-</div>
-</div>
-<script src="./web/assets/js/materialize.min.js"></script>
-<script src="./web/assets/js/pageAdmin.js"></script>
+    <div class="separator"></div>
+    <div id="mail">
+        <h2>Envoyez un mail a tous les étudiant pour leurs prévenir des résultats</h2>
+        <form action="/pageAdmin?form=sendMail" method="post">
+            <input type="submit" class="button" value="Envoyer Mail" name="submit">
+        </form>
+    </div>
+    </div>
+    <script src="./web/assets/js/materialize.min.js"></script>
+    <script src="./web/assets/js/pageAdmin.js"></script>
 </body>
 </html>
