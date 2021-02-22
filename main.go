@@ -6,13 +6,14 @@ import (
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/manipStockage"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
 	"golang.org/x/crypto/bcrypt"
 	"os"
 )
 
 func main() {
 
-	//web.InitWeb()
+	web.InitWeb()
 	/*
 		set GOOS=linux
 		set GOARCH=amd64
