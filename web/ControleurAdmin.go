@@ -151,10 +151,11 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			logs.WriteLog("Admin", "modification de la date de rendu")
 			debut, err1 := date.Parse(r.FormValue("date_debut"))
 			fin, err2 := date.Parse(r.FormValue("date_fin"))
+			numDefi, _ := strconv.Atoi(r.FormValue("numero"))
 			if err1 != nil || err2 != nil {
 				fmt.Println("Erreur de format dans les dates entrés pour modifier la date")
 			} else {
-				BDD.ModifyDefi(BDD.GetDefiActuel().Num, debut, fin)
+				BDD.ModifyDefi(numDefi, debut, fin)
 			}
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
@@ -216,40 +217,40 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		num_defi_actuel := defi_actuel.Num
 		path := ""
 
-		if r.URL.Query()["form"][0] == "defi" {
+		if r.URL.Query()["form"][0] == "defi" { // ajout d'un défi
 			submit := r.FormValue("submit")
-			date_debut, err := date.Parse(r.FormValue("date_debut"))
-			if err != nil {
-				fmt.Println("Erreur dans le format de la date de début")
-			}
-			date_fin, err := date.Parse(r.FormValue("date_fin"))
-			if err != nil {
-				fmt.Println("Erreur dans le format de la date de fin")
-			}
+			date_debut, _ := date.Parse(r.FormValue("date_debut"))
+			date_fin, _ := date.Parse(r.FormValue("date_fin"))
 			if submit == "modifier" {
-				logs.WriteLog("Admin", "modification de la correction")
+				logs.WriteLog("Admin", "modification du défi actuel")
 				BDD.ModifyDefi(BDD.GetDefiActuel().Num, date_debut, date_fin)
 				path = config.Path_defis + "correction_" + strconv.Itoa(num_defi_actuel)
 			} else {
-				logs.WriteLog("Admin", "ajout d'un nouveau défis")
+				logs.WriteLog("Admin", "ajout d'un nouveau défi")
 				// ajouter a la table défis
-				BDD.AddDefi(num_defi_actuel+1, date_debut, date_fin)
+				BDD.AddDefi(date_debut, date_fin)
 				os.Mkdir(config.Path_jeu_de_tests+"test_defi_"+strconv.Itoa(num_defi_actuel+1), os.ModePerm)
 				num_defi_actuel = num_defi_actuel + 1
 				path = config.Path_defis + "correction_" + strconv.Itoa(num_defi_actuel)
 			}
-		} else if r.URL.Query()["form"][0] == "test" {
-			num := r.FormValue("defiSelect")
+			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
+			return
+		} else if r.URL.Query()["form"][0] == "test" { // Pour upload un test
+			num := r.FormValue("defiSelectTest")
+			typeTest := fileHeader.Header.Values("Content-Type")
+
 			if num == "" {
-				fmt.Println("aucun numéro de défis n'a été spécifié")
+				logs.WriteLog("upload test", "aucun numéro de défis n'a été spécifié")
+				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
+				return
+			}
+			fmt.Println(typeTest)
+			if typeTest[0] != "application/zip" && typeTest[0] != "application/tar" {
+				logs.WriteLog("upload test", "format de l'upload incompatible")
 				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 				return
 			}
 			logs.WriteLog("Admin", "upload d'un test pour le défi n°"+num)
-			typeTest := fileHeader.Header.Values("Content-Type")
-			fmt.Println(typeTest)
-			//application/zip , application/tar, text/plain; charset=utf-8
-
 			//if dossier de test existe déjà, on le supprime
 			pathTest := config.Path_jeu_de_tests + "test_defi_" + num
 			if manipStockage.Contains(config.Path_jeu_de_tests, "test_defi_"+num) {
@@ -261,7 +262,6 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			os.Chmod(fichier.Name(), 777)
 
 			if typeTest[0] == "application/zip" {
-
 				cmd := exec.Command("unzip", "-d",
 					"test_defi_"+strconv.Itoa(num_defi_actuel),
 					fileHeader.Filename)

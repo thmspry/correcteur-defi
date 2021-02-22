@@ -71,7 +71,7 @@ func InitBDD() {
 	stmt.Exec()
 
 	stmt, err = db.Prepare("CREATE TABLE IF NOT EXISTS Defis (" +
-		"numero INTEGER PRIMARY KEY," +
+		"numero INTEGER PRIMARY KEY AUTOINCREMENT," +
 		"date_debut TEXT NOT NULL," +
 		"date_fin TEXT NOT NULL" +
 		")")
@@ -363,9 +363,9 @@ func GetResult(login string, defi int) ResBDD {
 /**
 Ajoute un défi à la table Defis
 */
-func AddDefi(num int, dateD date.Date, dateF date.Date) {
-	stmt, err := db.Prepare("INSERT INTO Defis values(?,?,?)")
-	_, err = stmt.Exec(num, dateD.String(), dateF.String())
+func AddDefi(dateD date.Date, dateF date.Date) {
+	stmt, err := db.Prepare("INSERT INTO Defis(date_debut,date_fin) values(?,?)")
+	_, err = stmt.Exec(dateD.String(), dateF.String())
 	if err != nil {
 		logs.WriteLog("BDD.AddDefi", err.Error())
 	}
