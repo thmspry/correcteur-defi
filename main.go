@@ -64,10 +64,7 @@ func resetBDD() {
 		Login:    "admin",
 		Password: "admin",
 	}
-	passwordHashed, err = bcrypt.GenerateFromPassword([]byte(admin.Password), 14) // hashage du mot de passe
-	if err == nil {
-		admin.Password = string(passwordHashed)
-	}
+
 	BDD.RegisterAdmin(admin)
 
 }

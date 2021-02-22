@@ -100,7 +100,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 
 			login := r.FormValue("login")
 			password := r.FormValue("password")
-			fmt.Println("Tentative de connexion avec :", login, " ", password)
+			fmt.Println("Tentative de connexion admin avec :", login, " ", password)
 			existe := BDD.LoginCorrectAdmin(login, password) // on test le couple login/passwordHashé
 			if existe {
 				//Création du token
@@ -109,20 +109,17 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				expiration := time.Now().Add(temps)
 				cookie := http.Cookie{Name: "token", Value: token, Expires: expiration}
 				http.SetCookie(w, &cookie)
-				fmt.Println("(login=", login, ",token=", token)
 				BDD.InsertToken(login, token)
 
-				logs.WriteLog(login, "connexion admin")
+				logs.WriteLog(login, "connexion admin réussie création d'un token")
 				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 
 				go DeleteToken(login, temps)
 				return
 			} else {
-				fmt.Println("login '" + login + "' incorrecte")
-				http.Redirect(w, r, "/loginAdmin", http.StatusFound)
+				logs.WriteLog(login, "mot de passe incorrecte connexion admin")
+				http.Redirect(w, r, "/login?connexion=admin", http.StatusFound)
 			}
-
-			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 		}
 	}
 }

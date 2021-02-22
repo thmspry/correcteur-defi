@@ -184,13 +184,10 @@ vérifie que le couple login,password existe dans la table Administrateur
 */
 func LoginCorrectAdmin(id string, password string) bool {
 	var passwordHashed string
-	row := db.QueryRow("SELECT password FROM Administrateur WHERE login = $1", id)
-	if row == nil { // pas de compte avec ce login
-		return false
-	}
+	row := db.QueryRow("SELECT password FROM administrateur WHERE login = $1", id)
 	errScan := row.Scan(&passwordHashed) // cast/parse du res de la requète en string dans passwordHashed
 	if errScan != nil {
-		fmt.Printf("Problème de row.Scan() : ", errScan)
+		logs.WriteLog(id, "login admin inconnu")
 	}
 	errCompare := bcrypt.CompareHashAndPassword([]byte(passwordHashed), []byte(password)) // comparaison du hashé et du clair
 	return errCompare == nil                                                              // si nil -> ça match, sinon non
