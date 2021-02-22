@@ -3,7 +3,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let optionsDatePicker = {
         format : "yyyy-mm-dd",
         minDate: new Date("2021-02-15"),
-        maxDate: new Date("2022-06-30")
+        maxDate: new Date("2022-06-30"),
+        defaultDate : new Date()
     }
     var instances = M.Datepicker.init(elems, optionsDatePicker);
 
@@ -12,7 +13,22 @@ document.addEventListener('DOMContentLoaded', function() {
     changeInputFile("#file-defi");
     changeInputFile("#file-test");
 
+    var selectList = document.querySelectorAll('select');
+    var instancesSelect = M.FormSelect.init(selectList);
 
+    var instanceTab = M.Tabs.init(el, optionsTabs);
+    console.log(localStorage.getItem("current-tab"));
+    instanceTab.select(localStorage.getItem("current-tab"));
+
+});
+
+let tabLi = document.querySelectorAll(".tabs a")
+tabLi.forEach(li => {
+    li.addEventListener('click', () => {
+        let tab = document.querySelector(".active");
+        localStorage.setItem("current-tab", tab.getAttribute("href").substring(1));
+        console.log("stock " + tab.getAttribute("href").substring(1));
+    });
 });
 
 let el = document.querySelector(".tabs");
@@ -42,5 +58,5 @@ function changeInputFile(selector) {
 document.addEventListener('DOMContentLoaded', function() {
     var elems = document.querySelectorAll('select');
     var instances = M.FormSelect.init(elems);
-});
 
+});

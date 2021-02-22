@@ -24,19 +24,19 @@ import (
 )
 
 type data_pageAdmin struct {
-	EtuSelect     string
-	DefiNumSelect string
-	AdminInfo     BDD.Admin
-	Etudiants     []BDD.Etudiant
-	Res_etu       []BDD.ResBDD
-	ListeDefis    []BDD.Defi
-	File          []string
-	Defi_actuel   BDD.Defi
-	Participants  []BDD.ParticipantDefi
-
-	Logs    []string
-	Log     []string
-	LogDate string
+	EtuSelect    string
+	DefiSelect   BDD.Defi
+	AdminInfo    BDD.Admin
+	Etudiants    []BDD.Etudiant
+	Res_etu      []BDD.ResBDD
+	ListeDefis   []BDD.Defi
+	File         []string
+	DefiActuel   BDD.Defi
+	Participants []BDD.ParticipantDefi
+	Correcteur   BDD.Etudiant
+	Logs         []string
+	Log          []string
+	LogDate      string
 }
 
 type SenderData struct {
@@ -64,16 +64,16 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	admin := BDD.GetAdmin(login)             // récupère les informations de l'étudiant grâce au login
 
 	data := data_pageAdmin{
-		AdminInfo:   admin,
-		Etudiants:   BDD.GetEtudiants(),
-		Defi_actuel: BDD.GetDefiActuel(),
-		ListeDefis:  BDD.GetDefis(),
-		Logs:        manipStockage.GetFiles(config.Path_log),
+		AdminInfo:  admin,
+		Etudiants:  BDD.GetEtudiants(),
+		DefiActuel: BDD.GetDefiActuel(),
+		ListeDefis: BDD.GetDefis(),
+		Logs:       manipStockage.GetFiles(config.Path_log),
 	}
 	//if date actuelle > defi actel.datefin alors defiactuel.num = -1
-	if data.Defi_actuel.Num != -1 {
-		if !date.Today().Within(date.NewRange(data.Defi_actuel.Date_debut, data.Defi_actuel.Date_fin)) {
-			data.Defi_actuel.Num = -1
+	if data.DefiActuel.Num != -1 {
+		if !date.Today().Within(date.NewRange(data.DefiActuel.Date_debut, data.DefiActuel.Date_fin)) {
+			data.DefiActuel.Num = -1
 		}
 	}
 	fmt.Println(r.URL.String())
@@ -96,11 +96,13 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 		if r.URL.Query()["Defi"] != nil {
 			num, _ := strconv.Atoi(r.URL.Query()["Defi"][0])
-			data.DefiNumSelect = r.URL.Query()["Defi"][0]
+			data.DefiSelect = BDD.GetDefi(num)
+			data.Correcteur = BDD.GetCorrecteur(num)
+			fmt.Println("data.correcteur = ", data.Correcteur)
 			data.Participants = BDD.GetParticipant(num)
 			if etu := r.URL.Query()["Etudiant"]; etu != nil {
 				fmt.Println(etu)
-				f, err := os.Open(config.Path_scripts + "script_" + etu[0] + "_" + data.DefiNumSelect)
+				f, err := os.Open(config.Path_scripts + "script_" + etu[0] + "_" + strconv.Itoa(data.DefiSelect.Num))
 				if err != nil {
 					data.File[0] = "erreur pour récupérer le script de l'étudiant"
 				} else {
@@ -127,6 +129,12 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				http.ServeFile(w, r, fileName)
 				os.Remove(fileName)
 				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
+				return
+			}
+			if r.URL.Query()["Correcteur"] != nil {
+				BDD.GenerateCorrecteur(num)
+				//TODO envoyer un mail à data.Correcteur
+				http.Redirect(w, r, "/pageAdmin?Defi="+strconv.Itoa(num), http.StatusFound)
 				return
 			}
 		}

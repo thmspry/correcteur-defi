@@ -16,22 +16,22 @@
 </div>
 <div class="main">
     <div class="title">
-        {{if eq .Defi_actuel.Num -1}}
+        {{if eq .DefiActuel.Num -1}}
         <h2>Il n'y a pas de défi en cours</h2>
         {{else}}
-        <h2>Défi actuel : défi n°{{.Defi_actuel.Num}}</h2>
-        <h2>Il a commencé le {{.Defi_actuel.Date_debut}}
-            et se termine le {{.Defi_actuel.Date_fin}}</h2>
+        <h2>Défi actuel : défi n°{{.DefiActuel.Num}}</h2>
+        <h2>Il a commencé le {{.DefiActuel.Date_debut}}
+            et se termine le {{.DefiActuel.Date_fin}}</h2>
         {{end}}
     </div>
     <div class="separator"></div>
     <div class="row">
         <div class="col s12">
             <ul class="tabs">
-                <li class="tab col s3"><a class="active {{if eq .Defi_actuel.Num -1}} disabled {{end}}" href="#up-defi">Déposer un défi</a></li>
-                <li class="tab col s3"><a class="{{if eq .Defi_actuel.Num -1}} disabled {{end}}" href="#modif-date">Modifier la date</a></li>
-                <li class="tab col s3"><a class="{{if eq .Defi_actuel.Num -1}} disabled {{end}}" href="#up-test">Déposer des test</a></li>
-                <li class="tab col s3"><a href="#liste-defi">Liste des défis</a></li>
+                <li class="tab col s3"><a class="active" href="#up-defi">Déposer un défi</a></li>
+                <li class="tab col {{if eq .DefiActuel.Num -1}} disabled {{end}} s3"><a href="#modif-date">Modifier la date</a></li>
+                <li class="tab col {{if eq .DefiActuel.Num -1}} disabled {{end}} s3"><a href="#up-test">Déposer des test</a></li>
+                <li class="tab col {{if eq .DefiActuel.Num -1}} disabled {{end}} s3"><a href="#liste-defi">Liste des défis</a></li>
                 <li class="tab col s3"><a href="#logs">Logs</a></li>
             </ul>
         </div>
@@ -49,11 +49,11 @@
                 </div>
                 <div class="date-selector">
                     <p>Date de début :</p>
-                    <input type="text" class="datepicker" name="date_debut" value="{{.Defi_actuel.Date_debut}}">
+                    <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num -1}} value="{{.DefiActuel.Date_debut}}" {{end}}>
                 </div>
                 <div class="date-selector">
                     <p>Date de fin :</p>
-                    <input type="text" class="datepicker" name="date_fin" value="{{.Defi_actuel.Date_fin}}">
+                    <input type="text" class="datepicker" name="date_fin" {{if ne .DefiActuel.Num -1}} value="{{.DefiActuel.Date_fin}}" {{end}}>
                 </div>
                 <div>
                     <input type="submit" class="button" value="déposer" name="submit"/>
@@ -65,61 +65,70 @@
             <h3>Modifier uniquement la date :</h3>
             <form action="/pageAdmin?form=modify_date" method="post">
                 <p>Numéro du défi à modifer la date :</p>
-                <select name="defiSelectModif" required="required">
-                    <option value="">null</option>
+                <select id="selectModifyDate" name="defiSelectModif" required="required">
                     {{range .ListeDefis}}
                     <option value="{{.Num}}">{{.Num}}</option>
                     {{end}}
                 </select>
                 <div>
                     <p>Date de début :</p>
-                    <input type="text" class="datepicker" name="date_debut" value="{{.Defi_actuel.Date_debut}}">
+                    <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num -1}} value="{{.DefiActuel.Date_debut}}" {{end}}>
                 </div>
-                <p>Date de fin : <input type="text" class="datepicker" name="date_fin" value="{{.Defi_actuel.Date_fin}}"></p>
-                <input type="submit">
+                <div>
+                    <p>Date de fin : </p>
+                    <input type="text" class="datepicker"  name="date_fin" {{if ne .DefiActuel.Num -1}} value="{{.DefiActuel.Date_fin}}" {{end}}>
+                </div>
+                <input class="button" type="submit">
             </form>
         </div>
         <div id="up-test" class="col s12">
             <h3>Formulaire pour upload des tests : </h3>
-            <p>Les formats acceptés sont les .zip et les .tar</p>
-            <p>l'archive doit comprendre à la racine les fichiers/dossiers servant au test et un fichier nommé "config"
-            contenant la liste des arguments pour chaque cas de test. Pas besoin de spécifier un nom à l'archive.</p>
-            <p>Exemple de fichier config :<br>
-            fichier1 fichier2<br>
-            fichier2 test1/fichier3<br>
-            test1/fichier3 test2/oui/fichier4<br>
-            etc...</p>
-            <form enctype="multipart/form-data" action="/pageAdmin?form=test" method="post">
-                Choisir un numéro de défi :
-                <select name="defiSelectTest" required="required">
-                    <option value="">null</option>
-                    {{range .ListeDefis}}
-                        <option value="{{.Num}}">{{.Num}}</option>
-                    {{end}}
-                </select>
-                <p>Dépot du test :</p>
-                <div class="chose-file" id="file-test">
-                    <label for="input-file-test">
-                        <img src="./web/assets/images/upload.png">
-                        <p>Choisir un fichier</p
-                        ></label>
-                    <input type="file" name="upload" id="input-file-test" required="required">
-                </div>
-                <input type="submit" class="button" value="déposer" name="submit">
-            </form>
+            <div class="explication">
+                <p>Les formats acceptés sont les .zip et les .tar</p>
+                <p>l'archive doit comprendre à la racine les fichiers/dossiers servant au test et un fichier nommé "config"
+                contenant la liste des arguments pour chaque cas de test. Pas besoin de spécifier un nom à l'archive.</p>
+                <p>Exemple de fichier config :<br>
+                fichier1 fichier2<br>
+                fichier2 test1/fichier3<br>
+                test1/fichier3 test2/oui/fichier4<br>
+                etc...</p>
+            </div>
+            <div>
+                <form enctype="multipart/form-data" action="/pageAdmin?form=test" method="post">
+                    <div>
+                    Choisir un numéro de défi :
+                    <select name="defiSelectTest" required="required">
+                        {{range .ListeDefis}}
+                            <option value="{{.Num}}">{{.Num}}</option>
+                        {{end}}
+                    </select>
+                    </div>
+                    <p>Dépot du test :</p>
+                    <div class="chose-file" id="file-test">
+                        <label for="input-file-test">
+                            <img src="./web/assets/images/upload.png">
+                            <p>Choisir un fichier</p></label>
+                        <input type="file" name="upload" id="input-file-test" required="required">
+                    </div>
+                    <div>
+                        <input type="submit" class="button" value="déposer" name="submit">
+                    </div>
+                </form>
+            </div>
         </div>
         <div id="liste-defi" class="col s12">
             <h3>Liste des défis enregistrés : </h3>
             {{range .ListeDefis}}
-            <p class="{{if eq $.Defi_actuel.Num .Num}}red{{end}}">
+            <p class="{{if eq $.DefiActuel.Num .Num}}red{{end}}">
                 Défi n°{{.Num}} du {{.Date_debut}} au {{.Date_fin}}
                 <a href="pageAdmin?Defi={{.Num}}">Afficher les participants</a></p>
             {{end}}
-            {{if .DefiNumSelect}}
-                <h4>Liste des participants au défi {{$.DefiNumSelect}}</h4>
+            {{if .DefiSelect}}
+                <h4>Liste des participants au défi {{$.DefiSelect.Num}}</h4>
                 {{if not .Participants}}
-                    Aucun participants<br>
+                    <p>Aucun participants</p>
                 {{end}}
+
                 {{range .Participants}}
                     {{.Etudiant.Login}}
                     Etat :
@@ -129,15 +138,57 @@
                         Échoué
                     {{end}}
                 Nombre de tentative : {{.Resultat.Tentative}}
-                <a href="pageAdmin?Defi={{$.DefiNumSelect}}&Etudiant={{.Etudiant.Login}}">
+                <a href="pageAdmin?Defi={{$.DefiSelect.Num}}&Etudiant={{.Etudiant.Login}}">
                     Afficher le script
                 </a>
-                <a href="pageAdmin?Defi={{$.DefiNumSelect}}&Etudiant={{.Etudiant.Login}}&Etat={{.Resultat.Etat}}">
+                <a href="pageAdmin?Defi={{$.DefiSelect.Num}}&Etudiant={{.Etudiant.Login}}&Etat={{.Resultat.Etat}}">
                     Modifier l'état
                 </a>
                 <br>
                 {{end}}
-                Récupérer le résultat au format CSV : <button><a href="pageAdmin?Defi={{.DefiNumSelect}}&getResult">téléchager</a></button>
+                Récupérer le résultat au format CSV : <button><a href="pageAdmin?Defi={{.DefiSelect.Num}}&getResult">téléchager</a></button><br>
+                {{if eq .DefiSelect.Correcteur ""}}
+                    Choisir un étudiant correcteur : <button><a href="pageAdmin?Defi={{.DefiSelect.Num}}&Correcteur">choisir</a></button>
+                {{else}}
+                    le correcteur est {{.Correcteur.Prenom}} {{.Correcteur.Nom}}<br>
+                    Son mail est {{.Correcteur.Mail}}
+                {{end}}
+
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>Etudiant</td>
+                            <td>Etat</td>
+                            <td>Nombre de tentative</td>
+                            <td>Action</td>
+                        </tr>
+                    {{range .Participants}}
+                        <tr>
+                            <td>{{.Etudiant.Login}}</td>
+                            <td>
+                        {{if eq .Resultat.Etat 1}}
+                            Réussi
+                            {{else if eq .Resultat.Etat 0}}
+                            Échoué
+                        {{end}}
+                            </td>
+                            <td>{{.Resultat.Tentative}}</td>
+                            <td>
+                    <a href="pageAdmin?Defi={{$.DefiNumSelect}}&Etudiant={{.Etudiant.Login}}">
+                        Afficher le script
+                    </a>
+                                |
+                    <a href="pageAdmin?Defi={{$.DefiNumSelect}}&Etudiant={{.Etudiant.Login}}&Etat={{.Resultat.Etat}}">
+                        Modifier l'état
+                    </a>
+                            </td>
+                        </tr>
+                    {{end}}
+                    </tbody>
+                </table>
+                <div>
+                    Récupérer le résultat au format CSV : <button class="button"><a href="pageAdmin?Defi={{.DefiNumSelect}}&getResult">Téléchager</a></button>
+                </div>
             {{end}}
             <br>
             {{if .File}}
@@ -153,25 +204,32 @@
         </div>
         <div id="logs" class="col s12">
             <h3>Logs :</h3>
-            <div>
                 {{range .Logs}}
-                <a href="pageAdmin?Log={{.}}">{{.}}</a><br>
+                    <a href="pageAdmin?Log={{.}}">{{.}}</a><br>
                 {{end}}
                 <a href="pageAdmin">désélectionner</a>
-            </div>
             {{if .Log}}
+            <div class="separator"></div>
             Contenu des logs du {{.LogDate}} : <br>
             <div>
-                {{range .Log}}
-                {{.}}<br>
-                {{end}}
+                <table>
+                    <tbody>
+                        {{range .Log}}
+                        <tr>
+                            <td>
+                                {{.}}
+                            </td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
             </div>
             {{end}}
         </div>
     </div>
     <div class="separator"></div>
     <div id="mail">
-        <h2>Envoyez un mail a tous les étudiant pour leurs prévenir des résultats</h2>
+        <h2>Envoyer le résultat par mail aux étudiants</h2>
         <form action="/pageAdmin?form=sendMail" method="post">
             <input type="submit" class="button" value="Envoyer Mail" name="submit">
         </form>

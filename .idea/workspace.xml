@@ -1,7 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="e8fa640e-7965-48b6-bacf-641595b0abe4" name="Default Changelist" comment="0.11.15 : ajout erreurs connexion admin + restructuration du controleur connexion" />
+    <list default="true" id="bed406ae-6ecc-4f7b-8893-5028a54dac5f" name="Default Changelist" comment="0.11.11">
+      <change afterPath="$PROJECT_DIR$/logs/2021-02-22" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_22_02_2021_14_39__Default_Changelist_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_22_02_2021_14_40__Default_Changelist_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_22_02_2021_14_41__Default_Changelist_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BDD/database.db" beforeDir="false" afterPath="$PROJECT_DIR$/BDD/database.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BDD/fonc_bdd.go" beforeDir="false" afterPath="$PROJECT_DIR$/BDD/fonc_bdd.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modele/testeur/testeur.go" beforeDir="false" afterPath="$PROJECT_DIR$/modele/testeur/testeur.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/ControleurAdmin.go" beforeDir="false" afterPath="$PROJECT_DIR$/web/ControleurAdmin.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/assets/js/pageAdmin.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/assets/js/pageAdmin.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/html/pageAdmin.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/html/pageAdmin.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -10,11 +43,11 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="JavaScript File" />
+        <option value="Go File" />
       </list>
     </option>
   </component>
-  <component name="GOROOT" url="file:///usr/local/go" />
+  <component name="GOROOT" path="C:\Users\paulv\sdk\go1.15.3" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -29,19 +62,70 @@
   <component name="GoLibraries">
     <option name="indexEntireGoPath" value="false" />
   </component>
-  <component name="ProjectId" id="1oq19wpzyfQzEDG0uavut3H64Xd" />
+  <component name="ProjectId" id="1kbtI2HJ8cqA5XCLja2g94Ff1II" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="DatabaseDriversLRU" value="sqlite" />
+    <property name="DefaultGoTemplateProperty" value="Go File" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
-    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
     <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
     <property name="last_opened_file_path" value="$USER_HOME$" />
+    <property name="restartRequiresConfirmation" value="false" />
+    <property name="settings.editor.selected.configurable" value="configurable.group.editor" />
+  </component>
+  <component name="RecentsManager">
+    <key name="GoMoveDeclarationDialog.RECENT_KEY">
+      <recent name="$PROJECT_DIR$/config" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="A:\travail\programmation\proj s3\ressource\jeu_de_test\test_defi_0" />
+      <recent name="A:\travail\programmation\proj s3\ressource\script_etudiants" />
+      <recent name="A:\travail\programmation\proj s3\ressource\defis" />
+      <recent name="A:\travail\programmation\proj s3\web\css" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="A:\travail\programmation\proj s3\BDD" />
+      <recent name="A:\travail\programmation\proj s3\modele" />
+      <recent name="A:\travail\programmation\proj s3\modele\manipStockage" />
+      <recent name="A:\travail\programmation\proj s3\ressource\jeu_de_test" />
+      <recent name="A:\travail\programmation\proj s3\ressource\jeu_de_test\oui" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Go Build.go build main.go">
+    <configuration name="go build gitlab.univ-nantes.fr/E192543L/projet-s3" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="projet s3" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="gitlab.univ-nantes.fr/E192543L/projet-s3" />
+      <directory value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="projet s3" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/main.go" />
+      <package value="gitlab.univ-nantes.fr/E192543L/projet-s3" />
+      <directory value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Build.go build main.go" />
+        <item itemvalue="Go Build.go build gitlab.univ-nantes.fr/E192543L/projet-s3" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">
@@ -57,10 +141,36 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="0.11.15 : ajout erreurs connexion admin + restructuration du controleur connexion" />
-    <option name="LAST_COMMIT_MESSAGE" value="0.11.15 : ajout erreurs connexion admin + restructuration du controleur connexion" />
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="0.6.5 : modification de la page admin, on y trouve la liste des étudiants et on peut afficher leurs informations" />
+    <MESSAGE value="0.6.6 : modif de donnée page admin : On peut maintenant visualiser les scripts des étudiants et changer leur état entre réussi et échoué." />
+    <MESSAGE value="0.6.7 modification page étudiante" />
+    <MESSAGE value="0.7 : retour du testeur plus spécifique : print le contenu des tests passés, le résultat des tests et il s'arrête au test échoué (non testé)" />
+    <MESSAGE value="0.8 : Modification de la base de donnée, ajout d'une table, gestion de la date de rendu, modification du nommage de certaines variables pour qu'ils soient plus cohérentes" />
+    <MESSAGE value="0.8.1 : modification de l'interface admin" />
+    <MESSAGE value="0.8.2 : envoie de CSV" />
+    <MESSAGE value="0.8.3 : affichage des logs sur la page admin" />
+    <MESSAGE value="0.8.3.1 : changement de formulaire et de format des logs (YYYY-MM-DD)" />
+    <MESSAGE value="0.9 : ajout d'un bouton permettant à l'étudiant de se logout du site&#10;ajout des différents modes d'exécution : &#10; - 0 : initialisation des répertoires et de la base de données&#10; - 1 : lance l'application normalement avec l'interface web" />
+    <MESSAGE value="0.9.1 : ajout du fichier exécutable pour le serveur" />
+    <MESSAGE value="0.9.2" />
+    <MESSAGE value="0.9.3 : modification des types d'exécution et du fichier exécutable" />
+    <MESSAGE value="0.9.4 : changement date qui ne marchait pas lorsqu'on a pas de défi enregistré" />
+    <MESSAGE value="0.9.5 : version qui marche" />
+    <MESSAGE value="0.9.6 : changement du système de date (utilisation de github.com/aodin/date)" />
+    <MESSAGE value="0.9.7 : changement du système qui permet de déterminer le défi actuel (maintenant on peut déposer des défis après celui du défi actuel) + ajout de la liste des défis dans la page admin" />
+    <MESSAGE value="0.10.1 : modification dans la BDD" />
+    <MESSAGE value="0.10.4 : Modification de la page admin" />
+    <MESSAGE value="0.10.10 : début modification du testeur" />
+    <MESSAGE value="0.10.11 : modification testeur" />
+    <MESSAGE value="0.11.4 : gestions des logs" />
+    <MESSAGE value="0.11.6 :" />
+    <MESSAGE value="0.11.10 : modif page admin, upload de test" />
+    <MESSAGE value="0.11.11" />
+    <option name="LAST_COMMIT_MESSAGE" value="0.11.11" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>

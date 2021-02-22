@@ -49,6 +49,7 @@ type Defi struct {
 	Num        int
 	Date_debut date.Date
 	Date_fin   date.Date
+	Correcteur string
 }
 
 var db, _ = sql.Open("sqlite3", "./BDD/database.db")
@@ -74,7 +75,9 @@ func InitBDD() {
 	stmt, err = db.Prepare("CREATE TABLE IF NOT EXISTS Defis (" +
 		"numero INTEGER PRIMARY KEY AUTOINCREMENT," +
 		"date_debut TEXT NOT NULL," +
-		"date_fin TEXT NOT NULL" +
+		"date_fin TEXT NOT NULL," +
+		"correcteur TEXT," +
+		"FOREIGN KEY (correcteur) REFERENCES Etudiant(login)" +
 		")")
 	if err != nil {
 		fmt.Println("Erreur création table Defis " + err.Error())
@@ -397,7 +400,7 @@ func GetDefis() []Defi {
 		logs.WriteLog("BDD.GetDefis", err.Error())
 	}
 	for row.Next() {
-		row.Scan(&defi.Num, &debutString, &finString)
+		row.Scan(&defi.Num, &debutString, &finString, &defi.Correcteur)
 		defi.Date_debut, _ = date.Parse(debutString)
 		defi.Date_fin, _ = date.Parse(finString)
 		defis = append(defis, defi)
@@ -415,6 +418,7 @@ func GetDefiActuel() Defi {
 		Num:        -1,
 		Date_debut: date.Date{},
 		Date_fin:   date.Date{},
+		Correcteur: "",
 	}
 	for _, d := range defis {
 		if date.Today().Within(date.NewRange(d.Date_debut, d.Date_fin)) {
@@ -424,34 +428,49 @@ func GetDefiActuel() Defi {
 	return defiActuel
 }
 
+func GetDefi(num int) Defi {
+	defis := GetDefis()
+	for _, d := range defis {
+		if d.Num == num {
+			return d
+		}
+	}
+	return Defi{}
+}
+
 //selectionne quel étudiant sera correcteur en fonction de si il a réussi et si il a déjà été correcteur
-func GetEtudiantCorrecteur(num_defi int) string {
-	var t = make([]string, 0)
-	var res string
-	var aleatoire int
-	var logfinal string
-	row, err := db.Query("Select r.Login FROM Resultat r, Etudiant e WHERE r.Defi = $1 AND r.Etat = 1 AND e.Correcteur= 0 AND r.Login =e.Login", num_defi)
+func GenerateCorrecteur(num_defi int) {
+	var t = make([]Etudiant, 0)
+	var etu Etudiant
+	row, err := db.Query("Select e.* FROM Resultat r, Etudiant e WHERE r.Defi = $1 AND r.Etat = 1 AND e.Correcteur= 0 AND r.Login =e.Login", num_defi)
 	defer row.Close()
 	if err != nil {
 		fmt.Printf(err.Error())
 	} else {
 		for row.Next() {
-			row.Scan(&res)
-			t = append(t, res)
+			row.Scan(&etu.Login, &etu.Password, &etu.Nom, &etu.Prenom, &etu.Mail, &etu.Correcteur)
+			t = append(t, etu)
 		}
-		fmt.Println(t)
 	}
 	rand.Seed(time.Now().UnixNano())
 	min := 0
 	max := len(t) - 1
-	aleatoire = rand.Intn(max-min+1) + min
-	logfinal = t[aleatoire]
+	aleatoire := rand.Intn(max-min+1) + min
+	correcteur := t[aleatoire]
 	sqlStatement := "UPDATE Etudiant  SET correcteur = 1 WHERE login = $1 "
-	_, err = db.Exec(sqlStatement, logfinal)
-	if err != nil {
-		fmt.Printf(err.Error())
+	db.Exec(sqlStatement, correcteur.Login)
+	sqlStatement = "UPDATE Defis SET correcteur = $1 WHERE numero = $2"
+	db.Exec(sqlStatement, correcteur.Login, num_defi)
+	fmt.Println("correcteur généré : ", correcteur)
+}
+
+func GetCorrecteur(num int) Etudiant {
+	var etu Etudiant
+	row := db.QueryRow("SELECT e.* FROM Etudiant e, Defis d WHERE d.numero = $1 AND e.login = d.correcteur", num)
+	if err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur); err != nil {
+		logs.WriteLog("BDD.GetCorrecteur", err.Error())
 	}
-	return logfinal
+	return etu
 }
 
 /**

@@ -15,7 +15,7 @@ func GetHoraire() string {
 	return horaire
 }
 
-func WriteLog(login string, msg string) {
+func WriteLog(titre string, msg string) {
 	d := date.Today()
 	/*if !manipStockage.Contains("./logs/", d.String()) {
 		ioutil.WriteFile("./logs/"+d.String(), nil, 0755)
@@ -29,7 +29,7 @@ func WriteLog(login string, msg string) {
 	if err != nil {
 		fmt.Printf(err.Error())
 	}
-	f.WriteString(GetHoraire() + ", " + login + " : " + msg + "\n")
+	f.WriteString(GetHoraire() + ", " + titre + " : " + msg + "\n")
 
 	f.Close()
 }
