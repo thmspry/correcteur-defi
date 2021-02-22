@@ -2,22 +2,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var elems = document.querySelectorAll('.datepicker');
     let optionsDatePicker = {
         format : "yyyy-mm-dd",
-        month :
-            [
-                'Janvier',
-                'February',
-                'March',
-                'April',
-                'May',
-                'June',
-                'July',
-                'August',
-                'September',
-                'October',
-                'November',
-                'December'
-            ],
-        minDate: new Date("2021-02-15")
+        minDate: new Date("2021-02-15"),
+        maxDate: new Date("2022-06-30")
     }
     var instances = M.Datepicker.init(elems, optionsDatePicker);
 
@@ -52,11 +38,4 @@ function changeInputFile(selector) {
         label.innerHTML = getFileName(input.value);
     });
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-    var elems = document.querySelectorAll('select');
-    var instances = M.FormSelect.init(elems);
-});
-
-
 
