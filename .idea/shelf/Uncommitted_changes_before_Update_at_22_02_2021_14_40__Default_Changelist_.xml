@@ -1,0 +1,9 @@
+<changelist name="Uncommitted_changes_before_Update_at_22_02_2021_14_40_[Default_Changelist]" date="1614001250439" recycled="false" toDelete="true">
+  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_22_02_2021_14_40_[Default_Changelist]/shelved.patch" />
+  <option name="DESCRIPTION" value="Uncommitted changes before Update at 22/02/2021 14:40 [Default Changelist]" />
+  <binary>
+    <option name="BEFORE_PATH" value="BDD/database.db" />
+    <option name="AFTER_PATH" value="BDD/database.db" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_22_02_2021_14_40_[Default_Changelist]/database.db" />
+  </binary>
+</changelist>
