@@ -28,10 +28,10 @@
     <div class="row">
         <div class="col s12">
             <ul class="tabs">
-                <li class="tab col s3"><a class="active {{if eq .Defi_actuel.Num -1}} disabled {{end}}" href="#up-defi">Déposer un défi</a></li>
-                <li class="tab col s3"><a class="{{if eq .Defi_actuel.Num -1}} disabled {{end}}" href="#modif-date">Modifier la date</a></li>
-                <li class="tab col s3"><a class="{{if eq .Defi_actuel.Num -1}} disabled {{end}}" href="#up-test">Déposer des test</a></li>
-                <li class="tab col s3"><a href="#liste-defi">Liste des défis</a></li>
+                <li class="tab col s3"><a class="active" href="#up-defi">Déposer un défi</a></li>
+                <li class="tab col {{if eq .Defi_actuel.Num -1}} disabled {{end}} s3"><a href="#modif-date">Modifier la date</a></li>
+                <li class="tab col {{if eq .Defi_actuel.Num -1}} disabled {{end}} s3"><a href="#up-test">Déposer des test</a></li>
+                <li class="tab col {{if eq .Defi_actuel.Num -1}} disabled {{end}} s3"><a href="#liste-defi">Liste des défis</a></li>
                 <li class="tab col s3"><a href="#logs">Logs</a></li>
             </ul>
         </div>
@@ -49,11 +49,11 @@
                 </div>
                 <div class="date-selector">
                     <p>Date de début :</p>
-                    <input type="text" class="datepicker" name="date_debut" value="{{.Defi_actuel.Date_debut}}">
+                    <input type="text" class="datepicker" name="date_debut" {{if ne .Defi_actuel.Num -1}} value="{{.Defi_actuel.Date_debut}}" {{end}}>
                 </div>
                 <div class="date-selector">
                     <p>Date de fin :</p>
-                    <input type="text" class="datepicker" name="date_fin" value="{{.Defi_actuel.Date_fin}}">
+                    <input type="text" class="datepicker" name="date_fin" {{if ne .Defi_actuel.Num -1}} value="{{.Defi_actuel.Date_fin}}" {{end}}>
                 </div>
                 <div>
                     <input type="submit" class="button" value="déposer" name="submit"/>
@@ -66,17 +66,19 @@
             <form action="/pageAdmin?form=modify_date" method="post">
                 <p>Numéro du défi à modifer la date :</p>
                 <select name="defiSelectModif" required="required">
-                    <option value="">null</option>
                     {{range .ListeDefis}}
                     <option value="{{.Num}}">{{.Num}}</option>
                     {{end}}
                 </select>
                 <div>
                     <p>Date de début :</p>
-                    <input type="text" class="datepicker" name="date_debut" value="{{.Defi_actuel.Date_debut}}">
+                    <input type="text" class="datepicker" name="date_debut" {{if ne .Defi_actuel.Num -1}} value="{{.Defi_actuel.Date_debut}}" {{end}}>
                 </div>
-                <p>Date de fin : <input type="text" class="datepicker" name="date_fin" value="{{.Defi_actuel.Date_fin}}"></p>
-                <input type="submit">
+                <div>
+                    <p>Date de fin : </p>
+                    <input type="text" class="datepicker"  name="date_fin" {{if ne .Defi_actuel.Num -1}} value="{{.Defi_actuel.Date_fin}}" {{end}}>
+                </div>
+                <input class="button" type="submit">
             </form>
         </div>
         <div id="up-test" class="col s12">
@@ -92,7 +94,6 @@
             <form enctype="multipart/form-data" action="/pageAdmin?form=test" method="post">
                 Choisir un numéro de défi :
                 <select name="defiSelectTest" required="required">
-                    <option value="">null</option>
                     {{range .ListeDefis}}
                         <option value="{{.Num}}">{{.Num}}</option>
                     {{end}}
@@ -171,7 +172,7 @@
     </div>
     <div class="separator"></div>
     <div id="mail">
-        <h2>Envoyez un mail a tous les étudiant pour leurs prévenir des résultats</h2>
+        <h2>Envoyer le résultat par mail aux étudiants</h2>
         <form action="/pageAdmin?form=sendMail" method="post">
             <input type="submit" class="button" value="Envoyer Mail" name="submit">
         </form>

@@ -168,4 +168,8 @@ h3 {
 input[type=text].datepicker {
     width: min-content;
 }
+
+.tabs .tab.disabled a, .tabs .tab.disabled a:hover {
+    color: rgba(58, 186, 89, 0.4);
+}
 /* --- */
