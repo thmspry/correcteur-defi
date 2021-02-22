@@ -1,18 +1,18 @@
 package main
 
 import (
+	fmt "fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/manipStockage"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
 	"golang.org/x/crypto/bcrypt"
 	"os"
 )
 
 func main() {
 
-	web.InitWeb()
+	//web.InitWeb()
 	/*
 		set GOOS=linux
 		set GOARCH=amd64
@@ -26,6 +26,8 @@ func main() {
 		} else {
 			web.InitWeb()
 		}*/
+	fmt.Println(BDD.GetEtudiantCorrecteur(1))
+
 }
 
 func Init() {
@@ -48,11 +50,12 @@ func resetBDD() {
 
 	BDD.InitBDD()
 	etu := BDD.Etudiant{
-		Login:    "test",
-		Password: "test",
-		Prenom:   "testPrenom",
-		Nom:      "testNom",
-		Mail:     "testMail",
+		Login:      "test",
+		Password:   "test",
+		Prenom:     "testPrenom",
+		Nom:        "testNom",
+		Mail:       "testMail",
+		Correcteur: false,
 	}
 	passwordHashed, err := bcrypt.GenerateFromPassword([]byte(etu.Password), 14) // hashage du mot de passe
 	if err == nil {
@@ -60,6 +63,17 @@ func resetBDD() {
 	}
 	BDD.Register(etu)
 
+	etu2 := BDD.Etudiant{
+		Login:      "test2",
+		Password:   "test2",
+		Prenom:     "testPrenom2",
+		Nom:        "testNom2",
+		Mail:       "testMail2",
+		Correcteur: false,
+	}
+	BDD.Register(etu2)
+	BDD.SaveResultat("test", 1, 1, false)
+	BDD.SaveResultat("test2", 1, 1, false)
 	admin := BDD.Admin{
 		Login:    "admin",
 		Password: "admin",

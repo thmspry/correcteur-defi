@@ -8,6 +8,7 @@ import (
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
 	"golang.org/x/crypto/bcrypt"
 	"math/rand"
+	"time"
 )
 
 // Structure a réutiliser un peu partout
@@ -429,7 +430,7 @@ func GetEtudiantCorrecteur(num_defi int) string {
 	var res string
 	var aleatoire int
 	var logfinal string
-	row, err := db.Query("Select Login FROM Resultat r, Etudiant e WHERE r.Defi = $1 AND r.Etat = 1 AND e.Correcteur= 0 AND r.Login =e.Login", num_defi)
+	row, err := db.Query("Select r.Login FROM Resultat r, Etudiant e WHERE r.Defi = $1 AND r.Etat = 1 AND e.Correcteur= 0 AND r.Login =e.Login", num_defi)
 	defer row.Close()
 	if err != nil {
 		fmt.Printf(err.Error())
@@ -438,9 +439,18 @@ func GetEtudiantCorrecteur(num_defi int) string {
 			row.Scan(&res)
 			t = append(t, res)
 		}
-		aleatoire = rand.Intn(len(t))
+		fmt.Println(t)
 	}
+	rand.Seed(time.Now().UnixNano())
+	min := 0
+	max := len(t) - 1
+	aleatoire = rand.Intn(max-min+1) + min
 	logfinal = t[aleatoire]
+	sqlStatement := "UPDATE Etudiant  SET correcteur = 1 WHERE login = $1 "
+	_, err = db.Exec(sqlStatement, logfinal)
+	if err != nil {
+		fmt.Printf(err.Error())
+	}
 	return logfinal
 }
 
