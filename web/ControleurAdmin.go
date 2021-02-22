@@ -239,15 +239,20 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				path = config.Path_defis + "correction_" + strconv.Itoa(num_defi_actuel)
 			}
 		} else if r.URL.Query()["form"][0] == "test" {
-
-			logs.WriteLog("Admin", "upload d'un test pour le défi n°"+strconv.Itoa(num_defi_actuel))
+			num := r.FormValue("defiSelect")
+			if num == "" {
+				fmt.Println("aucun numéro de défis n'a été spécifié")
+				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
+				return
+			}
+			logs.WriteLog("Admin", "upload d'un test pour le défi n°"+num)
 			typeTest := fileHeader.Header.Values("Content-Type")
 			fmt.Println(typeTest)
 			//application/zip , application/tar, text/plain; charset=utf-8
 
 			//if dossier de test existe déjà, on le supprime
-			pathTest := config.Path_jeu_de_tests + "test_defi_" + strconv.Itoa(num_defi_actuel)
-			if manipStockage.Contains(config.Path_jeu_de_tests, "test_defi_"+strconv.Itoa(num_defi_actuel)) {
+			pathTest := config.Path_jeu_de_tests + "test_defi_" + num
+			if manipStockage.Contains(config.Path_jeu_de_tests, "test_defi_"+num) {
 				os.RemoveAll(pathTest)
 			}
 			fichier, _ := os.Create(config.Path_jeu_de_tests + fileHeader.Filename) // remplacer handler.Filename par le nom et on le place où on veut

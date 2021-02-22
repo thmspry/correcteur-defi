@@ -1,6 +1,11 @@
 13:40:28, test : connexion
 13:40:39, test : déconnexion du serveur
 13:41:28, test : déconnexion du serveur
+14:35:16, Admin : ajout d'un nouveau défis
+14:35:37, Admin : upload d'un test pour le défi n°2
+14:36:1, test : connexion
+14:36:11, test : upload de script du défis 2
+14:37:1, test : déconnexion du serveur
 14:24:56, oui : connexion
 14:25:56, oui : déconnexion du serveur
 14:33:0, oui : connexion
@@ -77,3 +82,9 @@
 22:10:26, oui : déconnexion du serveur
 22:10:47, oui : connexion
 22:11:47, oui : déconnexion du serveur
+22:37:28, test : connexion
+22:38:28, test : déconnexion du serveur
+22:39:36, test : connexion
+22:40:36, test : déconnexion du serveur
+22:41:16, test : connexion
+22:42:16, test : déconnexion du serveur

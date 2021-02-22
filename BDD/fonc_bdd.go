@@ -401,6 +401,9 @@ func GetDefis() []Defi {
 		defi.Date_fin, _ = date.Parse(finString)
 		defis = append(defis, defi)
 	}
+	if len(defis) == 0 {
+		return nil
+	}
 	return defis
 }
 
@@ -426,7 +429,7 @@ func GetEtudiantCorrecteur(num_defi int) string {
 	var res string
 	var aleatoire int
 	var logfinal string
-	row, err := db.Query("Select Login FROM Resultat r, Etudiant e WHERE r.Defi =", num_defi, " AND r.Etat = 1 AND e.Correcteur= 0 AND r.Login =e.Login")
+	row, err := db.Query("Select Login FROM Resultat r, Etudiant e WHERE r.Defi = $1 AND r.Etat = 1 AND e.Correcteur= 0 AND r.Login =e.Login", num_defi)
 	defer row.Close()
 	if err != nil {
 		fmt.Printf(err.Error())
