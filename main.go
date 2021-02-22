@@ -1,18 +1,18 @@
 package main
 
 import (
-	fmt "fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/manipStockage"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
 	"golang.org/x/crypto/bcrypt"
 	"os"
 )
 
 func main() {
 
-	//web.InitWeb()
+	web.InitWeb()
 	/*
 		set GOOS=linux
 		set GOARCH=amd64
@@ -26,7 +26,6 @@ func main() {
 		} else {
 			web.InitWeb()
 		}*/
-	fmt.Println(BDD.GetEtudiantCorrecteur(1))
 
 }
 

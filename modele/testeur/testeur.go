@@ -68,7 +68,7 @@ func Test(login string) (string, []Resultat) {
 
 	//Récupérer le défi actuel
 	numDefi := BDD.GetDefiActuel().Num
-	//numDefi = BDD.Defi_actuel()
+	//numDefi = BDD.DefiActuel()
 	correction := "correction_" + strconv.Itoa(numDefi)
 	scriptEtu := "script_" + login + "_" + strconv.Itoa(numDefi)
 	jeuDeTest := "test_defi_" + strconv.Itoa(numDefi) + "/"

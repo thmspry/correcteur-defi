@@ -16,12 +16,12 @@
 </div>
 <div class="main">
     <div class="title">
-        {{if eq .Defi_actuel.Num -1}}
+        {{if eq .DefiActuel.Num -1}}
         <h2>Il n'y a pas de défi en cours</h2>
         {{else}}
-        <h2>Défi actuel : défi n°{{.Defi_actuel.Num}}</h2>
-        <h2>Il a commencé le {{.Defi_actuel.Date_debut}}
-            et se termine le {{.Defi_actuel.Date_fin}}</h2>
+        <h2>Défi actuel : défi n°{{.DefiActuel.Num}}</h2>
+        <h2>Il a commencé le {{.DefiActuel.Date_debut}}
+            et se termine le {{.DefiActuel.Date_fin}}</h2>
         {{end}}
     </div>
     <div class="separator"></div>
@@ -29,9 +29,9 @@
         <div class="col s12">
             <ul class="tabs">
                 <li class="tab col s3"><a class="active" href="#up-defi">Déposer un défi</a></li>
-                <li class="tab col {{if eq .Defi_actuel.Num -1}} disabled {{end}} s3"><a href="#modif-date">Modifier la date</a></li>
-                <li class="tab col {{if eq .Defi_actuel.Num -1}} disabled {{end}} s3"><a href="#up-test">Déposer des test</a></li>
-                <li class="tab col {{if eq .Defi_actuel.Num -1}} disabled {{end}} s3"><a href="#liste-defi">Liste des défis</a></li>
+                <li class="tab col {{if eq .DefiActuel.Num -1}} disabled {{end}} s3"><a href="#modif-date">Modifier la date</a></li>
+                <li class="tab col {{if eq .DefiActuel.Num -1}} disabled {{end}} s3"><a href="#up-test">Déposer des test</a></li>
+                <li class="tab col {{if eq .DefiActuel.Num -1}} disabled {{end}} s3"><a href="#liste-defi">Liste des défis</a></li>
                 <li class="tab col s3"><a href="#logs">Logs</a></li>
             </ul>
         </div>
@@ -49,11 +49,11 @@
                 </div>
                 <div class="date-selector">
                     <p>Date de début :</p>
-                    <input type="text" class="datepicker" name="date_debut" {{if ne .Defi_actuel.Num -1}} value="{{.Defi_actuel.Date_debut}}" {{end}}>
+                    <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num -1}} value="{{.DefiActuel.Date_debut}}" {{end}}>
                 </div>
                 <div class="date-selector">
                     <p>Date de fin :</p>
-                    <input type="text" class="datepicker" name="date_fin" {{if ne .Defi_actuel.Num -1}} value="{{.Defi_actuel.Date_fin}}" {{end}}>
+                    <input type="text" class="datepicker" name="date_fin" {{if ne .DefiActuel.Num -1}} value="{{.DefiActuel.Date_fin}}" {{end}}>
                 </div>
                 <div>
                     <input type="submit" class="button" value="déposer" name="submit"/>
@@ -65,18 +65,18 @@
             <h3>Modifier uniquement la date :</h3>
             <form action="/pageAdmin?form=modify_date" method="post">
                 <p>Numéro du défi à modifer la date :</p>
-                <select name="defiSelectModif" required="required">
+                <select id="selectModifyDate" name="defiSelectModif" required="required">
                     {{range .ListeDefis}}
                     <option value="{{.Num}}">{{.Num}}</option>
                     {{end}}
                 </select>
                 <div>
                     <p>Date de début :</p>
-                    <input type="text" class="datepicker" name="date_debut" {{if ne .Defi_actuel.Num -1}} value="{{.Defi_actuel.Date_debut}}" {{end}}>
+                    <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num -1}} value="{{.DefiActuel.Date_debut}}" {{end}}>
                 </div>
                 <div>
                     <p>Date de fin : </p>
-                    <input type="text" class="datepicker"  name="date_fin" {{if ne .Defi_actuel.Num -1}} value="{{.Defi_actuel.Date_fin}}" {{end}}>
+                    <input type="text" class="datepicker"  name="date_fin" {{if ne .DefiActuel.Num -1}} value="{{.DefiActuel.Date_fin}}" {{end}}>
                 </div>
                 <input class="button" type="submit">
             </form>
@@ -112,12 +112,12 @@
         <div id="liste-defi" class="col s12">
             <h3>Liste des défis enregistrés : </h3>
             {{range .ListeDefis}}
-            <p class="{{if eq $.Defi_actuel.Num .Num}}red{{end}}">
+            <p class="{{if eq $.DefiActuel.Num .Num}}red{{end}}">
                 Défi n°{{.Num}} du {{.Date_debut}} au {{.Date_fin}}
                 <a href="pageAdmin?Defi={{.Num}}">Afficher les participants</a></p>
             {{end}}
-            {{if .DefiNumSelect}}
-                <h4>Liste des participants au défi {{$.DefiNumSelect}}</h4>
+            {{if .DefiSelect}}
+                <h4>Liste des participants au défi {{$.DefiSelect.Num}}</h4>
                 {{if not .Participants}}
                     Aucun participants<br>
                 {{end}}
@@ -130,15 +130,22 @@
                         Échoué
                     {{end}}
                 Nombre de tentative : {{.Resultat.Tentative}}
-                <a href="pageAdmin?Defi={{$.DefiNumSelect}}&Etudiant={{.Etudiant.Login}}">
+                <a href="pageAdmin?Defi={{$.DefiSelect.Num}}&Etudiant={{.Etudiant.Login}}">
                     Afficher le script
                 </a>
-                <a href="pageAdmin?Defi={{$.DefiNumSelect}}&Etudiant={{.Etudiant.Login}}&Etat={{.Resultat.Etat}}">
+                <a href="pageAdmin?Defi={{$.DefiSelect.Num}}&Etudiant={{.Etudiant.Login}}&Etat={{.Resultat.Etat}}">
                     Modifier l'état
                 </a>
                 <br>
                 {{end}}
-                Récupérer le résultat au format CSV : <button><a href="pageAdmin?Defi={{.DefiNumSelect}}&getResult">téléchager</a></button>
+                Récupérer le résultat au format CSV : <button><a href="pageAdmin?Defi={{.DefiSelect.Num}}&getResult">téléchager</a></button><br>
+                {{if eq .DefiSelect.Correcteur ""}}
+                    Choisir un étudiant correcteur : <button><a href="pageAdmin?Defi={{.DefiSelect.Num}}&Correcteur">choisir</a></button>
+                {{else}}
+                    le correcteur est {{.Correcteur.Prenom}} {{.Correcteur.Nom}}<br>
+                    Son mail est {{.Correcteur.Mail}}
+                {{end}}
+
             {{end}}
             <br>
             {{if .File}}

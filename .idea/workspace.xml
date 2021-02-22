@@ -20,15 +20,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bed406ae-6ecc-4f7b-8893-5028a54dac5f" name="Default Changelist" comment="0.11.11">
+      <change afterPath="$PROJECT_DIR$/logs/2021-02-22" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_22_02_2021_14_39__Default_Changelist_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_22_02_2021_14_40__Default_Changelist_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_22_02_2021_14_41__Default_Changelist_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BDD/database.db" beforeDir="false" afterPath="$PROJECT_DIR$/BDD/database.db" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BDD/fonc_bdd.go" beforeDir="false" afterPath="$PROJECT_DIR$/BDD/fonc_bdd.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/2021-01-30" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/2021-02-02" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/2021-02-03" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/2021-02-04" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/2021-02-05" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/2021-02-07" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/2021-02-11" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modele/testeur/testeur.go" beforeDir="false" afterPath="$PROJECT_DIR$/modele/testeur/testeur.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/ControleurAdmin.go" beforeDir="false" afterPath="$PROJECT_DIR$/web/ControleurAdmin.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/assets/js/pageAdmin.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/assets/js/pageAdmin.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/html/pageAdmin.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/html/pageAdmin.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,7 +50,6 @@
   <component name="GOROOT" path="C:\Users\paulv\sdk\go1.15.3" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="GitSEFilterConfiguration">
     <file-type-list>
