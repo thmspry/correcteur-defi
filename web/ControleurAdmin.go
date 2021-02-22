@@ -134,7 +134,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query()["logout"] != nil {
 			fmt.Println("logout " + admin.Login)
 			DeleteToken(admin.Login, time.Second*0)
-			http.Redirect(w, r, "/login?connexion=admin", http.StatusFound)
+			http.Redirect(w, r, "/loginAdmin", http.StatusFound)
 			return
 		}
 

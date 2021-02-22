@@ -14,6 +14,10 @@ import (
 	"net/http"
 )
 
+type dataConnexion struct {
+	ConnexionErreur bool
+}
+
 func accueil(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method de accueil :", r.Method)
 
@@ -32,21 +36,11 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.Method == "GET" {
 
-		if r.URL.Query()["connexion"] != nil && r.URL.Query()["connexion"][0] == "admin" {
-
-			t, err := template.ParseFiles("./web/html/connexionAdmin.html")
-			if err != nil {
-				fmt.Print("erreur chargement connexionAdmin.html")
-			}
-			_ = t.Execute(w, nil)
-		} else {
-
-			t, err := template.ParseFiles("./web/html/accueil.html")
-			if err != nil {
-				fmt.Print("erreur chargement accueil.html")
-			}
-			_ = t.Execute(w, nil)
+		t, err := template.ParseFiles("./web/html/accueil.html")
+		if err != nil {
+			fmt.Print("erreur chargement accueil.html")
 		}
+		_ = t.Execute(w, nil)
 
 	} else if r.Method == "POST" {
 
@@ -96,7 +90,28 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			} else {
 				// renvoi vers un page error/signification d'une erreur
 			}
-		} else if r.URL.String() == "/login?loginAdmin" {
+		}
+	}
+}
+
+func connexionAdmin(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("method de connexionAdmin :", r.Method)
+
+	if r.Method == "GET" {
+
+		t, err := template.ParseFiles("./web/html/connexionAdmin.html")
+		if err != nil {
+			fmt.Print("erreur chargement connexionAdmin.html")
+		}
+
+		data := dataConnexion{
+			ConnexionErreur: false,
+		}
+		_ = t.Execute(w, data)
+
+	} else if r.Method == "POST" {
+
+		if r.URL.String() == "/loginAdmin?login" {
 
 			login := r.FormValue("login")
 			password := r.FormValue("password")
@@ -111,14 +126,22 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				http.SetCookie(w, &cookie)
 				BDD.InsertToken(login, token)
 
-				logs.WriteLog(login, "connexion admin réussie création d'un token")
+				logs.WriteLog(login, "connexion admin réussie, création d'un token")
 				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 
 				go DeleteToken(login, temps)
+
 				return
 			} else {
 				logs.WriteLog(login, "mot de passe incorrecte connexion admin")
-				http.Redirect(w, r, "/login?connexion=admin", http.StatusFound)
+				t, err := template.ParseFiles("./web/html/connexionAdmin.html")
+				if err != nil {
+					fmt.Print("erreur chargement connexionAdmin.html")
+				}
+				data := dataConnexion{
+					ConnexionErreur: true,
+				}
+				_ = t.Execute(w, data)
 			}
 		}
 	}
