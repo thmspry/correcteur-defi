@@ -174,11 +174,11 @@
                             </td>
                             <td>{{.Resultat.Tentative}}</td>
                             <td>
-                    <a href="pageAdmin?Defi={{$.DefiNumSelect}}&Etudiant={{.Etudiant.Login}}">
+                    <a href="pageAdmin?Defi={{$.DefiSelect.Num}}&Etudiant={{.Etudiant.Login}}">
                         Afficher le script
                     </a>
                                 |
-                    <a href="pageAdmin?Defi={{$.DefiNumSelect}}&Etudiant={{.Etudiant.Login}}&Etat={{.Resultat.Etat}}">
+                    <a href="pageAdmin?Defi={{$.DefiSelect.Num}}&Etudiant={{.Etudiant.Login}}&Etat={{.Resultat.Etat}}">
                         Modifier l'état
                     </a>
                             </td>
@@ -187,7 +187,7 @@
                     </tbody>
                 </table>
                 <div>
-                    Récupérer le résultat au format CSV : <button class="button"><a href="pageAdmin?Defi={{.DefiNumSelect}}&getResult">Téléchager</a></button>
+                    Récupérer le résultat au format CSV : <button class="button"><a href="pageAdmin?Defi={{.DefiSelect.Num}}&getResult">Téléchager</a></button>
                 </div>
             {{end}}
             <br>
