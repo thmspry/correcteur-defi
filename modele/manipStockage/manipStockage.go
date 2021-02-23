@@ -3,6 +3,7 @@ package manipStockage
 import (
 	"encoding/csv"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
 	"io/ioutil"
 	"log"
@@ -111,4 +112,48 @@ func Contenu(path string) string {
 		output, _ := exec.Command("cat", path).CombinedOutput()
 		return string(output)
 	}
+}
+
+func GetTriche(numDefi int) [][]string {
+	participants := BDD.GetParticipant(numDefi)
+
+	type script struct {
+		Login   string
+		Contenu string
+	}
+	var s script
+	TabParticipants := make([]script, 0)
+
+	for _, part := range participants {
+		s.Login = part.Etudiant.Login
+		f, _ := ioutil.ReadFile(config.Path_scripts + "script_" + s.Login + "_" + strconv.Itoa(numDefi))
+		s.Contenu = string(f)
+		TabParticipants = append(TabParticipants, s)
+	}
+	TabSimilaire := make([][]script, 0)
+	for _, s = range TabParticipants {
+		b := true
+		for i, sim := range TabSimilaire {
+			if s.Contenu == sim[0].Contenu {
+				sim = append(sim, s)
+				TabSimilaire[i] = sim
+				b = false
+			}
+		}
+		if b {
+			TabSimilaire = append(TabSimilaire, []script{s})
+		}
+
+	}
+	res := make([][]string, 0)
+	for _, groupe := range TabSimilaire {
+		g := make([]string, 0)
+		for _, tricheur := range groupe {
+			g = append(g, tricheur.Login)
+		}
+		if len(g) > 2 {
+			res = append(res, g)
+		}
+	}
+	return res
 }

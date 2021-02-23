@@ -34,6 +34,7 @@ type data_pageAdmin struct {
 	DefiActuel   BDD.Defi
 	Participants []BDD.ParticipantDefi
 	Correcteur   BDD.Etudiant
+	Tricheurs    [][]string
 	Logs         []string
 	Log          []string
 	LogDate      string
@@ -136,6 +137,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				//TODO envoyer un mail à data.Correcteur
 				http.Redirect(w, r, "/pageAdmin?Defi="+strconv.Itoa(num), http.StatusFound)
 				return
+			}
+			if r.URL.Query()["getIdentique"] != nil {
+				data.Tricheurs = manipStockage.GetTriche(num)
 			}
 		}
 
