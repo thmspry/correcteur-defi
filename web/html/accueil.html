@@ -5,34 +5,54 @@
     <title>Accueil</title>
     <link rel="icon" type="image/png" href="./web/assets/images/logo.png" />
     <link rel="stylesheet" href="./web/assets/css/materialize.min.css">
+    <link rel="stylesheet" href="./web/assets/css/login.css">
 </head>
 <body>
+<div class="main">
+    <div class="row">
+        <div class="col s12">
+            <ul class="tabs">
+                <li class="tab col s3"><a class="active" href="#login">Login</a></li>
+                <li class="tab col s3"><a href="#register">Register</a></li>
+            </ul>
+        </div>
+        <div id="login" class="col s12">
+            <h1>Login </h1>
+            <form action="/login?login" method="post">
+                Username:<input type="text" name="login">
+                Password:<input type="password" name="password">
+                <input class="button" type="submit" value="Login">
+            </form>
+        </div>
+        <div id="register" class="col s12">
+            <h1>Register </h1>
+            <form action="/login?register" method="post">
+                <div class="inputs">
+                    <div class="part-form">
+                        <p>Identifiant:<input type="text" name="login" pattern="[E][0-9][0-9][0-9][0-9][0-9][0-9][A-Z]" placeholder="E21XXXXX"></p>
+                        <p>Mot de passe:<input type="password" name="password"> </p>
+                    </div>
+                    <div class="part-form">
+                        <p>Prénom : <input type="text" name="prenom"> </p>
+                        <p>Nom : <input type="text" name="nom"> </p>
+                        <p>E-mail : <input type="email" id="email" name ="mail" pattern=".+@etu.univ-nantes.fr" size="30" required placeholder="xxx@etu.univ-nantes.fr"> </p>
+                    </div>
+                </div>
+                <input class="button" type="submit" value="Register">
+            </form>
+            <br>
 
-<h1>Login </h1>
-<form action="/login?login" method="post">
-    Username:<input type="text" name="login">
-    Password:<input type="password" name="password">
-    <input type="submit" value="Login">
-</form>
-
-<br>
-
-<h1>Register </h1>
-<form action="/login?register" method="post">
-    Identifiant:<input type="text" name="login" pattern="[E][0-9][0-9][0-9][0-9][0-9][0-9][A-Z]"> <br>
-    Mot de passe:<input type="password" name="password"> <br>
-    Prénom : <input type="text" name="prenom"> <br>
-    Nom : <input type="text" name="nom"> <br>
-    mail : <input type="email" id="email" name ="mail" pattern=".+@etu.univ-nantes.fr" size="30" required placeholder="xxx@etu.univ-nantes.fr"><br>
-    <input type="submit" value="Register">
-</form>
-
-<a href="/loginAdmin">Connexion Admin</a>
-
+        </div>
+    </div>
+    <div class="separator"></div>
+    <a class="button change-page" href="/loginAdmin">Connexion Admin</a>
+</div>
 <script src="./web/assets/js/materialize.min.js"></script>
+<script src="./web/assets/js/login.js"></script>
 {{if eq .ConnexionErreur true}}
 <script src="./web/assets/js/erreurConnexion.js"></script>
 {{end}}
+
 
 </body>
 </html>

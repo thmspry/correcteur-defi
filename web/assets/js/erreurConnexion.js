@@ -1,4 +1,4 @@
 "use strict";
 
-M.toast({html: 'erreur login / mot de passe', classes: 'rounded'});
+M.toast({html: 'Une erreur login/mot de passe est survenue', classes: 'rounded'});
 

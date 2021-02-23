@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', function() {
     var instances = M.Datepicker.init(elems, optionsDatePicker);
 
 
-
     changeInputFile("#file-defi");
     changeInputFile("#file-test");
 

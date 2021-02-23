@@ -41,6 +41,19 @@
     height: 100%;
 }
 
+.info {
+    display: flex;
+    justify-content: space-between;
+}
+
+.left-side {
+    width: 55%;
+}
+
+.right-side {
+    width: fit-content;
+}
+
 #user {
    background-color: #ececec;
    padding: 1%;
