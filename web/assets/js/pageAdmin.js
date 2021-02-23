@@ -17,19 +17,15 @@ document.addEventListener('DOMContentLoaded', function() {
     var instancesSelect = M.FormSelect.init(selectList);
 
     var instanceTab = M.Tabs.init(el, optionsTabs);
-    console.log(localStorage.getItem("current-tab"));
     instanceTab.select(localStorage.getItem("current-tab"));
 
 });
 
 let tabLi = document.querySelectorAll(".tabs a")
-tabLi.forEach(li => {
-    li.addEventListener('click', () => {
-        let tab = document.querySelector(".active");
-        localStorage.setItem("current-tab", tab.getAttribute("href").substring(1));
-        console.log("stock " + tab.getAttribute("href").substring(1));
-    });
-});
+tabLi.forEach(li => li.addEventListener('click', function() {
+    let href = li.getAttribute("href").substring(1);
+    localStorage.setItem("current-tab", href);
+}));
 
 let el = document.querySelector(".tabs");
 let optionsTabs = {

@@ -28,7 +28,7 @@
     <div class="row">
         <div class="col s12">
             <ul class="tabs">
-                <li class="tab col s3"><a class="active" href="#up-defi">Déposer un défi</a></li>
+                <li class="tab col s3"><a href="#up-defi">Déposer un défi</a></li>
                 <li class="tab col {{if eq .DefiActuel.Num -1}} disabled {{end}} s3"><a href="#modif-date">Modifier la date</a></li>
                 <li class="tab col {{if eq .DefiActuel.Num -1}} disabled {{end}} s3"><a href="#up-test">Déposer des test</a></li>
                 <li class="tab col {{if eq .DefiActuel.Num -1}} disabled {{end}} s3"><a href="#liste-defi">Liste des défis</a></li>
@@ -130,7 +130,7 @@
                     <p>Aucun participants</p>
                 {{end}}
 
-                {{range .Participants}}
+                <!---{{range .Participants}}
                     {{.Etudiant.Login}}
                     Etat :
                     {{if eq .Resultat.Etat 1}}
@@ -146,13 +146,12 @@
                     Modifier l'état
                 </a>
                 <br>
-                {{end}}
-                Récupérer le résultat au format CSV : <button><a href="pageAdmin?Defi={{.DefiSelect.Num}}&getResult">téléchager</a></button><br>
+                {{end}}---->
                 {{if eq .DefiSelect.Correcteur ""}}
-                    Choisir un étudiant correcteur : <button><a href="pageAdmin?Defi={{.DefiSelect.Num}}&Correcteur">choisir</a></button>
+                    <p>Choisir un étudiant correcteur : <button><a href="pageAdmin?Defi={{.DefiSelect.Num}}&Correcteur">choisir</a></button></p>
                 {{else}}
-                    le correcteur est {{.Correcteur.Prenom}} {{.Correcteur.Nom}}<br>
-                    Son mail est {{.Correcteur.Mail}}
+                    <p>Le correcteur est {{.Correcteur.Prenom}} {{.Correcteur.Nom}}</p>
+                    <p>Son mail est {{.Correcteur.Mail}}</p>
                 {{end}}
 
                 <table>
