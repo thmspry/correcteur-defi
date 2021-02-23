@@ -1,7 +1,6 @@
 package main
 
 import (
-	fmt "fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"

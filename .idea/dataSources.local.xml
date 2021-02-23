@@ -3,12 +3,11 @@
   <component name="dataSourceStorageLocal">
     <data-source name="database.db" uuid="225c68ce-8780-4145-8eaf-f6e2412fd01a">
       <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="SQLITE" exact-version="0" />
+      <secret-storage>forget</secret-storage>
       <schema-mapping />
     </data-source>
     <data-source name="database" uuid="92ea6c46-3f1b-4c05-bfb0-7f4a9c606040">
       <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="SQLITE" exact-version="0" />
-      <auth-provider>no-auth</auth-provider>
-      <secret-storage>forget</secret-storage>
       <schema-mapping />
     </data-source>
   </component>
