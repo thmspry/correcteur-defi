@@ -16,7 +16,7 @@
 </div>
 <div class="main">
     <div class="title">
-        {{if eq .DefiActuel.Num -1}}
+        {{if eq .DefiActuel.Num 0}}
         <h2>Il n'y a pas de défi en cours</h2>
         {{else}}
         <h2>Défi actuel : défi n°{{.DefiActuel.Num}}</h2>
@@ -29,9 +29,9 @@
         <div class="col s12">
             <ul class="tabs">
                 <li class="tab col s3"><a href="#up-defi">Déposer un défi</a></li>
-                <li class="tab col {{if eq .DefiActuel.Num -1}} disabled {{end}} s3"><a href="#modif-date">Modifier la date</a></li>
-                <li class="tab col {{if eq .DefiActuel.Num -1}} disabled {{end}} s3"><a href="#up-test">Déposer des test</a></li>
-                <li class="tab col {{if eq .DefiActuel.Num -1}} disabled {{end}} s3"><a href="#liste-defi">Liste des défis</a></li>
+                <li class="tab col {{if eq .DefiActuel.Num 0}} disabled {{end}} s3"><a href="#modif-date">Modifier la date</a></li>
+                <li class="tab col {{if eq .DefiActuel.Num 0}} disabled {{end}} s3"><a href="#up-test">Déposer des test</a></li>
+                <li class="tab col {{if eq .DefiActuel.Num 0}} disabled {{end}} s3"><a href="#liste-defi">Liste des défis</a></li>
                 <li class="tab col s3"><a href="#logs">Logs</a></li>
             </ul>
         </div>
@@ -49,11 +49,11 @@
                 </div>
                 <div class="date-selector">
                     <p>Date de début :</p>
-                    <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num -1}} value="{{.DefiActuel.Date_debut}}" {{end}}>
+                    <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.Date_debut}}" {{end}}>
                 </div>
                 <div class="date-selector">
                     <p>Date de fin :</p>
-                    <input type="text" class="datepicker" name="date_fin" {{if ne .DefiActuel.Num -1}} value="{{.DefiActuel.Date_fin}}" {{end}}>
+                    <input type="text" class="datepicker" name="date_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.Date_fin}}" {{end}}>
                 </div>
                 <div>
                     <input type="submit" class="button" value="déposer" name="submit"/>
@@ -72,11 +72,11 @@
                 </select>
                 <div>
                     <p>Date de début :</p>
-                    <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num -1}} value="{{.DefiActuel.Date_debut}}" {{end}}>
+                    <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.Date_debut}}" {{end}}>
                 </div>
                 <div>
                     <p>Date de fin : </p>
-                    <input type="text" class="datepicker"  name="date_fin" {{if ne .DefiActuel.Num -1}} value="{{.DefiActuel.Date_fin}}" {{end}}>
+                    <input type="text" class="datepicker"  name="date_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.Date_fin}}" {{end}}>
                 </div>
                 <input class="button" type="submit">
             </form>

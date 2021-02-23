@@ -422,7 +422,7 @@ func GetDefiActuel() Defi {
 	defis := GetDefis()
 
 	defiActuel := Defi{
-		Num:        -1,
+		Num:        0,
 		Date_debut: date.Date{},
 		Date_fin:   date.Date{},
 		Correcteur: "",
