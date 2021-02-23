@@ -35,12 +35,16 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if r.Method == "GET" {
-
-		t, err := template.ParseFiles("./web/html/accueil.html")
-		if err != nil {
-			fmt.Print("erreur chargement accueil.html")
+		fmt.Println(r.URL.String())
+		if r.URL.String() == "/login" {
+			t, err := template.ParseFiles("./web/html/accueil.html")
+			if err != nil {
+				fmt.Print("erreur chargement accueil.html")
+			}
+			_ = t.Execute(w, nil)
+		} else {
+			http.Redirect(w, r, "/login", http.StatusFound)
 		}
-		_ = t.Execute(w, nil)
 
 	} else if r.Method == "POST" {
 
@@ -60,14 +64,22 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				fmt.Println("(login=", login, ",token=", token)
 				BDD.InsertToken(login, token)
 
-				logs.WriteLog(login, "connexion")
+				logs.WriteLog(login, "connexion étudiant")
 				http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 
 				go DeleteToken(login, temps)
 				return
 			} else {
-				fmt.Println("login '" + login + "' incorrecte")
-				http.Redirect(w, r, "/login", http.StatusFound)
+				logs.WriteLog(login, "mot de passe incorrecte connexion étudiant")
+				page, err := template.ParseFiles("./web/html/accueil.html")
+				if err != nil {
+					fmt.Print("erreur chargement accueil.html")
+				} else {
+					data := dataConnexion{
+						ConnexionErreur: true,
+					}
+					err = page.Execute(w, data)
+				}
 			}
 		} else if r.URL.String() == "/login?register" {
 			// request provient du formulaire pour s'enregistrer
@@ -95,19 +107,26 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 }
 
 func connexionAdmin(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("method de connexionAdmin :", r.Method)
+	fmt.Println("methode de connexionAdmin :", r.Method)
 
 	if r.Method == "GET" {
 
-		t, err := template.ParseFiles("./web/html/connexionAdmin.html")
-		if err != nil {
-			fmt.Print("erreur chargement connexionAdmin.html")
+		if r.URL.String() == "/loginAdmin" {
+			page, err := template.ParseFiles("./web/html/connexionAdmin.html")
+			if err != nil {
+				fmt.Print("erreur chargement connexionAdmin.html : ", err)
+			} else {
+				data := dataConnexion{
+					ConnexionErreur: false,
+				}
+				err = page.Execute(w, data)
+				if err != nil {
+					fmt.Print("erreur affichage connexionAdmin.html : ", err)
+				}
+			}
+		} else {
+			http.Redirect(w, r, "/loginAdmin", http.StatusFound)
 		}
-
-		data := dataConnexion{
-			ConnexionErreur: false,
-		}
-		_ = t.Execute(w, data)
 
 	} else if r.Method == "POST" {
 

@@ -2,3 +2,27 @@
 9:31:22, admin : connexion admin réussie, création d'un token
 9:32:43, admin : déconnexion du serveur
 9:36:23, admin : déconnexion du serveur
+9:45:30, admin : connexion admin réussie, création d'un token
+9:50:32, admin : déconnexion du serveur
+9:51:19, admin : mot de passe incorrecte connexion admin
+9:51:26, admin : connexion admin réussie, création d'un token
+9:51:36, admin : déconnexion du serveur
+9:51:51, BDD.LoginCorrect : sql: no rows in result set
+9:52:0, test : connexion
+9:52:46, test : déconnexion du serveur
+9:52:54, admin : connexion admin réussie, création d'un token
+9:57:41, admin : déconnexion du serveur
+10:6:51, test : connexion
+10:8:22, test : déconnexion du serveur
+10:21:40, lkj : login admin inconnu
+10:21:40, lkj : mot de passe incorrecte connexion admin
+10:21:52, admin : connexion admin réussie, création d'un token
+10:21:57, admin : déconnexion du serveur
+10:22:5, BDD.LoginCorrect : sql: no rows in result set
+10:22:5, lk : mot de passe incorrecte connexion étudiant
+10:22:11, BDD.LoginCorrect : sql: no rows in result set
+10:22:11, mlk : mot de passe incorrecte connexion étudiant
+10:24:54, BDD.LoginCorrect : sql: no rows in result set
+10:24:54, matteo : mot de passe incorrecte connexion étudiant
+10:25:5, test : connexion étudiant
+10:25:7, test : déconnexion du serveur

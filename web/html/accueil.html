@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Accueil</title>
     <link rel="icon" type="image/png" href="./web/assets/images/logo.png" />
+    <link rel="stylesheet" href="./web/assets/css/materialize.min.css">
 </head>
 <body>
 
@@ -28,7 +29,10 @@
 
 <a href="/loginAdmin">Connexion Admin</a>
 
-
+<script src="./web/assets/js/materialize.min.js"></script>
+{{if eq .ConnexionErreur true}}
+<script src="./web/assets/js/erreurConnexion.js"></script>
+{{end}}
 
 </body>
 </html>
