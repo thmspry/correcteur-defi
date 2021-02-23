@@ -28,3 +28,8 @@ function getFileName(filePath) {
     }
     return filePathSplit[filePathSplit.length-1];
 }
+
+function ChangeDateInput(event) {
+    console.log("value: " + event.value())
+
+}

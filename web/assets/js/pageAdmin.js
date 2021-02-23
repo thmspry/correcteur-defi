@@ -60,3 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var instances = M.FormSelect.init(elems);
 
 });
+
+function ChangeDateInput(event) {
+    console.log("value: " + event.target.value)
+}

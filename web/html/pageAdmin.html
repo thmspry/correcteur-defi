@@ -65,7 +65,7 @@
             <h3>Modifier uniquement la date :</h3>
             <form action="/pageAdmin?form=modify_date" method="post">
                 <p>Numéro du défi à modifer la date :</p>
-                <select id="selectModifyDate" name="defiSelectModif" required="required">
+                <select id="selectModifyDate" name="defiSelectModif" required="required" onchange="ChangeDateInput( event)">
                     {{range .ListeDefis}}
                     <option value="{{.Num}}">{{.Num}}</option>
                     {{end}}
@@ -123,7 +123,8 @@
                 Défi n°{{.Num}} du {{.Date_debut}} au {{.Date_fin}}
                 <a href="pageAdmin?Defi={{.Num}}">Afficher les participants</a></p>
             {{end}}
-            {{if .DefiSelect}}
+            {{if eq .DefiSelect.Num 0}}
+            {{else}}
                 <h4>Liste des participants au défi {{$.DefiSelect.Num}}</h4>
                 {{if not .Participants}}
                     <p>Aucun participants</p>
