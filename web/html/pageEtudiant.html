@@ -14,42 +14,50 @@
     </div>
 </div>
 <div class="main">
-    <div id="user">
-        <h2>Profil</h2>
-        <p>{{.UserInfo.Prenom}} {{.UserInfo.Nom}} (<span id="id-etu">{{.UserInfo.Login}}</span>)
-        </p>
-        <p class="italic">{{.UserInfo.Mail}}</p>
-    </div>
-    <div id="content">
-    {{if eq .Defi_actuel.Num -1}}
-        <h2>Il n'y a pas défi en cours.</h2>
-    {{else}}
-        <h2>Défi actuel : Défi n°{{.Defi_actuel.Num}}</h2>
-        {{if .Defi_sent}}
-            <p>Vous avez déjà rendu un script pour ce défi.</p>
-            {{if eq .Resultat_defi.Etat 1}}
+    <div class="info">
+        <div class="left-side">
+            <div id="user">
+                <h2>Profil</h2>
+                <p>{{.UserInfo.Prenom}} {{.UserInfo.Nom}} (<span id="id-etu">{{.UserInfo.Login}}</span>)
+                </p>
+                <p class="italic">{{.UserInfo.Mail}}</p>
+            </div>
+            <div id="content">
+                {{if eq .Defi_actuel.Num -1}}
+                <h2>Il n'y a pas défi en cours.</h2>
+                {{else}}
+                <h2>Défi actuel : Défi n°{{.Defi_actuel.Num}}</h2>
+                {{if .Defi_sent}}
+                <p>Vous avez déjà rendu un script pour ce défi.</p>
+                {{if eq .Resultat_defi.Etat 1}}
                 <p>Votre script est correct.</p>
-            {{else}}
+                {{else}}
                 <p>Votre script est incorrect.</p>
-            {{end}}
-            <p>Vous pouvez le modifier jusqu'au {{.Defi_actuel.Date_fin}}.</p>
-        {{else}}
-            <p>Vous n'avez pas encore envoyé de script pour ce défi. <br>
-                Vous avez jusqu'au {{.Defi_actuel.Date_fin}} pour le rendre.</p>
-        {{end}}
+                {{end}}
+                <p>Vous pouvez le modifier jusqu'au {{.Defi_actuel.Date_fin}}.</p>
+                {{else}}
+                <p>Vous n'avez pas encore envoyé de script pour ce défi. <br>
+                    Vous avez jusqu'au {{.Defi_actuel.Date_fin}} pour le rendre.</p>
+                {{end}}
+            </div>
+
+            <div id="file">
+                <form enctype="multipart/form-data" action="/pageEtudiant?upload" method="post">
+                    <div class="chose-file">
+                        <img src="./web/assets/images/upload.png">
+                        <label for="input-file">Choisir un fichier</label>
+                        <input type="hidden" name="token" value=" " />
+                        <input type="file" name="script_etu" id="input-file" required="required"/>
+                    </div>
+                    <input type="submit" id="upload" value="Upload"/>
+                </form>
+            </div>
+        </div>
+        <div class="right-side">
+            <a class="twitter-timeline" data-width="450" margin-left:300 data-height="325" href="https://twitter.com/IutAsr?ref_src=twsrc%5Etfw">Tweets by IutAsr</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+        </div>
     </div>
 
-    <div id="file">
-        <form enctype="multipart/form-data" action="/pageEtudiant?upload" method="post">
-            <div class="chose-file">
-                <img src="./web/assets/images/upload.png">
-                <label for="input-file">Choisir un fichier</label>
-                <input type="hidden" name="token" value=" " />
-                <input type="file" name="script_etu" id="input-file" required="required"/>
-            </div>
-            <input type="submit" id="upload" value="Upload"/>
-        </form>
-    </div>
 
     <a href="/pageEtudiant?test" id="test-script">
         <img src="./web/assets/images/play-triangle.png">
@@ -97,7 +105,6 @@
         </div>
     </div>
     {{end}}
-    <a class="twitter-timeline" data-width="400" margin-left:300 data-height="300" href="https://twitter.com/IutAsr?ref_src=twsrc%5Etfw">Tweets by IutAsr</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </div>
 <script src="./web/assets/js/pageEtudiant.js"></script>
 </body>

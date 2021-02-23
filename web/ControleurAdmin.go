@@ -34,6 +34,7 @@ type data_pageAdmin struct {
 	DefiActuel   BDD.Defi
 	Participants []BDD.ParticipantDefi
 	Correcteur   BDD.Etudiant
+	Tricheurs    [][]string
 	Logs         []string
 	Log          []string
 	LogDate      string
@@ -137,6 +138,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				http.Redirect(w, r, "/pageAdmin?Defi="+strconv.Itoa(num), http.StatusFound)
 				return
 			}
+			if r.URL.Query()["getIdentique"] != nil {
+				data.Tricheurs = manipStockage.GetTriche(num)
+			}
 		}
 
 		if r.URL.Query()["logout"] != nil {
@@ -218,7 +222,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		}
 
 		r.ParseMultipartForm(10 << 20)
-		file, fileHeader, err := r.FormFile("upload")
+		file, fileHeader, _ := r.FormFile("upload")
 		defer file.Close()
 
 		defi_actuel := BDD.GetDefiActuel()
@@ -241,6 +245,10 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				num_defi_actuel = num_defi_actuel + 1
 				path = config.Path_defis + "correction_" + strconv.Itoa(num_defi_actuel)
 			}
+			script, _ := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
+			defer script.Close()
+			io.Copy(script, file)
+			os.Chmod(path, 770)
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 		} else if r.URL.Query()["form"][0] == "test" { // Pour upload un test
@@ -266,7 +274,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			}
 			fichier, _ := os.Create(config.Path_jeu_de_tests + fileHeader.Filename) // remplacer handler.Filename par le nom et on le place où on veut
 			defer fichier.Close()
-			_, err = io.Copy(fichier, file)
+			io.Copy(fichier, file)
 			os.Chmod(fichier.Name(), 777)
 
 			if typeTest[0] == "application/zip" {
@@ -297,22 +305,6 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 		}
-		script, err := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
-		defer script.Close()
-
-		_, err = io.Copy(script, file)
-		if err != nil {
-			fmt.Println("Internal Error")
-			fmt.Println(err)
-		}
-
-		os.Chmod(path, 770)
-
-		// return that we have successfully uploaded our file!
-		fmt.Println("Successfully Uploaded File\n")
-		//rename fonctionne pas jsp pk
-		//os.Rename(handler.Filename, "script_E1000.sh")
-		http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 	}
 }
 
