@@ -26,6 +26,7 @@ tabLi.forEach(li => li.addEventListener('click', function() {
     localStorage.setItem("current-tab", href);
 }));
 
+
 let el = document.querySelector(".tabs");
 let optionsTabs = {
     duration : 500

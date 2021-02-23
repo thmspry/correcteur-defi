@@ -14,9 +14,11 @@
 
 
 #header {
-    background-color: #a2a2a2;
+    background-color: #cdcdcd;
     display: flex;
     padding: 10px;
+    justify-content: flex-start;
+    align-items: center;
     border-bottom: solid 5px #50a969;
 }
 
@@ -41,6 +43,8 @@
     height: 100%;
     padding: 10px;
 }
+
+
 
 h1 {
     font-size: 2em;
@@ -83,6 +87,9 @@ h3 {
     margin-top: 30px;
 }
 
+.file-depot p {
+    margin-bottom: 10px;
+}
 
 .chose-file input#input-file-defi, input#input-file-test  {
     width: 0.1px;
@@ -127,9 +134,32 @@ h3 {
     margin: 10px;
 }
 
+.dates {
+    display: flex;
+    width: 25%;
+    justify-content: space-between;
+}
+
 .date-selector {
     display: flex;
     flex-flow: column;
+    width: fit-content;
+}
+
+.explication {
+    font-style: italic;
+}
+
+.explication p {
+    font-size: 17px;
+}
+
+.code {
+    background-color: #2d2d2d;
+    font-style: normal;
+    color: whitesmoke;
+    font-family: consolas, "Liberation Mono", courier, monospace;
+    padding: 10px;
 }
 
 .button {
@@ -139,6 +169,16 @@ h3 {
     font-weight: bold;
     border-radius: 5px;
     text-decoration: none;
+}
+
+#liste-defi p {
+    padding: 7px;
+}
+
+.red-actuel {
+    border-left: red 3px solid;
+    border-radius: 2px;
+    background-color: #ffd7d7;
 }
 
 
@@ -176,6 +216,31 @@ h3 {
     color: #2d2d2d;
     cursor: pointer;
 
+}
+
+
+#footer {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #cdcdcd;
+    border-top: solid 5px #50a969;
+    height:100px;
+    margin-top: 50px;
+}
+
+#footer img {
+    height: 20px;
+}
+
+#footer a {
+    display: flex;
+    align-items: center;
+    width: 150px;
+    justify-content: space-between;
+    /*text-decoration: none;*/
+    text-decoration: underline;
+    color: black;
 }
 
 /* Redefinition du framework */

@@ -8,6 +8,10 @@
     margin: auto;
 }
 
+input[type=submit]:hover {
+    cursor: pointer;
+}
+
 .button {
     background-color: white;
     border: 1px solid black;

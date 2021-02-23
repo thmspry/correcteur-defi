@@ -39,21 +39,25 @@
             <h3>Enregistrer un défis avec sa correction, sa date de début et de fin.</h3>
             <h3>Il peut aussi servir à modifier le fichier de correction du défi actuel.</h3>
             <form enctype="multipart/form-data"  action="/pageAdmin?form=defi" method="post">
-                <p>Dépot de la correction :</p>
-                <div class="chose-file" id="file-defi">
-                    <label for="input-file-defi">
-                        <img src="./web/assets/images/upload.png">
-                        <p>Choisir un fichier</p>
-                    </label>
-                    <input type="file" name="upload" id="input-file-defi" required="required">
+                <div class="file-depot">
+                    <p>Dépot de la correction :</p>
+                    <div class="chose-file" id="file-defi">
+                        <label for="input-file-defi">
+                            <img src="./web/assets/images/upload.png">
+                            <p>Choisir un fichier</p>
+                        </label>
+                        <input type="file" name="upload" id="input-file-defi" required="required">
+                    </div>
                 </div>
-                <div class="date-selector">
-                    <p>Date de début :</p>
-                    <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.Date_debut}}" {{end}}>
-                </div>
-                <div class="date-selector">
-                    <p>Date de fin :</p>
-                    <input type="text" class="datepicker" name="date_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.Date_fin}}" {{end}}>
+                <div class="dates">
+                    <div class="date-selector">
+                        <p>Date de début :</p>
+                        <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.Date_debut}}" {{end}}>
+                    </div>
+                    <div class="date-selector">
+                        <p>Date de fin :</p>
+                        <input type="text" class="datepicker" name="date_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.Date_fin}}" {{end}}>
+                    </div>
                 </div>
                 <div>
                     <input type="submit" class="button" value="déposer" name="submit"/>
@@ -70,13 +74,15 @@
                     <option value="{{.Num}}">{{.Num}}</option>
                     {{end}}
                 </select>
-                <div>
-                    <p>Date de début :</p>
-                    <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.Date_debut}}" {{end}}>
-                </div>
-                <div>
-                    <p>Date de fin : </p>
-                    <input type="text" class="datepicker"  name="date_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.Date_fin}}" {{end}}>
+                <div class="dates">
+                    <div class="date-selector">
+                        <p>Date de début :</p>
+                        <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.Date_debut}}" {{end}}>
+                    </div>
+                    <div class="date-selector">
+                        <p>Date de fin : </p>
+                        <input type="text" class="datepicker"  name="date_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.Date_fin}}" {{end}}>
+                    </div>
                 </div>
                 <input class="button" type="submit">
             </form>
@@ -87,7 +93,8 @@
                 <p>Les formats acceptés sont les .zip et les .tar</p>
                 <p>l'archive doit comprendre à la racine les fichiers/dossiers servant au test et un fichier nommé "config"
                     contenant la liste des arguments pour chaque cas de test. Pas besoin de spécifier un nom à l'archive.</p>
-                <p>Exemple de fichier config :<br>
+                <p>Exemple de fichier config :</p>
+                <p class="code">
                     fichier1 fichier2<br>
                     fichier2 test1/fichier3<br>
                     test1/fichier3 test2/oui/fichier4<br>
@@ -103,12 +110,14 @@
                             {{end}}
                         </select>
                     </div>
-                    <p>Dépot du test :</p>
-                    <div class="chose-file" id="file-test">
-                        <label for="input-file-test">
-                            <img src="./web/assets/images/upload.png">
-                            <p>Choisir un fichier</p></label>
-                        <input type="file" name="upload" id="input-file-test" required="required">
+                    <div class="file-depot">
+                        <p>Dépot du test :</p>
+                        <div class="chose-file" id="file-test">
+                            <label for="input-file-test">
+                                <img src="./web/assets/images/upload.png">
+                                <p>Choisir un fichier</p></label>
+                            <input type="file" name="upload" id="input-file-test" required="required">
+                        </div>
                     </div>
                     <div>
                         <input type="submit" class="button" value="déposer" name="submit">
@@ -119,7 +128,7 @@
         <div id="liste-defi" class="col s12">
             <h3>Liste des défis enregistrés : </h3>
             {{range .ListeDefis}}
-            <p class="{{if eq $.DefiActuel.Num .Num}}red{{end}}">
+            <p class="{{if eq $.DefiActuel.Num .Num}}red-actuel{{end}}">
                 Défi n°{{.Num}} du {{.Date_debut}} au {{.Date_fin}}
                 <a href="pageAdmin?Defi={{.Num}}">Afficher les participants</a></p>
             {{end}}
@@ -199,11 +208,13 @@
             <br>
             {{if .File}}
             <div>
-                Contenu du script :
+                <h3>Contenu du script :</h3>
                 <div id="file">
+                    <p class="code">
                     {{range .File}}
                     {{.}} <br>
                     {{end}}
+                    </p>
                 </div>
             </div>
             {{end}}
@@ -240,6 +251,13 @@
             <input type="submit" class="button" value="Envoyer Mail" name="submit">
         </form>
     </div>
+</div>
+<div id="footer">
+    <p>Projet réalisé sous l'initiative de Loïg Jezequel</p>
+    <p><a href="https://gitlab.univ-nantes.fr/E192543L/projet-s3/">
+        <img src="./web/assets/images/gitlab-logo.png">
+        GitLab du projet
+    </a></p>
 </div>
 <script src="./web/assets/js/materialize.min.js"></script>
 <script src="./web/assets/js/pageAdmin.js"></script>
