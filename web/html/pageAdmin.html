@@ -69,7 +69,7 @@
             <h3>Modifier uniquement la date :</h3>
             <form action="/pageAdmin?form=modify_date" method="post">
                 <p>Numéro du défi à modifer la date :</p>
-                <select id="selectModifyDate" name="defiSelectModif" required="required" onchange="ChangeDateInput( event)">
+                <select id="selectModifyDate" name="defiSelectModif" required="required" onchange="ChangeDateInput( event, 'modif-date')">
                     {{range .ListeDefis}}
                     <option value="{{.Num}}">{{.Num}}</option>
                     {{end}}

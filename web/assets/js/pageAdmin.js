@@ -57,6 +57,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
-function ChangeDateInput(event) {
-    console.log("value: " + event.target.value)
+
+function ChangeDateInput(event, divID) {
+    fetch("http://localhost:8192/GetDefis")
+        .then(response => response.json())
+        .then(data => {
+            defiActuel = data.find(el => el.Num == event.target.value);
+            datepicker = document.querySelectorAll('div#'+divID+' input.datepicker')
+            datepicker[0].value = defiActuel.Date_debut;
+            datepicker[1].value = defiActuel.Date_fin;
+
+        })
+        .catch(err => console.log(err))
 }
