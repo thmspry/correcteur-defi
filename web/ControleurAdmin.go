@@ -55,7 +55,7 @@ type ResultMail struct {
 func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	//Si il y a n'y a pas de token dans les cookies alors l'utilisateur est redirigé vers la page de login
 	if token, err := r.Cookie("token"); err != nil || !BDD.TokenExiste(token.Value) {
-		http.Redirect(w, r, "/login?connexion=admin", http.StatusFound)
+		http.Redirect(w, r, "/loginAdmin", http.StatusFound)
 		return
 	}
 
