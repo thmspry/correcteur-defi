@@ -19,10 +19,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bed406ae-6ecc-4f7b-8893-5028a54dac5f" name="Default Changelist" comment="0.11.15 : ajout erreurs connexion admin + restructuration du controleur connexion">
-      <change beforePath="$PROJECT_DIR$/BDD/database.db" beforeDir="false" afterPath="$PROJECT_DIR$/BDD/database.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-    </list>
+    <list default="true" id="bed406ae-6ecc-4f7b-8893-5028a54dac5f" name="Default Changelist" comment="0.11.15 : ajout erreurs connexion admin + restructuration du controleur connexion" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -64,6 +61,7 @@
     <property name="DatabaseDriversLRU" value="sqlite" />
     <property name="DefaultGoTemplateProperty" value="Go File" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
@@ -133,7 +131,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="0.6.5 : modification de la page admin, on y trouve la liste des étudiants et on peut afficher leurs informations" />
     <MESSAGE value="0.6.6 : modif de donnée page admin : On peut maintenant visualiser les scripts des étudiants et changer leur état entre réussi et échoué." />
     <MESSAGE value="0.6.7 modification page étudiante" />
     <MESSAGE value="0.7 : retour du testeur plus spécifique : print le contenu des tests passés, le résultat des tests et il s'arrête au test échoué (non testé)" />
@@ -158,7 +155,8 @@
     <MESSAGE value="0.11.6 :" />
     <MESSAGE value="0.11.10 : modif page admin, upload de test" />
     <MESSAGE value="0.11.11" />
-    <option name="LAST_COMMIT_MESSAGE" value="0.11.11" />
+    <MESSAGE value="0.11.15 : ajout erreurs connexion admin + restructuration du controleur connexion" />
+    <option name="LAST_COMMIT_MESSAGE" value="0.11.15 : ajout erreurs connexion admin + restructuration du controleur connexion" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
