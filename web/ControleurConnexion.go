@@ -84,6 +84,11 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 		} else if r.URL.String() == "/login?register" {
 			// request provient du formulaire pour s'enregistrer
 			// pas de vérification de champs implémenter pour l'instant
+			if BDD.IsLoginUsed(r.FormValue("login")) {
+				fmt.Printf("votre login existe déjà")
+				http.Redirect(w, r, "/login", http.StatusFound)
+
+			}
 			etu := BDD.Etudiant{
 				Login:    r.FormValue("login"),
 				Password: r.FormValue("password"),

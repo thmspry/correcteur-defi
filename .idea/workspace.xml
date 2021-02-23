@@ -19,17 +19,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bed406ae-6ecc-4f7b-8893-5028a54dac5f" name="Default Changelist" comment="0.11.15 : réparation connexionAdmin.html">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BDD/database.db" beforeDir="false" afterPath="$PROJECT_DIR$/BDD/database.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/2021-02-23" beforeDir="false" afterPath="$PROJECT_DIR$/logs/2021-02-23" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/ControleurConnexion.go" beforeDir="false" afterPath="$PROJECT_DIR$/web/ControleurConnexion.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/assets/js/pageConnexionAdmin.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/assets/js/erreurConnexion.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/html/accueil.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/html/accueil.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/html/connexionAdmin.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/html/connexionAdmin.html" afterDir="false" />
-    </list>
-    <list default="true" id="bed406ae-6ecc-4f7b-8893-5028a54dac5f" name="Default Changelist" comment="0.11.18 : twittos en plus">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="bed406ae-6ecc-4f7b-8893-5028a54dac5f" name="Default Changelist" comment="0.11.20: + vérif à l'inscription">
       <change beforePath="$PROJECT_DIR$/BDD/database.db" beforeDir="false" afterPath="$PROJECT_DIR$/BDD/database.db" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BDD/fonc_bdd.go" beforeDir="false" afterPath="$PROJECT_DIR$/BDD/fonc_bdd.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/2021-02-23" beforeDir="false" afterPath="$PROJECT_DIR$/logs/2021-02-23" afterDir="false" />
@@ -146,7 +136,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="0.6.6 : modif de donnée page admin : On peut maintenant visualiser les scripts des étudiants et changer leur état entre réussi et échoué." />
     <MESSAGE value="0.6.7 modification page étudiante" />
     <MESSAGE value="0.7 : retour du testeur plus spécifique : print le contenu des tests passés, le résultat des tests et il s'arrête au test échoué (non testé)" />
     <MESSAGE value="0.8 : Modification de la base de donnée, ajout d'une table, gestion de la date de rendu, modification du nommage de certaines variables pour qu'ils soient plus cohérentes" />
@@ -172,9 +161,9 @@
     <MESSAGE value="0.11.11" />
     <MESSAGE value="0.11.15 : ajout erreurs connexion admin + restructuration du controleur connexion" />
     <MESSAGE value="0.11.15 : réparation connexionAdmin.html" />
-    <option name="LAST_COMMIT_MESSAGE" value="0.11.15 : réparation connexionAdmin.html" />
     <MESSAGE value="0.11.18 : twittos en plus" />
-    <option name="LAST_COMMIT_MESSAGE" value="0.11.18 : twittos en plus" />
+    <MESSAGE value="0.11.20: + vérif à l'inscription" />
+    <option name="LAST_COMMIT_MESSAGE" value="0.11.20: + vérif à l'inscription" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>

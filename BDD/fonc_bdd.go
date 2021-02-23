@@ -182,6 +182,13 @@ func LoginCorrect(id string, password string) bool {
 	row.Close()
 	return false*/
 }
+func IsLoginUsed(id string) bool {
+	row := db.QueryRow("SELECT login FROM Etudiant WHERE login = $1", id)
+	if row == nil {
+		return false
+	}
+	return true
+}
 
 /**
 vérifie que le couple login,password existe dans la table Administrateur
