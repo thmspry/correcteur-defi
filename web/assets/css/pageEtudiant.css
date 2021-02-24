@@ -12,10 +12,13 @@
     flex-direction: column;
 }
 
+
 #header {
-    background-color: #a2a2a2;
+    background-color: #cdcdcd;
     display: flex;
     padding: 10px;
+    justify-content: flex-start;
+    align-items: center;
     border-bottom: solid 5px #50a969;
 }
 
@@ -31,7 +34,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 10px;
 }
 
 #logout a {
@@ -39,6 +41,7 @@
     color: white;
     width: 100%;
     height: 100%;
+    padding: 10px;
 }
 
 .info {
@@ -71,7 +74,7 @@
 
 }
 
-#file form .chose-file input#input-file {
+.chose-file input  {
     width: 0.1px;
     height: 0.1px;
     opacity: 0;
@@ -81,10 +84,9 @@
     cursor: pointer;
 }
 
-#file form .chose-file {
+.chose-file {
     display: flex;
     align-items: center;
-    color: white;
     font-weight: bold;
     background-color: #50a969;
     width: fit-content;
@@ -92,38 +94,33 @@
     cursor: pointer;
 }
 
-#file form .chose-file:hover {
+.chose-file:hover {
     background-color: #377249;
 }
 
-#file form .chose-file label {
+.chose-file label {
+    font-weight: bold;
+    color: white;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.chose-file label p {
     margin: 10px;
 }
 
-#file .chose-file img {
+.chose-file img {
     height: 30px;
     margin: 10px;
-}
-
-#file #upload {
-    background-color: white;
-    border: 1px solid black;
-    padding:15px;
-    font-weight: bold;
-    border-radius: 5px;
-}
-
-#file #upload:hover {
-    border: 1px solid #2d2d2d;
-    color: #2d2d2d;
-    cursor: pointer;
-
 }
 
 #content {
     margin-top: 30px;
     margin-bottom: 30px;
-    background-color: rgba(177, 177, 177, 0.94);
+    background-color: #ececec;
     padding: 1%;
 }
 
@@ -210,7 +207,38 @@ a#test-script {
     padding: 10px;
 }
 
+#footer {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #cdcdcd;
+    border-top: solid 5px #50a969;
+    height:100px;
+    margin-top: 50px;
+}
 
+#footer img {
+    height: 20px;
+}
+
+#footer a {
+    display: flex;
+    align-items: center;
+    width: 150px;
+    justify-content: space-between;
+    /*text-decoration: none;*/
+    text-decoration: underline;
+    color: black;
+}
+
+.button {
+    background-color: white;
+    border: 1px solid black;
+    padding:15px;
+    font-weight: bold;
+    border-radius: 5px;
+    text-decoration: none;
+}
 .italic {
     font-style: italic;
 }

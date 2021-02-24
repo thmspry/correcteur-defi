@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-type data_pageAdmin struct {
+type data_pageAdmin struct { /* Données envoyée à la page admin */
 	EtuSelect    string
 	DefiSelect   BDD.Defi
 	AdminInfo    BDD.Admin
@@ -40,7 +40,7 @@ type data_pageAdmin struct {
 	LogDate      string
 }
 
-type SenderData struct {
+type SenderData struct { /* Structure utile pour l'envoi de mail */
 	FromMail string `json:"fromMail"`
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -48,7 +48,7 @@ type SenderData struct {
 	SmtpPort string `json:"smtpPort"`
 }
 
-type ResultMail struct {
+type ResultMail struct { /* Structure de retour de l'envoi de mail */
 	adress string
 	send   bool
 }
@@ -159,20 +159,6 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "POST" {
 
-		if r.URL.Query()["form"][0] == "modify_date" {
-			logs.WriteLog("Admin", "modification de la date de rendu")
-			debut, err1 := date.Parse(r.FormValue("date_debut"))
-			fin, err2 := date.Parse(r.FormValue("date_fin"))
-			numDefi, _ := strconv.Atoi(r.FormValue("numero"))
-			if err1 != nil || err2 != nil {
-				fmt.Println("Erreur de format dans les dates entrés pour modifier la date")
-			} else {
-				BDD.ModifyDefi(numDefi, debut, fin)
-			}
-			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
-			return
-		}
-
 		if r.URL.Query()["form"][0] == "sendMail" {
 
 			etudiants := BDD.GetEtudiantsMail()
@@ -204,7 +190,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		//Permet de récupérer les résultats de tous les étudiants ainsi que leurs informations pour un défi donné
+		// Permet de récupérer les résultats de tous les étudiants ainsi que leurs informations pour un défi donné
 		if r.URL.Query()["form"][0] == "getResult" {
 			num := r.FormValue("num")
 			n, err := strconv.Atoi(num)
@@ -222,36 +208,56 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		}
 
 		r.ParseMultipartForm(10 << 20)
-		file, fileHeader, _ := r.FormFile("upload")
-		defer file.Close()
+
+		file, fileHeader, errorFile := r.FormFile("upload")
+		if errorFile == nil {
+			defer file.Close()
+		}
 
 		defi_actuel := BDD.GetDefiActuel()
 		num_defi_actuel := defi_actuel.Num
 		path := ""
 
+		if r.URL.Query()["form"][0] == "modify-defi" {
+			numDefi, _ := strconv.Atoi(r.FormValue("defiSelectModif")) // Et le num du defi
+			fmt.Println("numDefi : ", numDefi)
+			if r.FormValue("date_debut") != "" {
+				fmt.Println("change date defi")
+				logs.WriteLog("Admin", "modification de la date de rendu")
+				debut, _ := date.Parse(r.FormValue("date_debut")) // On récupère les date modifiée
+				fin, _ := date.Parse(r.FormValue("date_fin"))
+				BDD.ModifyDefi(numDefi, debut, fin)
+			}
+			if errorFile == nil {
+				logs.WriteLog("Admin", "modification du défi actuel")
+				path = config.Path_defis + "correction_" + strconv.Itoa(num_defi_actuel)
+				script, _ := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
+				defer script.Close()
+				io.Copy(script, file)
+				os.Chmod(path, 770)
+			}
+			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
+			return
+		}
 		if r.URL.Query()["form"][0] == "defi" { // ajout d'un défi
-			submit := r.FormValue("submit")
 			date_debut, _ := date.Parse(r.FormValue("date_debut"))
 			date_fin, _ := date.Parse(r.FormValue("date_fin"))
-			if submit == "modifier" {
-				logs.WriteLog("Admin", "modification du défi actuel")
-				BDD.ModifyDefi(BDD.GetDefiActuel().Num, date_debut, date_fin)
-				path = config.Path_defis + "correction_" + strconv.Itoa(num_defi_actuel)
-			} else {
-				logs.WriteLog("Admin", "ajout d'un nouveau défi")
-				// ajouter a la table défis
-				BDD.AddDefi(date_debut, date_fin)
-				os.Mkdir(config.Path_jeu_de_tests+"test_defi_"+strconv.Itoa(num_defi_actuel+1), os.ModePerm)
-				num_defi_actuel = num_defi_actuel + 1
-				path = config.Path_defis + "correction_" + strconv.Itoa(num_defi_actuel)
-			}
+
+			logs.WriteLog("Admin", "ajout d'un nouveau défi")
+			// ajouter a la table défis
+			BDD.AddDefi(date_debut, date_fin)
+			os.Mkdir(config.Path_jeu_de_tests+"test_defi_"+strconv.Itoa(num_defi_actuel+1), os.ModePerm)
+			num_defi_actuel = num_defi_actuel + 1
+			path = config.Path_defis + "correction_" + strconv.Itoa(num_defi_actuel)
+
 			script, _ := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
 			defer script.Close()
 			io.Copy(script, file)
 			os.Chmod(path, 770)
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
-		} else if r.URL.Query()["form"][0] == "test" { // Pour upload un test
+		}
+		if r.URL.Query()["form"][0] == "test" { // Pour upload un test
 			num := r.FormValue("defiSelectTest")
 			typeTest := fileHeader.Header.Values("Content-Type")
 

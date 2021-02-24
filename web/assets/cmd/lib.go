@@ -1,0 +1,24 @@
+package main
+
+import (
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
+	"syscall/js"
+)
+
+func getDefis(this js.Value, inputs []js.Value) interface{} {
+
+	var res []interface{}
+	defis := BDD.GetDefis()
+
+	for _, defi := range defis {
+		res = append(res, []interface{}{defi.Num, defi.Date_debut.String(), defi.Date_fin.String(), defi.Correcteur})
+	}
+
+	return res
+}
+
+func main() {
+	c := make(chan int)
+	js.Global().Set("getDefis", js.FuncOf(getDefis))
+	<-c
+}
