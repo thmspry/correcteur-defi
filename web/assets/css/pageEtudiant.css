@@ -12,6 +12,7 @@
     flex-direction: column;
 }
 
+
 #header {
     background-color: #cdcdcd;
     display: flex;
@@ -119,7 +120,7 @@
 #content {
     margin-top: 30px;
     margin-bottom: 30px;
-    background-color: rgba(177, 177, 177, 0.94);
+    background-color: #ececec;
     padding: 1%;
 }
 

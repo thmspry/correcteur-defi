@@ -157,7 +157,7 @@
             <br>
             {{end}}---->
             {{if eq .Correcteur.Login ""}}
-            <p>Choisir un étudiant correcteur : <button><a href="pageAdmin?Defi={{.DefiSelect.Num}}&Correcteur">choisir</a></button></p>
+            <p>Choisir un étudiant correcteur : <button class="button"><a href="pageAdmin?Defi={{.DefiSelect.Num}}&Correcteur">choisir</a></button></p>
             {{else}}
             <p>Le correcteur est {{.Correcteur.Prenom}} {{.Correcteur.Nom}}</p>
             <p>Son mail est {{.Correcteur.Mail}}</p>
@@ -166,19 +166,19 @@
             <table>
                 <tbody>
                 <tr>
-                    <td>Etudiant</td>
-                    <td>Etat</td>
+                    <td>Étudiant</td>
+                    <td>État</td>
                     <td>Nombre de tentative</td>
-                    <td>Action</td>
+                    <td>Actions</td>
                 </tr>
                 {{range .Participants}}
                 <tr>
                     <td>{{.Etudiant.Login}}</td>
                     <td>
                         {{if eq .Resultat.Etat 1}}
-                        Réussi
+                        <span class="etat-text win">Réussi</span>
                         {{else if eq .Resultat.Etat 0}}
-                        Échoué
+                        <span class="etat-text lose">Échoué</span>
                         {{end}}
                     </td>
                     <td>{{.Resultat.Tentative}}</td>

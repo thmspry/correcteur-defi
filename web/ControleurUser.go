@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-type data_pageEtudiant struct {
+type data_pageEtudiant struct { // Données transmises à la page Etudiant
 	UserInfo      BDD.Etudiant
 	Defi_sent     bool
 	Defi_actuel   BDD.Defi

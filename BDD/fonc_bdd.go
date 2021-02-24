@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// Structure a réutiliser un peu partout
+// Structures a réutiliser un peu partout
 type Etudiant struct {
 	Login      string
 	Password   string
@@ -157,7 +157,7 @@ func RegisterAdmin(admin Admin) bool {
 }
 
 /**
-vérifie que le couple login,password existe dans la table Etudiant
+Vérifie que le couple login,password existe dans la table Etudiant
 */
 func LoginCorrect(id string, password string) bool {
 	var passwordHashed string
@@ -394,6 +394,9 @@ func ModifyDefi(num int, dateD date.Date, dateF date.Date) {
 	stmt.Close()
 }
 
+/*
+Récupère la liste des défis
+*/
 func GetDefis() []Defi {
 	var (
 		debutString string
@@ -418,6 +421,9 @@ func GetDefis() []Defi {
 	return defis
 }
 
+/*
+Récupère le défi actuel
+*/
 func GetDefiActuel() Defi {
 	defis := GetDefis()
 
@@ -434,6 +440,10 @@ func GetDefiActuel() Defi {
 	}
 	return defiActuel
 }
+
+/*
+Récupère un défi précis, avec son numéro passé en paramètre
+*/
 
 func GetDefi(num int) Defi {
 	defis := GetDefis()

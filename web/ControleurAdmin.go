@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-type data_pageAdmin struct {
+type data_pageAdmin struct { /* Données envoyée à la page admin */
 	EtuSelect    string
 	DefiSelect   BDD.Defi
 	AdminInfo    BDD.Admin
@@ -40,7 +40,7 @@ type data_pageAdmin struct {
 	LogDate      string
 }
 
-type SenderData struct {
+type SenderData struct { /* Structure utile pour l'envoi de mail */
 	FromMail string `json:"fromMail"`
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -48,7 +48,7 @@ type SenderData struct {
 	SmtpPort string `json:"smtpPort"`
 }
 
-type ResultMail struct {
+type ResultMail struct { /* Structure de retour de l'envoi de mail */
 	adress string
 	send   bool
 }
@@ -159,14 +159,14 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "POST" {
 
-		if r.URL.Query()["form"][0] == "modify_date" {
+		if r.URL.Query()["form"][0] == "modify_date" { // Requete pour la modification de date
 			logs.WriteLog("Admin", "modification de la date de rendu")
-			debut, err1 := date.Parse(r.FormValue("date_debut"))
+			debut, err1 := date.Parse(r.FormValue("date_debut")) // On récupère les date modifiée
 			fin, err2 := date.Parse(r.FormValue("date_fin"))
-			numDefi, _ := strconv.Atoi(r.FormValue("numero"))
+			numDefi, _ := strconv.Atoi(r.FormValue("numero")) // Et le num du defi
 			if err1 != nil || err2 != nil {
 				fmt.Println("Erreur de format dans les dates entrés pour modifier la date")
-			} else {
+			} else { // Si pas d'erreur, on modifie le defi en question
 				BDD.ModifyDefi(numDefi, debut, fin)
 			}
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
@@ -204,7 +204,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		//Permet de récupérer les résultats de tous les étudiants ainsi que leurs informations pour un défi donné
+		// Permet de récupérer les résultats de tous les étudiants ainsi que leurs informations pour un défi donné
 		if r.URL.Query()["form"][0] == "getResult" {
 			num := r.FormValue("num")
 			n, err := strconv.Atoi(num)
