@@ -61,14 +61,17 @@
                 </div>
                 <div>
                     <input type="submit" class="button" value="déposer" name="submit"/>
-                    <input type="submit" class="button" value="modifier" name="submit"/>
                 </div>
             </form>
         </div>
         <div id="modif-date" class="col s12">
-            <h3>Modifier uniquement la date :</h3>
-            <form action="/pageAdmin?form=modify_date" method="post">
-                <p>Numéro du défi à modifer la date :</p>
+            <h3>Modifier la date du défi et le fichier de correction du défi sélectionné :</h3>
+            <div class="explication">
+                 <p>Il n'est pas nécessaire de choisir un fichier si l'on souhaite changer uniquement la date de rendu</p>
+            </div>
+            <br>
+            <form enctype="multipart/form-data" action="/pageAdmin?form=modify-defi" method="post">
+                <p>Numéro du défi à modifer :</p>
                 <select id="selectModifyDate" name="defiSelectModif" required="required" onchange="ChangeDateInput( event, 'modif-date')">
                     {{range .ListeDefis}}
                     <option value="{{.Num}}">{{.Num}}</option>
@@ -83,6 +86,18 @@
                         <p>Date de fin : </p>
                         <input type="text" class="datepicker"  name="date_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.Date_fin}}" {{end}}>
                     </div>
+                </div>
+                <br>
+                <div class="file-depot">
+                <p>Dépot de la correction :</p>
+                <div class="chose-file" id="file-defi-modify">
+                    <label for="input-file-defi-modify">
+                        <img src="./web/assets/images/upload.png">
+                        <p>Choisir un fichier</p>
+                    </label>
+                    <input type="file" name="upload" id="input-file-defi-modify">
+                </div>
+                    <br>
                 </div>
                 <input class="button" type="submit">
             </form>
