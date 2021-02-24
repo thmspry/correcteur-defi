@@ -57,7 +57,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
-
 function ChangeDateInput(event, divID) {
     fetch("http://localhost:8192/GetDefis")
         .then(response => response.json())
