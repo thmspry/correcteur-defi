@@ -8,6 +8,7 @@ import (
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
 	"golang.org/x/crypto/bcrypt"
 	"math/rand"
+	"sync"
 	"time"
 )
 
@@ -53,6 +54,7 @@ type Defi struct {
 }
 
 var db, _ = sql.Open("sqlite3", "./BDD/database.db")
+var m sync.Mutex
 
 /**
 Fonction qui initialise les tables vides
@@ -123,15 +125,23 @@ func InitBDD() {
 Enregistre un étudiant dans la table Etudiant
 */
 func Register(etu Etudiant) bool {
-	stmt, _ := db.Prepare("INSERT INTO Etudiant values(?,?,?,?,?,?)")
-
-	_, err := stmt.Exec(etu.Login, etu.Password, etu.Prenom, etu.Nom, etu.Mail, false)
+	m.Lock()
+	stmt, err := db.Prepare("INSERT INTO Etudiant values(?,?,?,?,?,?)")
 	if err != nil {
-		logs.WriteLog("BDD.Register", err.Error())
+		logs.WriteLog("BDD register étudiant : ", err.Error())
+	}
+	_, err = stmt.Exec(etu.Login, etu.Password, etu.Prenom, etu.Nom, etu.Mail, false)
+	if err != nil {
+		logs.WriteLog("BDD register étudiant : ", err.Error())
+		m.Unlock()
 		return false
 	}
-	logs.WriteLog("Register", etu.Login+" est enregistré")
-	stmt.Close()
+	logs.WriteLog("Register étudiant", etu.Login+" est enregistré")
+	err = stmt.Close()
+	if err != nil {
+		logs.WriteLog("Register étudiant : ", err.Error())
+	}
+	m.Unlock()
 	return true
 }
 
@@ -139,20 +149,24 @@ func Register(etu Etudiant) bool {
 Enregistre un admin dans la table Administrateur
 */
 func RegisterAdmin(admin Admin) bool {
+	m.Lock()
 	stmt, err := db.Prepare("INSERT INTO Administrateur values(?,?)")
 	if err != nil {
-		fmt.Println(err)
+		logs.WriteLog("BDD register admin : ", err.Error())
 	}
-
 	passwordHashed, err := bcrypt.GenerateFromPassword([]byte(admin.Password), 14)
-
 	_, err = stmt.Exec(admin.Login, passwordHashed)
 	if err != nil {
-		fmt.Println(err)
+		logs.WriteLog("BDD register admin : ", err.Error())
+		m.Unlock()
 		return false
 	}
 	fmt.Println("l'admin de login : " + admin.Login + " a été enregistré dans la bdd\n")
-	stmt.Close()
+	err = stmt.Close()
+	if err != nil {
+		logs.WriteLog("BDD register admin : ", err.Error())
+	}
+	m.Unlock()
 	return true
 }
 
@@ -160,6 +174,7 @@ func RegisterAdmin(admin Admin) bool {
 vérifie que le couple login,password existe dans la table Etudiant
 */
 func LoginCorrect(id string, password string) bool {
+	m.Lock()
 	var passwordHashed string
 	row := db.QueryRow("SELECT password FROM Etudiant WHERE login = $1", id)
 	if row == nil { // pas de compte avec ce login
@@ -170,18 +185,10 @@ func LoginCorrect(id string, password string) bool {
 		logs.WriteLog("BDD.LoginCorrect", err.Error())
 	}
 	errCompare := bcrypt.CompareHashAndPassword([]byte(passwordHashed), []byte(password)) // comparaison du hashé et du clair
-	return errCompare == nil                                                              // si nil -> ça match, sinon non
-
-	/* Ancient système
-	stmt := "SELECT * FROM Etudiant WHERE login = ? AND password = ?"
-	row, _ := db.Query(stmt, id, password)
-	if row.Next() {
-		row.Close()
-		return true
-	}
-	row.Close()
-	return false*/
+	m.Unlock()
+	return errCompare == nil // si nil -> ça match, sinon non
 }
+
 func IsLoginUsed(id string) bool {
 	row := db.QueryRow("SELECT login FROM Etudiant WHERE login = $1", id)
 	if row == nil {
@@ -194,6 +201,7 @@ func IsLoginUsed(id string) bool {
 vérifie que le couple login,password existe dans la table Administrateur
 */
 func LoginCorrectAdmin(id string, password string) bool {
+	m.Lock()
 	var passwordHashed string
 	row := db.QueryRow("SELECT password FROM administrateur WHERE login = $1", id)
 	errScan := row.Scan(&passwordHashed) // cast/parse du res de la requète en string dans passwordHashed
@@ -201,7 +209,8 @@ func LoginCorrectAdmin(id string, password string) bool {
 		logs.WriteLog(id, "login admin inconnu")
 	}
 	errCompare := bcrypt.CompareHashAndPassword([]byte(passwordHashed), []byte(password)) // comparaison du hashé et du clair
-	return errCompare == nil                                                              // si nil -> ça match, sinon non
+	m.Unlock()
+	return errCompare == nil // si nil -> ça match, sinon non
 }
 
 /**
@@ -211,7 +220,6 @@ func GetEtudiant(id string) Etudiant {
 	var etu Etudiant
 	row := db.QueryRow("SELECT * FROM Etudiant WHERE login = $1", id)
 	err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur)
-
 	if err != nil {
 		logs.WriteLog("BDD.GetEtudiant", err.Error())
 	}
@@ -219,7 +227,7 @@ func GetEtudiant(id string) Etudiant {
 }
 
 /**
-récupère les informations personnelles d'un admin
+récupère les informations d'un admin
 */
 func GetAdmin(id string) Admin {
 	var admin Admin
@@ -227,7 +235,7 @@ func GetAdmin(id string) Admin {
 	err := row.Scan(&admin.Login, &admin.Password)
 
 	if err != nil {
-		fmt.Printf("Problème de row.Scan() : ", err)
+		logs.WriteLog("BDD GetAdmin "+id+" : ", err.Error())
 	}
 	return admin
 }
@@ -238,32 +246,50 @@ func GetNameByToken(token string) string {
 	row := db.QueryRow("SELECT * FROM token WHERE token = $1", token)
 	err := row.Scan(&login, &token)
 	if err != nil {
-		logs.WriteLog("BDD.GetNameByToken", err.Error())
+		logs.WriteLog("BDD GetNameByToken "+token+" : ", err.Error())
 	}
 	return login
 }
 
 // testé
 func InsertToken(login string, token string) {
-
+	m.Lock()
 	stmt, _ := db.Prepare("DELETE FROM Token where login = ?")
-	stmt.Exec(login)
-	stmt, _ = db.Prepare("INSERT INTO Token values(?,?)")
-	_, err := stmt.Exec(login, token)
+	_, err := stmt.Exec(login)
 	if err != nil {
-		logs.WriteLog("BDD.InsertToken", err.Error())
+		logs.WriteLog("BDD InsertToken "+login, err.Error())
 	}
-	stmt.Close()
+	stmt, err = db.Prepare("INSERT INTO Token values(?,?)")
+	if err != nil {
+		logs.WriteLog("BDD InsertToken "+login, err.Error())
+	}
+	_, err = stmt.Exec(login, token)
+	if err != nil {
+		logs.WriteLog("BDD InsertToken "+login, err.Error())
+	}
+	err = stmt.Close()
+	if err != nil {
+		logs.WriteLog("BDD InsertToken "+login, err.Error())
+	}
+	m.Unlock()
 }
 
 // testé
 func DeleteToken(login string) {
-	stmt, _ := db.Prepare("DELETE FROM token WHERE login = ?")
-	_, err := stmt.Exec(login)
+	m.Lock()
+	stmt, err := db.Prepare("DELETE FROM token WHERE login = ?")
 	if err != nil {
 		logs.WriteLog("BDD.DeleteToken", err.Error())
 	}
-	stmt.Close()
+	_, err = stmt.Exec(login)
+	if err != nil {
+		logs.WriteLog("BDD DeleteToken", err.Error())
+	}
+	err = stmt.Close()
+	if err != nil {
+		logs.WriteLog("BDD.DeleteToken", err.Error())
+	}
+	m.Unlock()
 }
 
 func TokenExiste(token string) bool {
@@ -305,15 +331,8 @@ func TokenRole(token string) string {
 		return "administrateur"
 	}
 
+	logs.WriteLog("BDD TokenRole", "Le login associé n'est pas dans la table administrateur ou étudiant")
 	return ""
-}
-
-func ResetToken() {
-	stmt, _ := db.Prepare("TRUNCATE TABLE token;")
-	if _, err := stmt.Exec(); err != nil {
-		fmt.Printf("erreur clear de la table token")
-	}
-	stmt.Close()
 }
 
 /**
@@ -322,23 +341,41 @@ admin == false : fonction lancé par un étudiant lors d'une nouvelle tentative 
 (si c'est false, tentative++)
 */
 func SaveResultat(lelogin string, lenum_defi int, letat int, admin bool) {
+	m.Lock()
 	var res ResBDD
 	row := db.QueryRow("SELECT * FROM Resultat WHERE login = $1 AND defi = $2", lelogin, lenum_defi)
 
 	if err := row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative); err != nil {
 		stmt, _ := db.Prepare("INSERT INTO Resultat values(?,?,?,?)")
 		_, err = stmt.Exec(lelogin, lenum_defi, letat, 1)
-		stmt.Close()
-	} else {
-		stmt, _ := db.Prepare("UPDATE Resultat SET etat = ?, tentative = ? WHERE login = ? AND defi = ?")
-		if admin {
-			stmt.Exec(res.Etat, res.Tentative, res.Login, res.Defi)
-		} else {
-			stmt.Exec(res.Etat, res.Tentative+1, res.Login, res.Defi)
+		err = stmt.Close()
+		if err != nil {
+			logs.WriteLog("BDD SaveResultat", err.Error())
 		}
-		stmt.Close()
-	}
+	} else {
+		stmt, err := db.Prepare("UPDATE Resultat SET etat = ?, tentative = ? WHERE login = ? AND defi = ?")
+		if err != nil {
+			logs.WriteLog("BDD SaveResultats", err.Error())
+		} else {
+			if admin {
+				_, err = stmt.Exec(res.Etat, res.Tentative, res.Login, res.Defi)
+				if err != nil {
+					logs.WriteLog("BDD SaveResultats", err.Error())
+				}
 
+			} else {
+				_, err = stmt.Exec(res.Etat, res.Tentative+1, res.Login, res.Defi)
+				if err != nil {
+					logs.WriteLog("BDD SaveResultats", err.Error())
+				}
+			}
+			err = stmt.Close()
+			if err != nil {
+				logs.WriteLog("BDD SaveResultats", err.Error())
+			}
+		}
+	}
+	m.Unlock()
 }
 
 /**
@@ -350,10 +387,13 @@ func GetEtudiants() []Etudiant {
 	row, err := db.Query("SELECT * FROM Etudiant")
 	defer row.Close()
 	if err != nil {
-		logs.WriteLog("BDD.GetEtudiants", err.Error())
+		logs.WriteLog("BDD GetEtudiants", err.Error())
 	}
 	for row.Next() {
-		row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur)
+		err = row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur)
+		if err != nil {
+			logs.WriteLog("BDD GetEtudiants", err.Error())
+		}
 		etudiants = append(etudiants, etu)
 	}
 	return etudiants
@@ -375,23 +415,38 @@ func GetResult(login string, defi int) ResBDD {
 Ajoute un défi à la table Defis
 */
 func AddDefi(dateD date.Date, dateF date.Date) {
+	m.Lock()
 	stmt, err := db.Prepare("INSERT INTO Defis(date_debut,date_fin) values(?,?)")
-	_, err = stmt.Exec(dateD.String(), dateF.String())
 	if err != nil {
-		logs.WriteLog("BDD.AddDefi", err.Error())
+		logs.WriteLog("BDD AddeDefi", err.Error())
+	} else {
+		_, err = stmt.Exec(dateD.String(), dateF.String())
+		if err != nil {
+			logs.WriteLog("BDD AddDefi", err.Error())
+		}
+		err = stmt.Close()
+		if err != nil {
+			logs.WriteLog("BDD AddeDefi", err.Error())
+		}
 	}
-	stmt.Close()
+	m.Unlock()
 }
 
 /**
 Modifie le défi de numéro num
 */
 func ModifyDefi(num int, dateD date.Date, dateF date.Date) {
-	stmt, _ := db.Prepare("UPDATE Defis SET date_debut = ?, date_fin = ? where numero = ?")
+	stmt, err := db.Prepare("UPDATE Defis SET date_debut = ?, date_fin = ? where numero = ?")
+	if err != nil {
+		logs.WriteLog("BDD modify defi", err.Error())
+	}
 	if _, err := stmt.Exec(dateD.String(), dateF.String(), num); err != nil {
 		logs.WriteLog("BDD.ModifyDefi", err.Error())
 	}
-	stmt.Close()
+	err = stmt.Close()
+	if err != nil {
+		logs.WriteLog("BDD modify defi", err.Error())
+	}
 }
 
 func GetDefis() []Defi {
@@ -407,7 +462,10 @@ func GetDefis() []Defi {
 		logs.WriteLog("BDD.GetDefis", err.Error())
 	}
 	for row.Next() {
-		row.Scan(&defi.Num, &debutString, &finString, &defi.Correcteur)
+		err = row.Scan(&defi.Num, &debutString, &finString, &defi.Correcteur)
+		if err != nil {
+			logs.WriteLog("BDD GetDefis", err.Error())
+		}
 		defi.Date_debut, _ = date.Parse(debutString)
 		defi.Date_fin, _ = date.Parse(finString)
 		defis = append(defis, defi)
@@ -447,28 +505,35 @@ func GetDefi(num int) Defi {
 
 //selectionne quel étudiant sera correcteur en fonction de si il a réussi et si il a déjà été correcteur
 func GenerateCorrecteur(num_defi int) {
+	m.Lock()
 	var t = make([]Etudiant, 0)
 	var etu Etudiant
 	row, err := db.Query("Select e.* FROM Resultat r, Etudiant e WHERE r.Defi = $1 AND r.Etat = 1 AND e.Correcteur= 0 AND r.Login =e.Login", num_defi)
 	defer row.Close()
 	if err != nil {
-		fmt.Printf(err.Error())
+		logs.WriteLog("BDD GenerateCorrecteur", err.Error())
 	} else {
 		for row.Next() {
-			row.Scan(&etu.Login, &etu.Password, &etu.Nom, &etu.Prenom, &etu.Mail, &etu.Correcteur)
+			err = row.Scan(&etu.Login, &etu.Password, &etu.Nom, &etu.Prenom, &etu.Mail, &etu.Correcteur)
+			if err != nil {
+				logs.WriteLog("BDD GenerateCorrecteur", err.Error())
+			}
 			t = append(t, etu)
 		}
 	}
+	fmt.Println(t)
 	rand.Seed(time.Now().UnixNano())
 	min := 0
 	max := len(t) - 1
-	aleatoire := rand.Intn(max-min+1) + min
+	n := max - min + 1
+	aleatoire := rand.Intn(n) + min
 	correcteur := t[aleatoire]
 	sqlStatement := "UPDATE Etudiant  SET correcteur = 1 WHERE login = $1 "
 	db.Exec(sqlStatement, correcteur.Login)
 	sqlStatement = "UPDATE Defis SET correcteur = $1 WHERE numero = $2"
 	db.Exec(sqlStatement, correcteur.Login, num_defi)
 	fmt.Println("correcteur généré : ", correcteur)
+	m.Unlock()
 }
 
 func GetCorrecteur(num int) Etudiant {
@@ -489,10 +554,13 @@ func GetAllResultat(login string) []ResBDD {
 	row, err := db.Query("SELECT * FROM Resultat WHERE login = ? ORDER BY defi ASC", login)
 	defer row.Close()
 	if err != nil {
-		logs.WriteLog("BDD.GetAllResultat", err.Error())
+		logs.WriteLog("BDD GetAllResultat", err.Error())
 	}
 	for row.Next() {
-		row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative)
+		err = row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative)
+		if err != nil {
+			logs.WriteLog("BDD GetAllResultat", err.Error())
+		}
 		resT = append(resT, res)
 	}
 
@@ -512,8 +580,11 @@ func GetParticipant(num_defi int) []ParticipantDefi {
 		logs.WriteLog("BDD.GetParticipant", err.Error())
 	}
 	for row.Next() {
-		row.Scan(&res.Etudiant.Login, &res.Etudiant.Password, &res.Etudiant.Prenom, &res.Etudiant.Nom, &res.Etudiant.Mail, &res.Etudiant.Correcteur, &res.Resultat.Login, &res.Resultat.Defi,
+		err = row.Scan(&res.Etudiant.Login, &res.Etudiant.Password, &res.Etudiant.Prenom, &res.Etudiant.Nom, &res.Etudiant.Mail, &res.Etudiant.Correcteur, &res.Resultat.Login, &res.Resultat.Defi,
 			&res.Resultat.Etat, &res.Resultat.Tentative)
+		if err != nil {
+			logs.WriteLog("Bdd GetParticipants", err.Error())
+		}
 		resT = append(resT, res)
 	}
 	return resT

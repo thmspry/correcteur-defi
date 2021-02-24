@@ -22,7 +22,6 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 		if BDD.TokenExiste(tk.Value) {
 			fmt.Println("Token existe : ", tk.Value)
 			role := BDD.TokenRole(tk.Value)
-			fmt.Println(role)
 			if role == "etudiants" {
 				http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 			} else if role == "administrateur" {
@@ -81,7 +80,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			// request provient du formulaire pour s'enregistrer
 			// pas de vérification de champs implémenter pour l'instant
 			if BDD.IsLoginUsed(r.FormValue("login")) {
-				fmt.Printf("votre login existe déjà")
+				fmt.Println("votre login existe déjà")
 				http.Redirect(w, r, "/login", http.StatusFound)
 			} else {
 				etu := BDD.Etudiant{

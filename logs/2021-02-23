@@ -48,3 +48,43 @@
 10:24:54, matteo : mot de passe incorrecte connexion étudiant
 10:25:5, test : connexion étudiant
 10:25:7, test : déconnexion du serveur
+10:27:17, BDD.LoginCorrect : sql: no rows in result set
+10:27:17, nb : mot de passe incorrecte connexion étudiant
+10:27:23, BDD.LoginCorrect : sql: no rows in result set
+10:27:23, admin : mot de passe incorrecte connexion étudiant
+10:27:30, test : connexion étudiant
+10:27:42, test : déconnexion du serveur
+10:27:58, lkm : login admin inconnu
+10:27:58, lkm : mot de passe incorrecte connexion admin
+10:28:7, admin : connexion admin réussie, création d'un token
+10:28:19, admin : déconnexion du serveur
+10:32:30, test : déconnexion du serveur
+10:33:7, admin : déconnexion du serveur
+10:53:8, admin : connexion admin réussie, création d'un token
+10:53:23, admin : déconnexion du serveur
+10:54:12, test : connexion étudiant
+10:54:26, test : déconnexion du serveur
+10:58:8, admin : déconnexion du serveur
+10:59:12, test : déconnexion du serveur
+14:52:2, BDD.LoginCorrect : no such table: Etudiant
+14:52:2, matteo : mot de passe incorrecte connexion étudiant
+14:52:9, BDD.LoginCorrect : no such table: Etudiant
+14:52:9,  : mot de passe incorrecte connexion étudiant
+14:52:26, matteo : login admin inconnu
+14:52:26, matteo : mot de passe incorrecte connexion admin
+14:52:32, admin : login admin inconnu
+14:52:32, admin : mot de passe incorrecte connexion admin
+14:52:40, admin : login admin inconnu
+14:52:40, admin : mot de passe incorrecte connexion admin
+14:59:8, Register : test est enregistré
+14:59:8, Register : test2 est enregistré
+14:59:35, admin : connexion admin réussie, création d'un token
+15:4:35, admin : déconnexion du serveur
+15:29:52, test : connexion étudiant
+15:29:52, BDD.GetResult : sql: no rows in result set
+15:30:9, BDD.GetResult : sql: no rows in result set
+15:30:9, test : déconnexion du serveur
+15:30:25, admin : connexion admin réussie, création d'un token
+15:31:22, admin : déconnexion du serveur
+15:34:52, test : déconnexion du serveur
+15:35:25, admin : déconnexion du serveur
