@@ -10,8 +10,10 @@ import (
 	"os"
 )
 
+//Main fonction du programme
 func main() {
 
+	// initialalise le routeur
 	web.InitWeb()
 	/*
 		set GOOS=linux
@@ -29,6 +31,7 @@ func main() {
 
 }
 
+//fonction qui permet de reset la BDD et les dossier du serveur
 func Init() {
 	os.Mkdir("./logs", 0755)
 	os.Mkdir("./BDD", 0755)

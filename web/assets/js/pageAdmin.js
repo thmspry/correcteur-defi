@@ -30,22 +30,6 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
     changeInputFile("#file-test");
 
 });
-/*
-fetch("http://localhost:8192/GetDefis")
-    .then(response => response.json())
-    .then(data => {
-        var elems = document.querySelectorAll('.datepicker .depot');
-        let optionsDatePicker = {
-            format: "yyyy-mm-dd",
-            minDate: new Date(data[data.length-1].Date_fin),
-            maxDate: new Date("2022-06-30"),
-            defaultDate: new Date()
-        }
-        var instance = M.Datepicker.init(elems, optionsDatePicker);
-    })
-    .catch(err => console.log(err))
-*/
-
 
 // Stock dans le localstorage le dernier onglet selectionner, pour se replacer dessus au rechargement de la page
 let tabLi = document.querySelectorAll(".tabs a")

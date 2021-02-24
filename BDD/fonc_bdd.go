@@ -240,7 +240,9 @@ func GetAdmin(id string) Admin {
 	return admin
 }
 
-// testé
+/**
+
+ */
 func GetNameByToken(token string) string {
 	var login string
 	row := db.QueryRow("SELECT * FROM token WHERE token = $1", token)

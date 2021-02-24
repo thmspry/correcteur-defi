@@ -13,11 +13,10 @@ Fonction pour lancer l'interface web
 func InitWeb() {
 
 	http.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web")))) // compliqué à expliquer
-	http.Handle("/BDD/", http.StripPrefix("/BD/", http.FileServer(http.Dir("BDD"))))
-	http.HandleFunc("/login", accueil)             // Page d'acceuil : http://localhost:8192/login
-	http.HandleFunc("/loginAdmin", connexionAdmin) // Page de connexion admin : http://localhost:8192/loginAdmin
-	http.HandleFunc("/pageEtudiant", pageEtudiant) // Page étudiant : http://localhost:8192/pageEtudiant
-	http.HandleFunc("/pageAdmin", pageAdmin)       // Page admin : http://localhost:8192/pageAdmin
+	http.HandleFunc("/login", accueil)                                                // Page d'acceuil : http://localhost:8192/login
+	http.HandleFunc("/loginAdmin", connexionAdmin)                                    // Page de connexion admin : http://localhost:8192/loginAdmin
+	http.HandleFunc("/pageEtudiant", pageEtudiant)                                    // Page étudiant : http://localhost:8192/pageEtudiant
+	http.HandleFunc("/pageAdmin", pageAdmin)                                          // Page admin : http://localhost:8192/pageAdmin
 
 	http.HandleFunc("/GetDefis", GetDefis)
 
