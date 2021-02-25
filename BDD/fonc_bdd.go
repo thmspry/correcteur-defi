@@ -190,8 +190,10 @@ func LoginCorrect(id string, password string) bool {
 }
 
 func IsLoginUsed(id string) bool {
+	var pseudo string
 	row := db.QueryRow("SELECT login FROM Etudiant WHERE login = $1", id)
-	if row == nil {
+	err := row.Scan(&pseudo)
+	if err != nil {
 		return false
 	}
 	return true
