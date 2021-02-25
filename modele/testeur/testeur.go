@@ -2,6 +2,7 @@ package testeur
 
 import (
 	"bufio"
+	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
@@ -96,6 +97,8 @@ func Test(login string) (string, []Resultat) {
 		logs.WriteLog("testeur", "pas de fichier config dans le dossier "+Path_dir_test+jeuDeTest)
 		return "Pas de fichier de config", nil
 	}
+
+	fmt.Println("configtest : \n", configTest)
 
 	for i := 0; i < len(configTest.CasDeTest); i++ {
 

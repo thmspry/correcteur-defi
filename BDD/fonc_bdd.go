@@ -78,7 +78,7 @@ func InitBDD() {
 		"numero INTEGER PRIMARY KEY AUTOINCREMENT," +
 		"date_debut TEXT NOT NULL," +
 		"date_fin TEXT NOT NULL," +
-		"correcteur TEXT," +
+		"correcteur TEXT NOT NULL," +
 		"FOREIGN KEY (correcteur) REFERENCES Etudiant(login)" +
 		")")
 	if err != nil {
@@ -420,11 +420,11 @@ Ajoute un défi à la table Defis
 */
 func AddDefi(dateD date.Date, dateF date.Date) {
 	m.Lock()
-	stmt, err := db.Prepare("INSERT INTO Defis(date_debut,date_fin) values(?,?)")
+	stmt, err := db.Prepare("INSERT INTO Defis(date_debut,date_fin,correcteur) values(?,?,?)")
 	if err != nil {
 		logs.WriteLog("BDD AddeDefi", err.Error())
 	} else {
-		_, err = stmt.Exec(dateD.String(), dateF.String())
+		_, err = stmt.Exec(dateD.String(), dateF.String(), "")
 		if err != nil {
 			logs.WriteLog("BDD AddDefi", err.Error())
 		}

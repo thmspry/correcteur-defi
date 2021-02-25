@@ -7,6 +7,8 @@ import (
 	"net/http"
 )
 
+var domain = "go-correcteur.com"
+
 /**
 Fonction pour lancer l'interface web
 */
@@ -17,7 +19,6 @@ func InitWeb() {
 	http.HandleFunc("/loginAdmin", connexionAdmin)                                    // Page de connexion admin : http://localhost:8192/loginAdmin
 	http.HandleFunc("/pageEtudiant", pageEtudiant)                                    // Page étudiant : http://localhost:8192/pageEtudiant
 	http.HandleFunc("/pageAdmin", pageAdmin)                                          // Page admin : http://localhost:8192/pageAdmin
-
 	http.HandleFunc("/GetDefis", GetDefis)
 
 	err := http.ListenAndServe(":8192", nil) // port utilisé

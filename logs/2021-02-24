@@ -1,0 +1,7 @@
+16:2:28, admin : login admin inconnu
+16:2:28, admin : mot de passe incorrecte connexion admin
+16:3:3, Register : test est enregistré
+16:3:3, Register : test2 est enregistré
+16:3:24, admin : connexion admin réussie, création d'un token
+16:7:58, admin : connexion admin réussie, création d'un token
+16:12:58, admin : déconnexion du serveur

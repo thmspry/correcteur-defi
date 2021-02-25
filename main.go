@@ -14,20 +14,20 @@ import (
 func main() {
 
 	// initialalise le routeur
-	web.InitWeb()
+
 	/*
 		set GOOS=linux
 		set GOARCH=amd64
 	*/
-	/*
-		mode := os.Args[1]
-		if mode == "0" {
-			Init()
-		} else if mode == "1" {
-			web.InitWeb()
-		} else {
-			web.InitWeb()
-		}*/
+
+	mode := os.Args[1]
+	if mode == "0" {
+		Init()
+	} else if mode == "1" {
+		web.InitWeb()
+	} else {
+		web.InitWeb()
+	}
 
 }
 
@@ -74,13 +74,11 @@ func resetBDD() {
 		Correcteur: false,
 	}
 	BDD.Register(etu2)
-	BDD.SaveResultat("test", 1, 1, false)
-	BDD.SaveResultat("test2", 1, 1, false)
+
 	admin := BDD.Admin{
 		Login:    "admin",
 		Password: "admin",
 	}
 
 	BDD.RegisterAdmin(admin)
-
 }
