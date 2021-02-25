@@ -121,7 +121,11 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 
 			logs.WriteLog(etu.Login, "upload de script du défis "+strconv.Itoa(num_defi_actuel))
 			data.Msg_res, data.ResTest = testeur.Test(etu.Login)
-			http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
+			t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
+			// execute la page avec la structure "etu" qui viendra remplacer les éléments de la page en fonction de l'étudiant (voir pageEtudiant.html)
+			if err := t.Execute(w, data); err != nil {
+				log.Printf("error exec template : ", err)
+			}
 		}
 	}
 }

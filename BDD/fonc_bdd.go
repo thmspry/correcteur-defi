@@ -78,7 +78,7 @@ func InitBDD() {
 		"numero INTEGER PRIMARY KEY AUTOINCREMENT," +
 		"date_debut TEXT NOT NULL," +
 		"date_fin TEXT NOT NULL," +
-		"correcteur TEXT NOT NULL," +
+		"correcteur TEXT," +
 		"FOREIGN KEY (correcteur) REFERENCES Etudiant(login)" +
 		")")
 	if err != nil {
@@ -420,11 +420,11 @@ Ajoute un défi à la table Defis
 */
 func AddDefi(dateD date.Date, dateF date.Date) {
 	m.Lock()
-	stmt, err := db.Prepare("INSERT INTO Defis(date_debut,date_fin,correcteur) values(?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO Defis(date_debut,date_fin) values(?,?)")
 	if err != nil {
 		logs.WriteLog("BDD AddeDefi", err.Error())
 	} else {
-		_, err = stmt.Exec(dateD.String(), dateF.String(), "")
+		_, err = stmt.Exec(dateD.String(), dateF.String())
 		if err != nil {
 			logs.WriteLog("BDD AddDefi", err.Error())
 		}
@@ -470,12 +470,13 @@ func GetDefis() []Defi {
 	}
 	for row.Next() {
 		err = row.Scan(&defi.Num, &debutString, &finString, &defi.Correcteur)
-		if err != nil {
+		if err != nil && defi.Correcteur != "" {
 			logs.WriteLog("BDD GetDefis", err.Error())
 		}
 		defi.Date_debut, _ = date.Parse(debutString)
 		defi.Date_fin, _ = date.Parse(finString)
 		defis = append(defis, defi)
+		defi = Defi{}
 	}
 	if len(defis) == 0 {
 		return nil
@@ -533,6 +534,7 @@ func GenerateCorrecteur(num_defi int) {
 				logs.WriteLog("BDD GenerateCorrecteur", err.Error())
 			}
 			t = append(t, etu)
+			etu = Etudiant{}
 		}
 	}
 	fmt.Println(t)
@@ -600,6 +602,7 @@ func GetParticipant(num_defi int) []ParticipantDefi {
 			logs.WriteLog("Bdd GetParticipants", err.Error())
 		}
 		resT = append(resT, res)
+		res = ParticipantDefi{}
 	}
 	return resT
 }
@@ -618,6 +621,7 @@ func GetEtudiantsMail() []EtudiantMail {
 				panic(err)
 			}
 			resT = append(resT, res)
+			res = EtudiantMail{}
 		}
 	}
 
