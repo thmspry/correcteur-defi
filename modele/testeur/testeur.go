@@ -364,8 +364,8 @@ func getConfigTest(path string, jt string) JeuDeTest {
 			arg.Contenu = manipStockage.Contenu(path + args) // changer le path
 			testUnique.Arguments = append(testUnique.Arguments, arg)
 		}
-
 		Jeu.CasDeTest = append(Jeu.CasDeTest, testUnique)
+		testUnique.Arguments = nil
 		i++
 	}
 	return Jeu
