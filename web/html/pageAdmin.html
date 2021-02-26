@@ -153,24 +153,6 @@
             {{if not .Participants}}
             <p>Aucun participants</p>
             {{end}}
-
-            <!---{{range .Participants}}
-                {{.Etudiant.Login}}
-                Etat :
-                {{if eq .Resultat.Etat 1}}
-                    Réussi
-                    {{else if eq .Resultat.Etat 0}}
-                    Échoué
-                {{end}}
-            Nombre de tentative : {{.Resultat.Tentative}}
-            <a href="pageAdmin?Defi={{$.DefiSelect.Num}}&Etudiant={{.Etudiant.Login}}">
-                Afficher le script
-            </a>
-            <a href="pageAdmin?Defi={{$.DefiSelect.Num}}&Etudiant={{.Etudiant.Login}}&Etat={{.Resultat.Etat}}">
-                Modifier l'état
-            </a>
-            <br>
-            {{end}}---->
             {{if eq .Correcteur.Login ""}}
             <p>Choisir un étudiant correcteur : <button class="button"><a href="pageAdmin?Defi={{.DefiSelect.Num}}&Correcteur">choisir</a></button></p>
             {{else}}

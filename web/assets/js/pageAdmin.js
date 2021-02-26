@@ -4,14 +4,14 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
 
     // Instanciation des "date pickers" de Materialize
     var elems = document.querySelectorAll('.datepicker');
-    let dateactu = new Date()
-    let anneeencours = dateactu.getFullYear()
-    let anneeapres = anneeencours +1
+    let currentDate = new Date();
+    let currentYear = currentDate.getFullYear();
+    let nextYear = currentYear + 1;
     let optionsDatePicker = {
         format : "yyyy-mm-dd",
-        minDate: new Date(anneeencours+"-02-15"),
-        maxDate: new Date(anneeapres+"-06-30"),
-        defaultDate : new Date()
+        minDate: new Date(currentYear + "-02-15"),
+        maxDate: new Date(nextYear + "-06-30"),
+        defaultDate : currentDate
     }
     var instances = M.Datepicker.init(elems, optionsDatePicker);
 
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
     // Selectionne le dernier onglet selectionné
     instanceTab.select(localStorage.getItem("current-tab"));
 
-    // Change les label des chose-file de défi et de test
+    // Change les labels des chose-file de défi et de test
     changeInputFile("#file-defi");
     changeInputFile("#file-test");
 

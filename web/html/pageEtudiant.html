@@ -71,7 +71,7 @@
         <h1 id="message-res" class="">{{.Msg_res}}</h1>
         <div class="res-test">
             {{range .ResTest}}
-                <p>Test {{.CasTest.Nom}} :
+                <p>Test "{{.CasTest.Nom}}" :
                 {{if eq .Etat 1}}
                     <span class="win-text">Vous avez réussi ce test</span>
                     <img src="./web/assets/images/green-light.png">

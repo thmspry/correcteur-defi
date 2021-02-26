@@ -54,6 +54,7 @@
 }
 
 .right-side {
+    width: -moz-fit-content;
     width: fit-content;
 }
 
@@ -89,6 +90,7 @@
     align-items: center;
     font-weight: bold;
     background-color: #50a969;
+    width: -moz-fit-content;
     width: fit-content;
     height:50px;
     cursor: pointer;
