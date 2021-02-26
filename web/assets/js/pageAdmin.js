@@ -4,10 +4,13 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
 
     // Instanciation des "date pickers" de Materialize
     var elems = document.querySelectorAll('.datepicker');
+    let dateactu = new Date()
+    let anneeencours = dateactu.getFullYear()
+    let anneeapres = anneeencours +1
     let optionsDatePicker = {
         format : "yyyy-mm-dd",
-        minDate: new Date("2021-02-15"),
-        maxDate: new Date("2022-06-30"),
+        minDate: new Date(anneeencours+"-02-15"),
+        maxDate: new Date(anneeapres+"-06-30"),
         defaultDate : new Date()
     }
     var instances = M.Datepicker.init(elems, optionsDatePicker);
