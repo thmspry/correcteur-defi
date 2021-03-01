@@ -119,6 +119,12 @@ func InitBDD() {
 	stmt.Exec()
 
 	stmt.Close()
+
+	admin := Admin{
+		Login:    "admin",
+		Password: "admin",
+	}
+	RegisterAdmin(admin)
 }
 
 /**

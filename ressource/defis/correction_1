@@ -1,4 +1,0 @@
-#!/bin/bash
-grep ',[1-2][0-9]' $1 > notes_sup
-cut -d',' -f1,2 notes_sup > passent
-rm -f notes_sup

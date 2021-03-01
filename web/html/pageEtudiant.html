@@ -23,7 +23,7 @@
                 <p class="italic">{{.UserInfo.Mail}}</p>
             </div>
             <div id="content">
-                {{if eq .Defi_actuel.Num -1}}
+                {{if eq .Defi_actuel.Num 0}}
                 <h2>Il n'y a pas défi en cours.</h2>
                 {{else}}
                 <h2>Défi actuel : Défi n°{{.Defi_actuel.Num}}</h2>
@@ -55,6 +55,7 @@
                 </form>
             </div>
         </div>
+
         <div class="right-side">
             <a class="twitter-timeline" data-width="450" margin-left:300 data-height="325" href="https://twitter.com/IutAsr?ref_src=twsrc%5Etfw">Tweets by IutAsr</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
         </div>

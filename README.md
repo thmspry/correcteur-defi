@@ -1,6 +1,10 @@
-Utilisateur pour faire des tests :<br> 
-login : test<br>
-mot de passe : test
+Admin :
+login : admin | password : admin
+
+Pour lancer l'application : 
+ - "start" : lance l'application
+ - "reset" : supprime les fichiers des dossiers et la BDD
+ - "init" : initialise l'application
 
 Pour initialiser le projet il est nécessaire d'ajouter les fichiers .html et .css
 sur le serveur à la suite.
