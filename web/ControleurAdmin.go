@@ -24,20 +24,21 @@ import (
 )
 
 type data_pageAdmin struct { /* Données envoyée à la page admin */
-	EtuSelect    string
-	DefiSelect   BDD.Defi
-	AdminInfo    BDD.Admin
-	Etudiants    []BDD.Etudiant
-	Res_etu      []BDD.ResBDD
-	ListeDefis   []BDD.Defi
-	File         []string
-	DefiActuel   BDD.Defi
-	Participants []BDD.ParticipantDefi
-	Correcteur   BDD.Etudiant
-	Tricheurs    [][]string
-	Logs         []string
-	Log          []string
-	LogDate      string
+	EtuSelect     string
+	DefiSelect    BDD.Defi
+	AdminInfo     BDD.Admin
+	Etudiants     []BDD.Etudiant
+	Res_etu       []BDD.ResBDD
+	ListeDefis    []BDD.Defi
+	File          []string
+	DefiActuel    BDD.Defi
+	JeuDeTestSent string
+	Participants  []BDD.ParticipantDefi
+	Correcteur    BDD.Etudiant
+	Tricheurs     [][]string
+	Logs          []string
+	Log           []string
+	LogDate       string
 }
 
 type SenderData struct { /* Structure utile pour l'envoi de mail */
@@ -86,7 +87,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			data.LogDate = log
 			f, err := os.Open(config.Path_log + log)
 			if err != nil {
-				data.File[0] = "erreur pour récupérer le script de l'étudiant"
+				data.Log = []string{"erreur pour récupérer le fichier de log"}
 			} else {
 				scanner := bufio.NewScanner(f)
 				for scanner.Scan() {
@@ -307,6 +308,8 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				}
 				os.Rename(config.Path_jeu_de_tests+nomArchive, pathTest)
 			}
+			num2, _ := strconv.Atoi(num)
+			BDD.AddJeuDeTest(num2)
 			os.Remove(fichier.Name())
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return

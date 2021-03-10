@@ -8,6 +8,7 @@ import (
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
 	"golang.org/x/crypto/bcrypt"
 	"math/rand"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -50,6 +51,7 @@ type Defi struct {
 	Num        int
 	Date_debut date.Date
 	Date_fin   date.Date
+	JeuDeTest  bool
 	Correcteur string
 }
 
@@ -78,6 +80,7 @@ func InitBDD() {
 		"numero INTEGER PRIMARY KEY AUTOINCREMENT," +
 		"date_debut TEXT NOT NULL," +
 		"date_fin TEXT NOT NULL," +
+		"jeu_de_test BOOL NOT NULL," +
 		"correcteur TEXT," +
 		"FOREIGN KEY (correcteur) REFERENCES Etudiant(login)" +
 		")")
@@ -426,18 +429,15 @@ Ajoute un défi à la table Defis
 */
 func AddDefi(dateD date.Date, dateF date.Date) {
 	m.Lock()
-	stmt, err := db.Prepare("INSERT INTO Defis(date_debut,date_fin) values(?,?)")
+	stmt, err := db.Prepare("INSERT INTO Defis(date_debut,date_fin, jeu_de_test) values(?,?,?)")
 	if err != nil {
 		logs.WriteLog("BDD AddeDefi", err.Error())
 	} else {
-		_, err = stmt.Exec(dateD.String(), dateF.String())
+		_, err = stmt.Exec(dateD.String(), dateF.String(), false)
 		if err != nil {
 			logs.WriteLog("BDD AddDefi", err.Error())
 		}
-		err = stmt.Close()
-		if err != nil {
-			logs.WriteLog("BDD AddeDefi", err.Error())
-		}
+		stmt.Close()
 	}
 	m.Unlock()
 }
@@ -475,7 +475,7 @@ func GetDefis() []Defi {
 		logs.WriteLog("BDD.GetDefis", err.Error())
 	}
 	for row.Next() {
-		err = row.Scan(&defi.Num, &debutString, &finString, &defi.Correcteur)
+		err = row.Scan(&defi.Num, &debutString, &finString, &defi.JeuDeTest, &defi.Correcteur)
 		if err != nil && defi.Correcteur != "" {
 			logs.WriteLog("BDD GetDefis", err.Error())
 		}
@@ -522,6 +522,20 @@ func GetDefi(num int) Defi {
 		}
 	}
 	return Defi{}
+}
+
+func AddJeuDeTest(num int) {
+	stmt, err := db.Prepare("UPDATE Defis SET jeu_de_test = ? where numero = ?")
+	if err != nil {
+		logs.WriteLog("BDD ajout d'un jeu de test au défi n°"+strconv.Itoa(num), err.Error())
+	}
+	if _, err := stmt.Exec(true, num); err != nil {
+		logs.WriteLog("BDD.AddJeuDeTest", err.Error())
+	}
+	err = stmt.Close()
+	if err != nil {
+		logs.WriteLog("BDD.AddJeuDeTest", err.Error())
+	}
 }
 
 //selectionne quel étudiant sera correcteur en fonction de si il a réussi et si il a déjà été correcteur

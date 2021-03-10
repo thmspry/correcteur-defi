@@ -29,9 +29,9 @@
         <div class="col s12">
             <ul class="tabs">
                 <li class="tab col s3"><a href="#up-defi">Déposer un défi</a></li>
-                <li class="tab col {{if eq .DefiActuel.Num 0}} disabled {{end}} s3"><a href="#modif-date">Modifier la date</a></li>
-                <li class="tab col {{if eq .DefiActuel.Num 0}} disabled {{end}} s3"><a href="#up-test">Déposer des test</a></li>
-                <li class="tab col {{if eq .DefiActuel.Num 0}} disabled {{end}} s3"><a href="#liste-defi">Liste des défis</a></li>
+                <li class="tab col {{if eq (len .ListeDefis) 0}} disabled {{end}} s3"><a href="#modif-date">Modifier la date</a></li>
+                <li class="tab col {{if eq (len .ListeDefis) 0}} disabled {{end}} s3"><a href="#up-test">Déposer des test</a></li>
+                <li class="tab col {{if eq (len .ListeDefis) 0}} disabled {{end}} s3"><a href="#liste-defi">Liste des défis</a></li>
                 <li class="tab col s3"><a href="#logs">Logs</a></li>
             </ul>
         </div>
@@ -119,12 +119,13 @@
                 <form enctype="multipart/form-data" action="/pageAdmin?form=test" method="post">
                     <div>
                         Choisir un numéro de défi :
-                        <select name="defiSelectTest" required="required">
+                        <select name="defiSelectTest" required="required" onchange="checkJeuDeTestSent(event)">
                             {{range .ListeDefis}}
                             <option value="{{.Num}}">{{.Num}}</option>
                             {{end}}
                         </select>
                     </div>
+                    <p id="TestDeposer"></p>
                     <div class="file-depot">
                         <p>Dépot du test :</p>
                         <div class="chose-file" id="file-test">

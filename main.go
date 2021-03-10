@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
@@ -21,10 +22,13 @@ func main() {
 
 	mode := os.Args[1]
 	if mode == "init" {
+		fmt.Println("init")
 		Init()
 	} else if mode == "reset" {
+		fmt.Println("reset")
 		reset()
 	} else if mode == "start" {
+		fmt.Println("start")
 		web.InitWeb()
 	} else {
 		web.InitWeb()
@@ -40,15 +44,22 @@ func reset() {
 	BDD.InitBDD()
 	if len(manipStockage.GetFiles("./logs")) > 0 {
 		os.RemoveAll("./logs")
+		os.Mkdir("./logs", 0755)
 	}
 	if len(manipStockage.GetFiles("./ressource/defis")) > 0 {
 		os.RemoveAll("./ressource/defis")
+		os.Mkdir("./ressource/defis", 0755)
+
 	}
 	if len(manipStockage.GetFiles("./ressource/jeu_de_test")) > 0 {
 		os.RemoveAll("./ressource/jeu_de_test")
+		os.Mkdir("./ressource/jeu_de_test", 0755)
+
 	}
 	if len(manipStockage.GetFiles("./ressource/script_etudiants")) > 0 {
 		os.RemoveAll("./ressource/script_etudiants")
+		os.Mkdir("./ressource/script_etudiants", 0755)
+
 	}
 }
 

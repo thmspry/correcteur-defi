@@ -76,9 +76,41 @@ function ChangeDateInput(event, divID) {
         .then(response => response.json())
         .then(data => {
             let defiActuel = data.find(el => el.Num == event.target.value);
+            console.log(defiActuel)
             let datepicker = document.querySelectorAll('div#'+divID+' input.datepicker')
             datepicker[0].value = defiActuel.Date_debut;
             datepicker[1].value = defiActuel.Date_fin;
         })
         .catch(err => console.log(err))
 }
+
+function checkJeuDeTestSent(event) {
+    fetch("/GetDefis")
+        .then(response => response.json())
+        .then(data =>  {
+            let defiActuel = data.find(el => el.Num == event.target.value);
+            console.log(defiActuel)
+
+            let para = document.querySelector('#TestDeposer');
+            if (defiActuel.Jeu_de_test) {
+                para.innerHTML = "Vous avez déjà déposé un jeu de test pour ce défi."
+            } else {
+                para.innerHTML = "Vous n'avez pas encore déposé de jeu de test pour ce défi."
+            }
+        })
+}
+
+async function init() {
+    const response = await fetch('/GetDefiActuel');
+    // waits until the request completes...
+    let defiActuel = response.json()
+    let para = document.querySelector('#TestDeposer');
+    if (defiActuel.Jeu_de_test) {
+        para.innerHTML = "Vous avez déjà déposé un jeu de test pour ce défi."
+    } else {
+        para.innerHTML = "Vous n'avez pas encore déposé de jeu de test pour ce défi."
+    }
+}
+
+
+init()
