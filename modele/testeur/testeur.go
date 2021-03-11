@@ -177,7 +177,7 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 	cmd.Dir = PathDirTest
 	stdout_correction, err := cmd.CombinedOutput()
 	if err != nil {
-		logs.WriteLog("testeur", "Erreur execution script de correction : "+err.Error())
+		logs.WriteLog("testeur ("+login+")", "Erreur execution script de correction : "+err.Error())
 		res.Error_message = "erreur execution du script de correction"
 		res.Etat = -1
 		return res
@@ -195,7 +195,7 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 			exec.Command("chmod", "777", PathDirTest+name).Run()
 			f, err := exec.Command("cat", PathDirTest+name).CombinedOutput()
 			if err != nil {
-				logs.WriteLog("testeur", "Erreur lecture du fichier "+PathDirTest+name)
+				logs.WriteLog("testeur ("+login+")", "Erreur lecture du fichier "+PathDirTest+name)
 				res.Error_message = "erreur lecture du fichier " + PathDirTest + name + " (correction)"
 				res.Etat = -1
 				return res
@@ -213,7 +213,7 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 		cmd.Dir = PathDirTest
 		_, err := cmd.CombinedOutput()
 		if err != nil {
-			logs.WriteLog("testeur", "Erreur execution script etudiant "+login+": "+err.Error())
+			logs.WriteLog("testeur ("+login+")", "Erreur execution script etudiant "+login+": "+err.Error())
 			res.Error_message = "erreur execution du script de l'étudiant"
 			res.Etat = -1
 			return res
@@ -222,7 +222,7 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 		for _, name := range diff {
 			f, err := exec.Command("cat", PathDirTest+name).CombinedOutput()
 			if err != nil {
-				logs.WriteLog("testeur", "Erreur lecture du fichier "+PathDirTest+name)
+				logs.WriteLog("testeur ("+login+")", "Erreur lecture du fichier "+PathDirTest+name)
 				res.Error_message = "erreur lecture du fichier " + PathDirTest + name + " (etudiant)"
 				res.Etat = -1
 				return res
@@ -247,7 +247,7 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 		cmd.Dir = PathDirTest
 		stdout_etu, err := cmd.CombinedOutput()
 		if err != nil {
-			logs.WriteLog("testeur", "Erreur execution du script étudiant "+login+": "+err.Error())
+			logs.WriteLog("testeur ("+login+")", "Erreur execution du script étudiant "+login+": "+err.Error())
 			res.Error_message = "erreur execution du script étudiant"
 			res.Etat = -1
 			return res
@@ -353,16 +353,16 @@ func TestArtificiel(login string) (string, []Resultat) {
 func getConfigTest(path string, jt string) JeuDeTest {
 	var Jeu JeuDeTest
 	var testUnique CasTest
-	var arg Retour
 	f, _ := os.Open(path + "config")
 	scanner := bufio.NewScanner(f)
 	i := 0
 	for scanner.Scan() {
-		testUnique.Nom = "Test N°" + strconv.Itoa(i)
+		testUnique.Nom = strconv.Itoa(i)
 		for _, args := range strings.Split(scanner.Text(), " ") {
-			arg.Nom = jt + args
-			arg.Contenu = manipStockage.Contenu(path + args) // changer le path
-			testUnique.Arguments = append(testUnique.Arguments, arg)
+			testUnique.Arguments = append(testUnique.Arguments, Retour{
+				jt + args,
+				manipStockage.Contenu(path + args),
+			})
 		}
 		Jeu.CasDeTest = append(Jeu.CasDeTest, testUnique)
 		testUnique.Arguments = nil

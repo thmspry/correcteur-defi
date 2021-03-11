@@ -268,12 +268,14 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			fmt.Println(typeTest)
-			if typeTest[0] != "application/zip" && typeTest[0] != "application/tar" {
+			if typeTest[0] != "application/zip" && typeTest[0] != "application/x-tar" && typeTest[0] != "application/tar" {
 				logs.WriteLog("upload test", "format de l'upload incompatible")
 				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 				return
 			}
 			logs.WriteLog("Admin", "upload d'un test pour le défi n°"+num)
+			num2, _ := strconv.Atoi(num)
+			BDD.AddJeuDeTest(num2)
 			//if dossier de test existe déjà, on le supprime
 			pathTest := config.Path_jeu_de_tests + "test_defi_" + num
 			if manipStockage.Contains(config.Path_jeu_de_tests, "test_defi_"+num) {
@@ -296,7 +298,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 					os.RemoveAll(pathTest)
 					os.Rename(config.Path_jeu_de_tests+"temp", pathTest)
 				}
-			} else if typeTest[0] == "application/x-tar" {
+			} else if typeTest[0] == "application/x-tar" || typeTest[0] == "application/tar" {
 				cmd := exec.Command("tar", "tf", fileHeader.Filename)
 				cmd.Dir = config.Path_jeu_de_tests
 				output, _ := cmd.CombinedOutput()
@@ -308,8 +310,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				}
 				os.Rename(config.Path_jeu_de_tests+nomArchive, pathTest)
 			}
-			num2, _ := strconv.Atoi(num)
-			BDD.AddJeuDeTest(num2)
+
 			os.Remove(fichier.Name())
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return

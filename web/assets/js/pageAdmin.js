@@ -88,11 +88,10 @@ function checkJeuDeTestSent(event) {
     fetch("/GetDefis")
         .then(response => response.json())
         .then(data =>  {
-            let defiActuel = data.find(el => el.Num == event.target.value);
-            console.log(defiActuel)
+            let defiSelect = data.find(el => el.Num == event.target.value);
 
             let para = document.querySelector('#TestDeposer');
-            if (defiActuel.Jeu_de_test) {
+            if (defiSelect.JeuDeTest) {
                 para.innerHTML = "Vous avez déjà déposé un jeu de test pour ce défi."
             } else {
                 para.innerHTML = "Vous n'avez pas encore déposé de jeu de test pour ce défi."
@@ -101,11 +100,14 @@ function checkJeuDeTestSent(event) {
 }
 
 async function init() {
-    const response = await fetch('/GetDefiActuel');
+    const defiActuel = await fetch('/GetDefiActuel')
+        .then((response) => response.json())
+        .then((data) => {
+        return data
+    });
     // waits until the request completes...
-    let defiActuel = response.json()
     let para = document.querySelector('#TestDeposer');
-    if (defiActuel.Jeu_de_test) {
+    if (defiActuel.JeuDeTest) {
         para.innerHTML = "Vous avez déjà déposé un jeu de test pour ce défi."
     } else {
         para.innerHTML = "Vous n'avez pas encore déposé de jeu de test pour ce défi."
