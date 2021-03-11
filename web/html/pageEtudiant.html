@@ -24,22 +24,25 @@
             </div>
             <div id="content">
                 {{if eq .Defi_actuel.Num 0}}
-                <h2>Il n'y a pas défi en cours.</h2>
+                    <h2>Il n'y a pas défi en cours.</h2>
+                    </div>
+        </div>
+    </div>
                 {{else}}
-                <h2>Défi actuel : Défi n°{{.Defi_actuel.Num}}</h2>
-                {{if .Defi_sent}}
-                <p>Vous avez déjà rendu un script pour ce défi.</p>
-                {{if eq .Resultat_defi.Etat 1}}
-                <p>Votre script est correct.</p>
-                {{else}}
-                <p>Votre script est incorrect.</p>
-                {{end}}
-                <p>Vous pouvez le modifier jusqu'au {{.Defi_actuel.Date_fin}}.</p>
-                {{else}}
-                <p>Vous n'avez pas encore envoyé de script pour ce défi. <br>
-                    Vous avez jusqu'au {{.Defi_actuel.Date_fin}} pour le rendre.</p>
-                {{end}}
-            </div>
+                    <h2>Défi actuel : Défi n°{{.Defi_actuel.Num}}</h2>
+                    {{if .Defi_sent}}
+                        <p>Vous avez déjà rendu un script pour ce défi.</p>
+                        {{if eq .Resultat_defi.Etat 1}}
+                            <p>Votre script est correct.</p>
+                        {{else}}
+                            <p>Votre script est incorrect.</p>
+                        {{end}}
+                    <p>Vous pouvez le modifier jusqu'au {{.Defi_actuel.Date_fin}}.</p>
+                    {{else}}
+                        <p>Vous n'avez pas encore envoyé de script pour ce défi. <br>
+                        Vous avez jusqu'au {{.Defi_actuel.Date_fin}} pour le rendre.</p>
+                    {{end}}
+                </div>
 
             <div id="file">
                 <form enctype="multipart/form-data" action="/pageEtudiant?upload" method="post">
@@ -47,7 +50,6 @@
                         <label for="input-file">
                             <img src="./web/assets/images/upload.png">
                             <p>Choisir un fichier</p>
-
                         </label>
                         <input type="file" name="script_etu" id="input-file" required="required"/>
                     </div>
@@ -108,9 +110,9 @@
         </div>
     </div>
     {{end}}
-</div>
 <div id="footer">
     <p>Projet réalisé sous l'initiative de Loïg Jezequel</p>
+    <p>Par Paul Vernin, Mattéo Ordrenneau, Thomas Peray et Antoine Gru</p>
     <p><a href="https://gitlab.univ-nantes.fr/E192543L/projet-s3/">
         <img src="./web/assets/images/gitlab-logo.png">
         GitLab du projet

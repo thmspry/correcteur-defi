@@ -52,7 +52,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			if existe {
 				//Création du token
 				token := tokenGenerator()
-				temps := 5 * time.Minute // défini le temps d'attente
+				temps := 20 * time.Minute // défini le temps d'attente
 				expiration := time.Now().Add(temps)
 				cookie := http.Cookie{Name: "token", Value: token, Expires: expiration}
 				http.SetCookie(w, &cookie)
@@ -193,7 +193,7 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 */
 func DeleteToken(login string, temps time.Duration) {
 	time.Sleep(temps)
-	logs.WriteLog(login, "déconnexion du serveur")
+	logs.WriteLog(login, "Déconnexion du serveur")
 	BDD.DeleteToken(login)
 	return
 }
