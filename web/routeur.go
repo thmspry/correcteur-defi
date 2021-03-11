@@ -21,11 +21,16 @@ func InitWeb() {
 	http.HandleFunc("/pageAdmin", pageAdmin)                                          // Page admin : http://localhost:8192/pageAdmin
 	http.HandleFunc("/GetDefis", GetDefis)
 	http.HandleFunc("/GetDefiActuel", GetDefiActuel)
+	http.HandleFunc("/", Redirection)
 
 	err := http.ListenAndServe(":8192", nil) // port utilisé
 	if err != nil {
 		fmt.Printf("ListenAndServe: ", err)
 	}
+}
+
+func Redirection(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
 func GetDefis(w http.ResponseWriter, r *http.Request) {

@@ -135,7 +135,28 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			}
 			if r.URL.Query()["Correcteur"] != nil {
 				BDD.GenerateCorrecteur(num)
-				//TODO envoyer un mail à data.Correcteur
+				etudiant := BDD.GetCorrecteur(num)
+				etudiantMail := BDD.EtudiantMail{Prenom: etudiant.Prenom, Nom: etudiant.Nom, Mail: etudiant.Mail}
+				file, err := os.Open("mailConf.json")
+				if err != nil {
+					fmt.Println(err)
+				}
+				byteValue, err := ioutil.ReadAll(file)
+				if err != nil {
+					fmt.Println(err)
+				}
+				var configSender SenderData
+				err = json.Unmarshal(byteValue, &configSender)
+				if err != nil {
+					fmt.Println(err)
+				}
+				defer file.Close()
+				resultMail := sendMailCorrecteur(etudiantMail, num, configSender)
+				if resultMail.send == false {
+					logs.WriteLog("Envoi de mail correcteur", "Erreur lors de l'envoi de mail du correcteur du défi "+strconv.Itoa(num)+" à l'adresse : "+etudiantMail.Mail)
+				} else {
+					logs.WriteLog("Envoi de mail correcteur", "envoi de mail du correcteur du défi "+strconv.Itoa(num)+" à l'adresse : "+etudiantMail.Mail)
+				}
 				http.Redirect(w, r, "/pageAdmin?Defi="+strconv.Itoa(num), http.StatusFound)
 				return
 			}
@@ -406,4 +427,46 @@ func sendMail(etudiants []BDD.EtudiantMail, nbDefis int, config SenderData) []Re
 		resultatsEnvois = append(resultatsEnvois, <-c)
 	}
 	return resultatsEnvois
+}
+
+func sendMailCorrecteur(etudiant BDD.EtudiantMail, nbDefi int, config SenderData) ResultMail {
+	// Authentication sur le serveur de mail
+
+	auth := smtp.PlainAuth("", config.Username, config.Password, config.SmtpHost)
+
+	to := []string{
+		etudiant.Mail,
+	}
+
+	// En-tête du mail
+	header := make(map[string]string)
+	header["From"] = config.FromMail
+	header["To"] = to[0]
+	header["Subject"] = "Defis du lundi"
+	header["MIME-Version"] = "1.0"
+	header["Content-Type"] = "text/plain; charset= utf-8"
+	header["Content-Transfer-Encoding"] = "base64"
+
+	// Création du contenu du mail
+	message := ""
+	for champ, valeur := range header {
+		message += fmt.Sprintf("%s : %s\r\n", champ, valeur)
+	}
+
+	body := "défis du lundi\n\n" +
+		"Bonjour " + etudiant.Prenom + " " + etudiant.Nom + "\n" +
+		"A ce jour vous avez réussi le défi  " + strconv.Itoa(nbDefi) + ".\nVous avez été aléatoirement " +
+		"nommé correcteur pour ce test parmi ceux ayant réussi le test\n" +
+		"Vous devez donc envoyer un mail au professeur afin de lui remettre votre correction\n \nBonne journée"
+
+	// encodage du contenu en UTF-8 pour que les caractères spéciaux s'affichent
+	message += base64.StdEncoding.EncodeToString([]byte(body))
+
+	// Envoi du mail
+	err := smtp.SendMail(config.SmtpHost+":"+config.SmtpPort, auth, config.FromMail, to, []byte(message))
+	if err != nil {
+		return ResultMail{adress: etudiant.Mail, send: false}
+	} else {
+		return ResultMail{adress: etudiant.Mail, send: true}
+	}
 }

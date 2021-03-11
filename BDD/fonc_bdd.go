@@ -557,7 +557,6 @@ func GenerateCorrecteur(num_defi int) {
 			etu = Etudiant{}
 		}
 	}
-	fmt.Println(t)
 	rand.Seed(time.Now().UnixNano())
 	min := 0
 	max := len(t) - 1

@@ -1,19 +1,51 @@
 "use strict";
+/* TODO : A chager suivant uune utilisation locale ou su serveur */
+const baseUrl = "http://localhost:8192/";
+//const baseUrl = "http://172.26.82.23:8192/";
+
+async function getDefis() {
+    let response = await fetch(baseUrl + "GetDefis");
+    let data = await response.json();
+    data = JSON.stringify(data);
+    data = JSON.parse(data);
+    return data;
+}
 
 document.addEventListener('DOMContentLoaded', function() { // Au chargement de la page
 
-    // Instanciation des "date pickers" de Materialize
-    var elems = document.querySelectorAll('.datepicker');
-    let currentDate = new Date();
-    let currentYear = currentDate.getFullYear();
-    let nextYear = currentYear + 1;
-    let optionsDatePicker = {
-        format : "yyyy-mm-dd",
-        minDate: new Date(currentYear + "-02-15"),
-        maxDate: new Date(nextYear + "-06-30"),
-        defaultDate : currentDate
-    }
-    var instances = M.Datepicker.init(elems, optionsDatePicker);
+    getDefis().then(data => {
+        var elems = document.querySelectorAll('.datepicker');
+        if (data!=null) {
+            // Instanciation des "date pickers" de Materialize
+            let maxDate = data[data.length - 1].Date_fin;
+
+            let currentDate = new Date();
+            let currentYear = currentDate.getFullYear();
+            let nextYear = currentYear + 1;
+            let optionsDatePicker = {
+                format: "yyyy-mm-dd",
+                minDate: new Date(maxDate),
+                maxDate: new Date(nextYear + "-06-30"),
+                defaultDate: currentDate
+            }
+            var instances = M.Datepicker.init(elems, optionsDatePicker);
+        } else {
+            let currentDate = new Date();
+            let currentYear = currentDate.getFullYear();
+            let nextYear = currentYear + 1;
+            let optionsDatePicker = {
+                format: "yyyy-mm-dd",
+                minDate: new Date(currentYear + "-02-15"),
+                maxDate: new Date(nextYear + "-06-30"),
+                defaultDate: currentDate
+            }
+            var instances = M.Datepicker.init(elems, optionsDatePicker);
+
+        }
+
+    })
+
+
 
     // Instanciation des inputs "select" de Materialize
     var selectList = document.querySelectorAll('select');
