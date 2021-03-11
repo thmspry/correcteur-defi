@@ -527,10 +527,10 @@ func GetDefi(num int) Defi {
 func AddJeuDeTest(num int) {
 	stmt, err := db.Prepare("UPDATE Defis SET jeu_de_test = ? where numero = ?")
 	if err != nil {
-		logs.WriteLog("BDD ajout d'un jeu de test au défi n°"+strconv.Itoa(num), err.Error())
+		logs.WriteLog("BDD.AddJeuDeTest n°"+strconv.Itoa(num), err.Error())
 	}
 	if _, err := stmt.Exec(true, num); err != nil {
-		logs.WriteLog("BDD.AddJeuDeTest", err.Error())
+		logs.WriteLog("BDD.AddJeuDeTest defi "+strconv.Itoa(num), err.Error())
 	}
 	err = stmt.Close()
 	if err != nil {
