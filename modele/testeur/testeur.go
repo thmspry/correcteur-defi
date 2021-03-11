@@ -2,6 +2,7 @@ package testeur
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
@@ -156,6 +157,7 @@ Si non :
 func testeurUnique(correction string, script_user string, login string, test CasTest, PathDirTest string) Resultat {
 	//o, _ := exec.Command("ls", "-R", "-l", PathDirTest).CombinedOutput()
 	//fmt.Println(string(o))
+	var stdout, stderr bytes.Buffer
 	args := make([]string, 0)
 	for _, arg := range test.Arguments {
 		args = append(args, arg.Nom)
@@ -175,13 +177,16 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 
 	cmd := exec.Command(PathDirTest+correction, argsString)
 	cmd.Dir = PathDirTest
-	stdout_correction, err := cmd.CombinedOutput()
+	cmd.Stderr = &stderr
+	cmd.Stdout = &stdout
+	err := cmd.Run()
 	if err != nil {
-		logs.WriteLog("testeur ("+login+")", "Erreur execution script de correction : "+err.Error())
-		res.Error_message = "erreur execution du script de correction"
+		logs.WriteLog("testeur ("+login+")", "Erreur execution script de correction : "+string(stderr.Bytes()))
+		res.Error_message = "erreur execution du script de correction\n" + string(stderr.Bytes())
 		res.Etat = -1
 		return res
 	}
+	stdout_correction := string(stdout.Bytes())
 	arboApres := manipStockage.GetFiles(PathDirTest)
 	if len(arboAvant) != len(arboApres) {
 		//modif dans un new fichier
@@ -211,13 +216,15 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 		cmdUser := PathDirTest + script_user + " " + argsString
 		cmd := exec.Command("sudo", "-H", "-u", login, "bash", "-c", cmdUser)
 		cmd.Dir = PathDirTest
-		_, err := cmd.CombinedOutput()
+		cmd.Stderr = &stderr
+		err := cmd.Run()
 		if err != nil {
-			logs.WriteLog("testeur ("+login+")", "Erreur execution script etudiant "+login+": "+err.Error())
-			res.Error_message = "erreur execution du script de l'étudiant"
+			logs.WriteLog("testeur ("+login+")", "Erreur execution script etudiant "+login+": "+string(stderr.Bytes()))
+			res.Error_message = "erreur execution du script de l'étudiant\n" + string(stderr.Bytes())
 			res.Etat = -1
 			return res
 		}
+
 		//boucle qui enregistre les fichiers créé par le script de l'étudiant
 		for _, name := range diff {
 			f, err := exec.Command("cat", PathDirTest+name).CombinedOutput()
@@ -245,13 +252,16 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 		cmdUser := PathDirTest + script_user + " " + argsString
 		cmd := exec.Command("sudo", "-H", "-u", login, "bash", "-c", cmdUser)
 		cmd.Dir = PathDirTest
-		stdout_etu, err := cmd.CombinedOutput()
+		cmd.Stderr = &stderr
+		cmd.Stdout = &stdout
+		err := cmd.Run()
 		if err != nil {
-			logs.WriteLog("testeur ("+login+")", "Erreur execution du script étudiant "+login+": "+err.Error())
-			res.Error_message = "erreur execution du script étudiant"
+			logs.WriteLog("testeur ("+login+")", "Erreur execution du script étudiant : "+string(stderr.Bytes()))
+			res.Error_message = "erreur execution du script étudiant\n" + string(stderr.Bytes())
 			res.Etat = -1
 			return res
 		}
+		stdout_etu := string(stdout.Bytes())
 		retour.Contenu = string(stdout_etu)
 		res.Res_etu = append(res.Res_etu, retour)
 		if res.Res_etu[0] == res.Res_correction[0] {
