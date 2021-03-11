@@ -230,10 +230,10 @@ h3 {
 
 #mail {
     display: flex;
+
     justify-content: space-around;
     align-items: center;
     width: 50%;
-
 }
 
 #mail h2 {
@@ -243,6 +243,12 @@ h3 {
 #mail .button {
     border: 3px solid #50a969;
     color: #50a969;
+}
+
+#changeID form {
+    display: flex;
+    justify-content: space-between;
+    width: 50%;
 }
 
 .button:hover {

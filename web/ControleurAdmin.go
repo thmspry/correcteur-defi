@@ -54,6 +54,11 @@ type ResultMail struct { /* Structure de retour de l'envoi de mail */
 	send   bool
 }
 
+type Admin struct {
+	Login    string
+	Password string
+}
+
 func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	//Si il y a n'y a pas de token dans les cookies alors l'utilisateur est redirigé vers la page de login
 	if token, err := r.Cookie("token"); err != nil || !BDD.TokenExiste(token.Value) {
@@ -333,6 +338,14 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			}
 
 			os.Remove(fichier.Name())
+			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
+			return
+		}
+
+		if r.URL.Query()["form"][0] == "changeId" {
+			login := r.FormValue("loginAd")
+			password := r.FormValue("passwordAd")
+			BDD.RegisterAdminString(login, password)
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 		}

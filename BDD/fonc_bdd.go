@@ -180,6 +180,17 @@ func RegisterAdmin(admin Admin) bool {
 }
 
 /**
+
+ */
+func RegisterAdminString(login string, password string) bool {
+	admin := Admin{
+		Login:    login,
+		Password: password,
+	}
+	return RegisterAdmin(admin)
+}
+
+/**
 Vérifie que le couple login,password existe dans la table Etudiant
 */
 func LoginCorrect(id string, password string) bool {

@@ -244,9 +244,27 @@
     </div>
     <div class="separator"></div>
     <div id="mail">
-        <h2>Envoyer le résultat par mail aux étudiants</h2>
-        <form action="/pageAdmin?form=sendMail" method="post">
-            <input type="submit" class="button" value="Envoyer Mail" name="submit">
+        <div>
+            <h2>Envoyer le résultat par mail aux étudiants</h2>
+            <form action="/pageAdmin?form=sendMail" method="post">
+                <input type="submit" class="button" value="Envoyer Mail" name="submit">
+            </form>
+        </div>
+    </div>
+    <div class="separator"></div>
+    <div id="changeID">
+
+        <h2>Changer ses identifiants de connexion</h2>
+        <form action="/pageAdmin?form=changeId" method="post">
+            <p>
+                <input type="text" id="loginAd" name="loginAd" required="required" >
+                <label for="loginAd">Login</label>
+            </p>
+            <p>
+                <input type="text" id="passwordAd" name="passwordAd" required="required">
+                <label for="passwordAd">Password</label>
+            </p>
+            <input type="submit" class="button" value="Modifier" name="submit">
         </form>
     </div>
 </div>
