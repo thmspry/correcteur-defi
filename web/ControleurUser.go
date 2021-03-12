@@ -97,28 +97,22 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(err)
 				return
 			}
-			defer file.Close()
-
 			script, err := os.Create(config.Path_scripts + "script_" + etu.Login + "_" + strconv.Itoa(num_defi_actuel)) // remplacer handler.Filename par le nom et on le place où on veut
-
 			BDD.SaveResultat(etu.Login, num_defi_actuel, -1, false)
 			if err != nil {
 				fmt.Println("Internal Error")
 				fmt.Println(err)
 				return
 			}
-
-			defer script.Close()
-
 			_, err = io.Copy(script, file)
 			if err != nil {
 				fmt.Println("Internal Error")
 				fmt.Println(err)
 				return
 			}
-
 			os.Chmod(config.Path_scripts+"script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel), 770)
-
+			file.Close()
+			script.Close()
 			logs.WriteLog(etu.Login, "upload de script du défis "+strconv.Itoa(num_defi_actuel))
 			data.Msg_res, data.ResTest = testeur.Test(etu.Login)
 			t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))

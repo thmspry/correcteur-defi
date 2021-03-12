@@ -157,7 +157,7 @@ Si non :
 func testeurUnique(correction string, script_user string, login string, test CasTest, PathDirTest string) Resultat {
 	//o, _ := exec.Command("ls", "-R", "-l", PathDirTest).CombinedOutput()
 	//fmt.Println(string(o))
-	var stdout, stderr bytes.Buffer
+	var stdoutEtu, stdoutCorrection, stderr bytes.Buffer
 	args := make([]string, 0)
 	for _, arg := range test.Arguments {
 		args = append(args, arg.Nom)
@@ -178,7 +178,7 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 	cmd := exec.Command(PathDirTest+correction, argsString)
 	cmd.Dir = PathDirTest
 	cmd.Stderr = &stderr
-	cmd.Stdout = &stdout
+	cmd.Stdout = &stdoutCorrection
 	err := cmd.Run()
 	if err != nil {
 		logs.WriteLog("testeur ("+login+")", "Erreur execution script de correction : "+string(stderr.Bytes()))
@@ -186,7 +186,6 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 		res.Etat = -1
 		return res
 	}
-	stdout_correction := string(stdout.Bytes())
 	arboApres := manipStockage.GetFiles(PathDirTest)
 	if len(arboAvant) != len(arboApres) {
 		//modif dans un new fichier
@@ -247,13 +246,13 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 		return res
 	} else {
 		retour.Nom = "sortie standart"
-		retour.Contenu = string(stdout_correction)
+		retour.Contenu = string(stdoutCorrection.Bytes())
 		res.Res_correction = append(res.Res_correction, retour)
 		cmdUser := PathDirTest + script_user + " " + argsString
 		cmd := exec.Command("sudo", "-H", "-u", login, "bash", "-c", cmdUser)
 		cmd.Dir = PathDirTest
 		cmd.Stderr = &stderr
-		cmd.Stdout = &stdout
+		cmd.Stdout = &stdoutEtu
 		err := cmd.Run()
 		if err != nil {
 			logs.WriteLog("testeur ("+login+")", "Erreur execution du script étudiant : "+string(stderr.Bytes()))
@@ -261,8 +260,7 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 			res.Etat = -1
 			return res
 		}
-		stdout_etu := string(stdout.Bytes())
-		retour.Contenu = string(stdout_etu)
+		retour.Contenu = string(stdoutEtu.Bytes())
 		res.Res_etu = append(res.Res_etu, retour)
 		if res.Res_etu[0] == res.Res_correction[0] {
 			res.Etat = 1

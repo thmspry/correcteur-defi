@@ -270,7 +270,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			date_debut, _ := date.Parse(r.FormValue("date_debut"))
 			date_fin, _ := date.Parse(r.FormValue("date_fin"))
 
-			logs.WriteLog("Admin", "ajout d'un nouveau défi")
+			logs.WriteLog("Admin", "ajout d'un nouveau défi du "+date_debut.String()+" au "+date_fin.String())
 			// ajouter a la table défis
 			BDD.AddDefi(date_debut, date_fin)
 			os.Mkdir(config.Path_jeu_de_tests+"test_defi_"+strconv.Itoa(num_defi_actuel+1), os.ModePerm)
