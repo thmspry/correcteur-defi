@@ -29,14 +29,14 @@
         <div class="col s12">
             <ul class="tabs">
                 <li class="tab col s3"><a href="#up-defi">Déposer un défi</a></li>
-                <li class="tab col {{if eq (len .ListeDefis) 0}} disabled {{end}} s3"><a href="#modif-date">Modifier la date</a></li>
+                <li class="tab col {{if eq (len .ListeDefis) 0}} disabled {{end}} s3"><a href="#modif-date">Modifier le défi</a></li>
                 <li class="tab col {{if eq (len .ListeDefis) 0}} disabled {{end}} s3"><a href="#up-test">Déposer des test</a></li>
                 <li class="tab col {{if eq (len .ListeDefis) 0}} disabled {{end}} s3"><a href="#liste-defi">Liste des défis</a></li>
                 <li class="tab col s3"><a href="#logs">Logs</a></li>
             </ul>
         </div>
         <div id="up-defi" class="col s12">
-            <h3>Enregistrer un défis avec sa correction, sa date de début et de fin.</h3>
+            <h3>Enregistrer un défi avec sa correction, sa date de début et de fin.</h3>
             <h3>Il peut aussi servir à modifier le fichier de correction du défi actuel.</h3>
             <form enctype="multipart/form-data"  action="/pageAdmin?form=defi" method="post">
                 <div class="file-depot">

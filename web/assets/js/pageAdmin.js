@@ -1,10 +1,7 @@
 "use strict";
-/* TODO : A chager suivant uune utilisation locale ou su serveur */
-const baseUrl = "http://localhost:8192/";
-//const baseUrl = "http://172.26.82.23:8192/";
 
 async function getDefis() {
-    let response = await fetch(baseUrl + "GetDefis");
+    let response = await fetch("/GetDefis");
     let data = await response.json();
     data = JSON.stringify(data);
     data = JSON.parse(data);
@@ -104,7 +101,7 @@ function changeInputFile(selector) {
 Function qui permet de modifier les valeur par défaut dans des input date, suivant le défi selectionné
  */
 function ChangeDateInput(event, divID) {
-    fetch("http://localhost:8192/GetDefis")
+    fetch("/GetDefis")
         .then(response => response.json())
         .then(data => {
             let defiActuel = data.find(el => el.Num == event.target.value);
