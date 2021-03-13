@@ -16,13 +16,13 @@
 <div class="main">
     <div class="info">
         <div class="left-side">
-            <div id="user">
+            <div id="user" class="block">
                 <h2>Profil</h2>
                 <p>{{.UserInfo.Prenom}} {{.UserInfo.Nom}} (<span id="id-etu">{{.UserInfo.Login}}</span>)
                 </p>
                 <p class="italic">{{.UserInfo.Mail}}</p>
             </div>
-            <div id="content">
+            <div id="content" class="block">
                 {{if eq .Defi_actuel.Num 0}}
                     <h2>Il n'y a pas défi en cours.</h2>
                     </div>
@@ -64,7 +64,17 @@
         </div>
     </div>
 
-
+{{if .Script}}
+<br>
+    <div class="block">
+    <h2>Contenu du script envoyé :</h2>
+    <div id="contenu">
+        {{range .Script}}
+            <p>{{.}}</p>
+        {{end}}
+    </div>
+    </div>
+{{end}}
     <a href="/pageEtudiant?test" id="test-script">
         <img src="./web/assets/images/play-triangle.png">
         <p>Tester son script</p>

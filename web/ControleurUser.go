@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/aodin/date"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
@@ -24,6 +25,7 @@ type data_pageEtudiant struct { // Données transmises à la page Etudiant
 	Resultat_defi BDD.ResBDD
 	ResTest       []testeur.Resultat
 	Msg_res       string
+	Script        []string
 }
 
 /**
@@ -63,6 +65,14 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	f, err := os.Open(config.Path_scripts + "script_" + etu.Login + "_" + strconv.Itoa(data.Defi_actuel.Num))
+	if err == nil {
+		scanner := bufio.NewScanner(f)
+		for scanner.Scan() {
+			data.Script = append(data.Script, scanner.Text())
+		}
+	}
+	fmt.Println("data.Script", data.Script)
 	//Check la méthode utilisé par le formulaire
 	if r.Method == "GET" {
 		//Charge la template html
