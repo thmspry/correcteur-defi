@@ -1,5 +1,9 @@
 package config
 
+import (
+	"github.com/aodin/date"
+)
+
 var (
 	Path_root         = "./"
 	Path_defis        = "./ressource/defis/"
@@ -8,3 +12,72 @@ var (
 	Path_jeu_de_tests = "./ressource/jeu_de_test/"
 	Path_log          = "./logs/"
 )
+
+/**
+ * Listes des structures utilisés
+ */
+
+// Structures a réutiliser un peu partout
+type Etudiant struct {
+	Login         string
+	Password      string
+	Prenom        string
+	Nom           string
+	Mail          string
+	Correcteur    bool
+	ResDefiActuel Resultat
+}
+
+type Admin struct {
+	Login    string
+	Password string
+}
+
+type EtudiantMail struct {
+	Login  string
+	Prenom string
+	Nom    string
+	Mail   string
+	Defis  []ResBDD
+}
+
+type ResBDD struct {
+	Login     string
+	Defi      int
+	Etat      int
+	Tentative int
+}
+type ParticipantDefi struct {
+	Etudiant Etudiant
+	Resultat ResBDD
+}
+
+type Defi struct {
+	Num        int
+	Date_debut date.Date
+	Date_fin   date.Date
+	JeuDeTest  bool
+	Correcteur string
+}
+
+// structure
+type Resultat struct {
+	Etat           int
+	CasTest        CasTest
+	Res_etu        []Retour
+	Res_correction []Retour
+	Error_message  string
+}
+type Retour struct { // changer le Nom --> dossier/fichier
+	Nom     string
+	Contenu string
+}
+
+type JeuDeTest struct {
+	CasDeTest []CasTest
+}
+
+type CasTest struct {
+	Nom       string
+	Arguments []Retour
+}

@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
 	"golang.org/x/crypto/bcrypt"
 	"html/template"
@@ -83,7 +84,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				fmt.Println("votre login existe déjà")
 				http.Redirect(w, r, "/login", http.StatusFound)
 			} else {
-				etu := BDD.Etudiant{
+				etu := config.Etudiant{
 					Login:    r.FormValue("login"),
 					Password: r.FormValue("password"),
 					Prenom:   r.FormValue("prenom"),

@@ -15,33 +15,12 @@ import (
 	"strings"
 )
 
-type Resultat struct {
-	Etat           int
-	CasTest        CasTest
-	Res_etu        []Retour
-	Res_correction []Retour
-	Error_message  string
-}
-type Retour struct { // changer le Nom --> dossier/fichier
-	Nom     string
-	Contenu string
-}
-
-type JeuDeTest struct {
-	CasDeTest []CasTest
-}
-
-type CasTest struct {
-	Nom       string
-	Arguments []Retour
-}
-
 /*
 Fonction a appelé pour tester
 */
-func Test(login string) (string, []Resultat) {
+func Test(login string) (string, []config.Resultat) {
 
-	var resTest = make([]Resultat, 0) // Resultat
+	var resTest = make([]config.Resultat, 0) // Resultat
 	messageDeRetour := ""
 	etatTestGlobal := 1 // État du test des tests (1,0,-1)
 
@@ -59,6 +38,7 @@ func Test(login string) (string, []Resultat) {
 	//Associe le dossier à l'user
 	if err := exec.Command("mkhomedir_helper", login).Run(); err != nil {
 		logs.WriteLog("testeur", "Erreur création dossier de l'utilisateur "+login)
+		exec.Command("sudo", "userdel", login).Run()
 		return "Erreur création du dossier de l'utilisateur", nil
 	}
 	//Associe le chemin de CasTest au dossier créé
@@ -91,12 +71,13 @@ func Test(login string) (string, []Resultat) {
 	// r pour que les scripts puissent lire le contenu des cas de test
 	// x pour qu'il puisse accéder/entrer dans le dossier de cas de test
 
-	var configTest JeuDeTest
+	var configTest config.JeuDeTest
 	if manipStockage.Contains(Path_dir_test+jeuDeTest, "config") {
 		configTest = getConfigTest(Path_dir_test+jeuDeTest, jeuDeTest)
 	} else {
 		logs.WriteLog("testeur", "pas de fichier config dans le dossier "+Path_dir_test+jeuDeTest)
-		return "Pas de fichier de config", nil
+		messageDeRetour = "Pas de fichier de config"
+		resTest = nil
 	}
 
 	fmt.Println("configtest : \n", configTest)
@@ -110,13 +91,13 @@ func Test(login string) (string, []Resultat) {
 		manipStockage.Clear(Path_dir_test, []string{jeuDeTest, correction, scriptEtu})
 
 		if res.Etat == 0 {
-			BDD.SaveResultat(login, numDefi, 0, false)
+			BDD.SaveResultat(login, numDefi, 0, resTest, false)
 			messageDeRetour = "Le CasTest n°" + strconv.Itoa(i) + " n'est pas passé"
 			etatTestGlobal = 0
 			i = len(configTest.CasDeTest)
 		}
 		if res.Etat == -1 {
-			BDD.SaveResultat(login, numDefi, 0, false)
+			BDD.SaveResultat(login, numDefi, 0, resTest, false)
 			messageDeRetour = "Il y a eu un erreur lors du CasTest n°" + strconv.Itoa(i)
 			etatTestGlobal = -1
 			i = len(configTest.CasDeTest)
@@ -133,7 +114,7 @@ func Test(login string) (string, []Resultat) {
 	if etatTestGlobal == 0 || etatTestGlobal == -1 {
 		return messageDeRetour, resTest
 	}
-	BDD.SaveResultat(login, numDefi, etatTestGlobal, false)
+	BDD.SaveResultat(login, numDefi, etatTestGlobal, resTest, false)
 	return "Vous avez passé tous les tests avec succès", resTest
 }
 
@@ -154,7 +135,7 @@ Si non :
 	- compare stdout du défis et de l'étudiant
 	- retunr 1 si c'est pareil, 0 sinon
 */
-func testeurUnique(correction string, script_user string, login string, test CasTest, PathDirTest string) Resultat {
+func testeurUnique(correction string, script_user string, login string, test config.CasTest, PathDirTest string) config.Resultat {
 	//o, _ := exec.Command("ls", "-R", "-l", PathDirTest).CombinedOutput()
 	//fmt.Println(string(o))
 	var stdoutEtu, stdoutCorrection, stderr bytes.Buffer
@@ -163,13 +144,13 @@ func testeurUnique(correction string, script_user string, login string, test Cas
 		args = append(args, arg.Nom)
 	}
 	argsString := strings.Join(args, " ")
-	res := Resultat{
+	res := config.Resultat{
 		Etat:           0,
-		Res_etu:        make([]Retour, 0),
-		Res_correction: make([]Retour, 0),
+		Res_etu:        make([]config.Retour, 0),
+		Res_correction: make([]config.Retour, 0),
 		Error_message:  "",
 	}
-	retour := Retour{
+	retour := config.Retour{
 		Nom:     "",
 		Contenu: "",
 	}
@@ -302,22 +283,22 @@ func difference(slice1 []string, slice2 []string) []string {
 	return diff
 }
 
-func TestArtificiel(login string) (string, []Resultat) {
+func TestArtificiel(login string) (string, []config.Resultat) {
 
-	var resTests = make([]Resultat, 0) // Resultats
-	res := Resultat{
+	var resTests = make([]config.Resultat, 0) // Resultats
+	res := config.Resultat{
 		Etat:           0,
-		Res_etu:        make([]Retour, 0),
-		Res_correction: make([]Retour, 0),
+		Res_etu:        make([]config.Retour, 0),
+		Res_correction: make([]config.Retour, 0),
 		Error_message:  "",
 	}
 
-	var retoursEtu = make([]Retour, 0) // Retours
-	ret11 := Retour{
+	var retoursEtu = make([]config.Retour, 0) // Retours
+	ret11 := config.Retour{
 		Nom:     "grp1",
 		Contenu: "François\nPatrice\nDaniel",
 	}
-	ret21 := Retour{
+	ret21 := config.Retour{
 		Nom:     "grp2",
 		Contenu: "Paul\nThomas\nGabriel",
 	}
@@ -325,12 +306,12 @@ func TestArtificiel(login string) (string, []Resultat) {
 	retoursEtu = append(retoursEtu, ret21)
 	res.Res_etu = retoursEtu
 
-	var retoursCor = make([]Retour, 0) // Retours
-	ret12 := Retour{
+	var retoursCor = make([]config.Retour, 0) // Retours
+	ret12 := config.Retour{
 		Nom:     "grp1",
 		Contenu: "François\nPatrice\nPaul",
 	}
-	ret22 := Retour{
+	ret22 := config.Retour{
 		Nom:     "grp2",
 		Contenu: "Daniel\nThomas\nGabriel",
 	}
@@ -340,14 +321,14 @@ func TestArtificiel(login string) (string, []Resultat) {
 
 	resTests = append(resTests, res)
 
-	retCasTest := Retour{
+	retCasTest := config.Retour{
 		Nom:     "Retour cas de test",
 		Contenu: "le contenu du retour du cas test",
 	}
 
-	var retoursCasTest = make([]Retour, 0)
+	var retoursCasTest = make([]config.Retour, 0)
 	retoursCasTest = append(retoursCasTest, retCasTest)
-	casTest := CasTest{
+	casTest := config.CasTest{
 		Nom:       "Le nom du cas de test",
 		Arguments: retoursCasTest,
 	}
@@ -358,19 +339,25 @@ func TestArtificiel(login string) (string, []Resultat) {
 }
 
 //testé
-func getConfigTest(path string, jt string) JeuDeTest {
-	var Jeu JeuDeTest
-	var testUnique CasTest
+
+func getConfigTest(path string, jt string) config.JeuDeTest {
+	var Jeu config.JeuDeTest
+	var testUnique config.CasTest
+	var arg config.Retour
 	f, _ := os.Open(path + "config")
 	scanner := bufio.NewScanner(f)
 	i := 0
 	for scanner.Scan() {
 		testUnique.Nom = strconv.Itoa(i)
-		for _, args := range strings.Split(scanner.Text(), " ") {
-			testUnique.Arguments = append(testUnique.Arguments, Retour{
-				jt + args,
-				manipStockage.Contenu(path + args),
-			})
+		for _, argument := range strings.Split(scanner.Text(), " ") {
+			arg.Contenu = manipStockage.Contenu(path + argument)
+			if arg.Contenu == "pas de fichier" {
+				arg.Nom = argument
+			} else {
+				arg.Nom = jt + argument
+			}
+			testUnique.Arguments = append(testUnique.Arguments, arg)
+			arg = config.Retour{}
 		}
 		Jeu.CasDeTest = append(Jeu.CasDeTest, testUnique)
 		testUnique.Arguments = nil

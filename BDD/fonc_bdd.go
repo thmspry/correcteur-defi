@@ -2,9 +2,11 @@ package BDD
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"github.com/aodin/date"
 	_ "github.com/aodin/date"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
 	"golang.org/x/crypto/bcrypt"
 	"math/rand"
@@ -12,48 +14,6 @@ import (
 	"sync"
 	"time"
 )
-
-// Structures a réutiliser un peu partout
-type Etudiant struct {
-	Login      string
-	Password   string
-	Prenom     string
-	Nom        string
-	Mail       string
-	Correcteur bool
-}
-
-type Admin struct {
-	Login    string
-	Password string
-}
-
-type EtudiantMail struct {
-	Login  string
-	Prenom string
-	Nom    string
-	Mail   string
-	Defis  []ResBDD
-}
-
-type ResBDD struct {
-	Login     string
-	Defi      int
-	Etat      int
-	Tentative int
-}
-type ParticipantDefi struct {
-	Etudiant Etudiant
-	Resultat ResBDD
-}
-
-type Defi struct {
-	Num        int
-	Date_debut date.Date
-	Date_fin   date.Date
-	JeuDeTest  bool
-	Correcteur string
-}
 
 var db, _ = sql.Open("sqlite3", "./BDD/database.db")
 var m sync.Mutex
@@ -69,7 +29,8 @@ func InitBDD() {
 		"prenom TEXT NOT NULL," +
 		"nom TEXT NOT NULL," +
 		"mail TEXT NOT NULL," +
-		"correcteur BOOLEAN NOT NULL" +
+		"correcteur BOOLEAN NOT NULL," +
+		"resDefiActuel TEXT" +
 		");")
 	if err != nil {
 		fmt.Println("prblm table Etudiant" + err.Error())
@@ -92,7 +53,7 @@ func InitBDD() {
 	stmt, err = db.Prepare("CREATE TABLE IF NOT EXISTS Resultat (" +
 		"login TEXT NOT NULL," +
 		"defi INTEGER NOT NULL," +
-		"etat INTEGER NOT NULL," + // 2 états : 1 (réussi), 0 (non réussi), -1 (non testé)
+		"etat INTEGER NOT NULL," + // 3 états possibles : 1 (réussi), 0 (non réussi), -1 (non testé)
 		"tentative INTEGER NOT NULL," + // Nombre de tentative au test
 		"FOREIGN KEY (login) REFERENCES Etudiant(login)" +
 		"FOREIGN KEY (defi) REFERENCES Defis(numero)" +
@@ -123,7 +84,7 @@ func InitBDD() {
 
 	stmt.Close()
 
-	admin := Admin{
+	admin := config.Admin{
 		Login:    "admin",
 		Password: "admin",
 	}
@@ -133,9 +94,9 @@ func InitBDD() {
 /**
 Enregistre un étudiant dans la table Etudiant
 */
-func Register(etu Etudiant) bool {
+func Register(etu config.Etudiant) bool {
 	m.Lock()
-	stmt, err := db.Prepare("INSERT INTO Etudiant values(?,?,?,?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO Etudiant(login,password,prenom,nom,mail,correcteur) values(?,?,?,?,?,?)")
 	if err != nil {
 		logs.WriteLog("BDD register étudiant : ", err.Error())
 	}
@@ -157,7 +118,7 @@ func Register(etu Etudiant) bool {
 /**
 Enregistre un admin dans la table Administrateur
 */
-func RegisterAdmin(admin Admin) bool {
+func RegisterAdmin(admin config.Admin) bool {
 	m.Lock()
 	stmt, err := db.Prepare("INSERT INTO Administrateur values(?,?)")
 	if err != nil {
@@ -183,7 +144,7 @@ func RegisterAdmin(admin Admin) bool {
 
  */
 func RegisterAdminString(login string, password string) bool {
-	admin := Admin{
+	admin := config.Admin{
 		Login:    login,
 		Password: password,
 	}
@@ -238,10 +199,10 @@ func LoginCorrectAdmin(id string, password string) bool {
 /**
 récupère les informations personnelles d'un étudiant
 */
-func GetEtudiant(id string) Etudiant {
-	var etu Etudiant
+func GetEtudiant(id string) config.Etudiant {
+	var etu config.Etudiant
 	row := db.QueryRow("SELECT * FROM Etudiant WHERE login = $1", id)
-	err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur)
+	err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur, &etu.ResDefiActuel)
 	if err != nil {
 		logs.WriteLog("BDD.GetEtudiant", err.Error())
 	}
@@ -251,8 +212,8 @@ func GetEtudiant(id string) Etudiant {
 /**
 récupère les informations d'un admin
 */
-func GetAdmin(id string) Admin {
-	var admin Admin
+func GetAdmin(id string) config.Admin {
+	var admin config.Admin
 	row := db.QueryRow("SELECT * FROM Administrateur WHERE login = $1", id)
 	err := row.Scan(&admin.Login, &admin.Password)
 
@@ -364,9 +325,20 @@ admin == true : fonction lancé par l'admin pour modifier les valeurs
 admin == false : fonction lancé par un étudiant lors d'une nouvelle tentative de test
 (si c'est false, tentative++)
 */
-func SaveResultat(lelogin string, lenum_defi int, letat int, admin bool) {
+func SaveResultat(lelogin string, lenum_defi int, letat int, resultat []config.Resultat, admin bool) {
 	m.Lock()
-	var res ResBDD
+
+	if resultat != nil {
+		resJson, _ := json.Marshal(resultat)
+		stmt, _ := db.Prepare("UPDATE Etudiant SET resDefiActuel = ? WHERE login = ?")
+		_, err := stmt.Exec(string(resJson), lelogin)
+		if err != nil {
+			logs.WriteLog("BDD DeleteToken", err.Error())
+		}
+		err = stmt.Close()
+	}
+
+	var res config.ResBDD
 	row := db.QueryRow("SELECT * FROM Resultat WHERE login = $1 AND defi = $2", lelogin, lenum_defi)
 
 	if err := row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative); err != nil {
@@ -402,32 +374,45 @@ func SaveResultat(lelogin string, lenum_defi int, letat int, admin bool) {
 	m.Unlock()
 }
 
+func GetResultatActuel(login string) []config.Resultat {
+	var (
+		query string
+		res   []config.Resultat
+	)
+	row := db.QueryRow("SELECT resDefiActuel FROM Etudiant WHERE login = $1", login)
+	if err := row.Scan(&query); err != nil {
+		logs.WriteLog("BDD.GetResultatActuel", err.Error())
+	}
+	json.Unmarshal([]byte(query), &res)
+	return res
+}
+
 /**
 Récupère la liste des étudiants de la table Etudiant
 */
-func GetEtudiants() []Etudiant {
-	var etu Etudiant
-	etudiants := make([]Etudiant, 0)
+func GetEtudiants() []config.Etudiant {
+	var etu config.Etudiant
+	etudiants := make([]config.Etudiant, 0)
 	row, err := db.Query("SELECT * FROM Etudiant")
-	defer row.Close()
 	if err != nil {
 		logs.WriteLog("BDD GetEtudiants", err.Error())
 	}
 	for row.Next() {
-		err = row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur)
+		err = row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur, &etu.ResDefiActuel)
 		if err != nil {
 			logs.WriteLog("BDD GetEtudiants", err.Error())
 		}
 		etudiants = append(etudiants, etu)
 	}
+	row.Close()
 	return etudiants
 }
 
 /**
 Récupère le résultat d'un étudiant pour un défi spécifique
 */
-func GetResult(login string, defi int) ResBDD {
-	var res ResBDD
+func GetResult(login string, defi int) config.ResBDD {
+	var res config.ResBDD
 	row := db.QueryRow("SELECT * FROM Resultat WHERE login = $1 AND defi = $2", login, defi)
 	if err := row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative); err != nil {
 		logs.WriteLog("BDD.GetResult", err.Error())
@@ -473,15 +458,14 @@ func ModifyDefi(num int, dateD date.Date, dateF date.Date) {
 /*
 Récupère la liste des défis
 */
-func GetDefis() []Defi {
+func GetDefis() []config.Defi {
 	var (
 		debutString string
 		finString   string
-		defi        Defi
+		defi        config.Defi
 	)
-	defis := make([]Defi, 0)
+	defis := make([]config.Defi, 0)
 	row, err := db.Query("SELECT * FROM Defis")
-	defer row.Close()
 	if err != nil {
 		logs.WriteLog("BDD.GetDefis", err.Error())
 	}
@@ -493,8 +477,9 @@ func GetDefis() []Defi {
 		defi.Date_debut, _ = date.Parse(debutString)
 		defi.Date_fin, _ = date.Parse(finString)
 		defis = append(defis, defi)
-		defi = Defi{}
+		defi = config.Defi{}
 	}
+	row.Close()
 	if len(defis) == 0 {
 		return nil
 	}
@@ -504,10 +489,10 @@ func GetDefis() []Defi {
 /*
 Récupère le défi actuel
 */
-func GetDefiActuel() Defi {
+func GetDefiActuel() config.Defi {
 	defis := GetDefis()
 
-	defiActuel := Defi{
+	defiActuel := config.Defi{
 		Num:        0,
 		Date_debut: date.Date{},
 		Date_fin:   date.Date{},
@@ -525,16 +510,19 @@ func GetDefiActuel() Defi {
 Récupère un défi précis, avec son numéro passé en paramètre
 */
 
-func GetDefi(num int) Defi {
+func GetDefi(num int) config.Defi {
 	defis := GetDefis()
 	for _, d := range defis {
 		if d.Num == num {
 			return d
 		}
 	}
-	return Defi{}
+	return config.Defi{}
 }
 
+/**
+Fonction qui va mettre jeu de test à true pour signaler qu'un jeu de test a été upload pour le défi du num donné en argument
+*/
 func AddJeuDeTest(num int) {
 	stmt, err := db.Prepare("UPDATE Defis SET jeu_de_test = ? where numero = ?")
 	if err != nil {
@@ -549,25 +537,39 @@ func AddJeuDeTest(num int) {
 	}
 }
 
+/**
+ * Repasse tous les résultats du défi dont le numéro est donné en argument à -1 (non testé)
+ * fonction appelé lorsqu'on change le jeu de test
+ */
+func ResetEtatDefi(num int) {
+	m.Lock()
+	stmt, _ := db.Prepare("UPDATE Resultat SET etat = -1 WHERE defi = ?")
+	if _, err := stmt.Exec(num); err != nil {
+		logs.WriteLog("BDD.ResetEtatDefi "+strconv.Itoa(num), err.Error())
+	}
+	stmt.Close()
+	m.Unlock()
+}
+
 //selectionne quel étudiant sera correcteur en fonction de si il a réussi et si il a déjà été correcteur
 func GenerateCorrecteur(num_defi int) {
 	m.Lock()
-	var t = make([]Etudiant, 0)
-	var etu Etudiant
+	var t = make([]config.Etudiant, 0)
+	var etu config.Etudiant
 	row, err := db.Query("Select e.* FROM Resultat r, Etudiant e WHERE r.Defi = $1 AND r.Etat = 1 AND e.Correcteur= 0 AND r.Login =e.Login", num_defi)
-	defer row.Close()
 	if err != nil {
 		logs.WriteLog("BDD GenerateCorrecteur", err.Error())
 	} else {
 		for row.Next() {
-			err = row.Scan(&etu.Login, &etu.Password, &etu.Nom, &etu.Prenom, &etu.Mail, &etu.Correcteur)
+			err = row.Scan(&etu.Login, &etu.Password, &etu.Nom, &etu.Prenom, &etu.Mail, &etu.Correcteur, &etu.ResDefiActuel)
 			if err != nil {
 				logs.WriteLog("BDD GenerateCorrecteur", err.Error())
 			}
 			t = append(t, etu)
-			etu = Etudiant{}
+			etu = config.Etudiant{}
 		}
 	}
+	row.Close()
 	rand.Seed(time.Now().UnixNano())
 	min := 0
 	max := len(t) - 1
@@ -582,10 +584,10 @@ func GenerateCorrecteur(num_defi int) {
 	m.Unlock()
 }
 
-func GetCorrecteur(num int) Etudiant {
-	var etu Etudiant
+func GetCorrecteur(num int) config.Etudiant {
+	var etu config.Etudiant
 	row := db.QueryRow("SELECT e.* FROM Etudiant e, Defis d WHERE d.numero = $1 AND e.login = d.correcteur", num)
-	if err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur); err != nil {
+	if err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur, &etu.ResDefiActuel); err != nil {
 		logs.WriteLog("BDD.GetCorrecteur", err.Error())
 	}
 	return etu
@@ -594,11 +596,10 @@ func GetCorrecteur(num int) Etudiant {
 /**
 Récupère tous les résultats d'un étudiant à tous les défis auquel il a participé
 */
-func GetAllResultat(login string) []ResBDD {
-	var res ResBDD
-	resT := make([]ResBDD, 0)
+func GetAllResultat(login string) []config.ResBDD {
+	var res config.ResBDD
+	resT := make([]config.ResBDD, 0)
 	row, err := db.Query("SELECT * FROM Resultat WHERE login = ? ORDER BY defi ASC", login)
-	defer row.Close()
 	if err != nil {
 		logs.WriteLog("BDD GetAllResultat", err.Error())
 	}
@@ -609,37 +610,38 @@ func GetAllResultat(login string) []ResBDD {
 		}
 		resT = append(resT, res)
 	}
-
+	row.Close()
 	return resT
 }
 
 /**
 Récupère tous les résultats de tous les étudiants pour un défi spécifique
 */
-func GetParticipant(num_defi int) []ParticipantDefi {
-	var res ParticipantDefi
-	resT := make([]ParticipantDefi, 0)
+func GetParticipant(num_defi int) []config.ParticipantDefi {
+	var res config.ParticipantDefi
+	resT := make([]config.ParticipantDefi, 0)
 
 	row, err := db.Query("SELECT * FROM Etudiant e, Resultat r WHERE e.login = r.login AND r.defi = ? ORDER BY nom", num_defi)
-	defer row.Close()
 	if err != nil {
 		logs.WriteLog("BDD.GetParticipant", err.Error())
 	}
 	for row.Next() {
-		err = row.Scan(&res.Etudiant.Login, &res.Etudiant.Password, &res.Etudiant.Prenom, &res.Etudiant.Nom, &res.Etudiant.Mail, &res.Etudiant.Correcteur, &res.Resultat.Login, &res.Resultat.Defi,
-			&res.Resultat.Etat, &res.Resultat.Tentative)
+		err = row.Scan(&res.Etudiant.Login, &res.Etudiant.Password, &res.Etudiant.Prenom, &res.Etudiant.Nom,
+			&res.Etudiant.Mail, &res.Etudiant.Correcteur, &res.Etudiant.ResDefiActuel,
+			&res.Resultat.Login, &res.Resultat.Defi, &res.Resultat.Etat, &res.Resultat.Tentative)
 		if err != nil {
 			logs.WriteLog("Bdd GetParticipants", err.Error())
 		}
 		resT = append(resT, res)
-		res = ParticipantDefi{}
+		res = config.ParticipantDefi{}
 	}
+	row.Close()
 	return resT
 }
 
-func GetEtudiantsMail() []EtudiantMail {
-	var res EtudiantMail
-	resT := make([]EtudiantMail, 0)
+func GetEtudiantsMail() []config.EtudiantMail {
+	var res config.EtudiantMail
+	resT := make([]config.EtudiantMail, 0)
 
 	row, err := db.Query("SELECT  login, prenom, nom, mail FROM Etudiant;")
 	if err != nil {
@@ -651,7 +653,7 @@ func GetEtudiantsMail() []EtudiantMail {
 				panic(err)
 			}
 			resT = append(resT, res)
-			res = EtudiantMail{}
+			res = config.EtudiantMail{}
 		}
 	}
 

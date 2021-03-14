@@ -25,16 +25,16 @@ import (
 
 type data_pageAdmin struct { /* Données envoyée à la page admin */
 	EtuSelect     string
-	DefiSelect    BDD.Defi
-	AdminInfo     BDD.Admin
-	Etudiants     []BDD.Etudiant
-	Res_etu       []BDD.ResBDD
-	ListeDefis    []BDD.Defi
+	DefiSelect    config.Defi
+	AdminInfo     config.Admin
+	Etudiants     []config.Etudiant
+	Res_etu       []config.ResBDD
+	ListeDefis    []config.Defi
 	File          []string
-	DefiActuel    BDD.Defi
+	DefiActuel    config.Defi
 	JeuDeTestSent string
-	Participants  []BDD.ParticipantDefi
-	Correcteur    BDD.Etudiant
+	Participants  []config.ParticipantDefi
+	Correcteur    config.Etudiant
 	Tricheurs     [][]string
 	Logs          []string
 	Log           []string
@@ -121,9 +121,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				if etat := r.URL.Query()["Etat"]; etat != nil {
 
 					if etat[0] == "1" {
-						BDD.SaveResultat(etu[0], num, 0, true)
+						BDD.SaveResultat(etu[0], num, 0, nil, true)
 					} else {
-						BDD.SaveResultat(etu[0], num, 1, true)
+						BDD.SaveResultat(etu[0], num, 1, nil, true)
 					}
 				}
 			}
@@ -141,7 +141,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Query()["Correcteur"] != nil {
 				BDD.GenerateCorrecteur(num)
 				etudiant := BDD.GetCorrecteur(num)
-				etudiantMail := BDD.EtudiantMail{Prenom: etudiant.Prenom, Nom: etudiant.Nom, Mail: etudiant.Mail}
+				etudiantMail := config.EtudiantMail{Prenom: etudiant.Prenom, Nom: etudiant.Nom, Mail: etudiant.Mail}
 				file, err := os.Open("mailConf.json")
 				if err != nil {
 					fmt.Println(err)
@@ -286,22 +286,32 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		}
 		if r.URL.Query()["form"][0] == "test" { // Pour upload un test
 			num := r.FormValue("defiSelectTest")
-			typeTest := fileHeader.Header.Values("Content-Type")
-
 			if num == "" {
 				logs.WriteLog("upload test", "aucun numéro de défis n'a été spécifié")
 				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 				return
 			}
-			fmt.Println(typeTest)
+
+			num2, _ := strconv.Atoi(num)
+			defi := BDD.GetDefi(num2)
+			typeTest := fileHeader.Header.Values("Content-Type")
+
 			if typeTest[0] != "application/zip" && typeTest[0] != "application/x-tar" && typeTest[0] != "application/tar" {
 				logs.WriteLog("upload test", "format de l'upload incompatible")
 				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 				return
 			}
 			logs.WriteLog("Admin", "upload d'un test pour le défi n°"+num)
-			num2, _ := strconv.Atoi(num)
-			BDD.AddJeuDeTest(num2)
+			if !defi.JeuDeTest {
+				BDD.AddJeuDeTest(num2)
+			} else if defi.Num == defi_actuel.Num {
+				// Si on change le défi ACTUEL
+				BDD.ResetEtatDefi(num2)
+				/* TODO envoyer un mail aux étudiants
+				 * (soit tous les étudiants, soit uniquement les étudiant ayant envoyé un script (enregistré dans Resultat)
+				 * pour leur dire que le jeu de test a changé et que leur résultat est repassé à "non testé"
+				 */
+			}
 			//if dossier de test existe déjà, on le supprime
 			pathTest := config.Path_jeu_de_tests + "test_defi_" + num
 			if manipStockage.Contains(config.Path_jeu_de_tests, "test_defi_"+num) {
@@ -352,7 +362,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func sendMail(etudiants []BDD.EtudiantMail, nbDefis int, config SenderData) []ResultMail { // Authentication sur le serveur de mail
+func sendMail(etudiants []config.EtudiantMail, nbDefis int, config SenderData) []ResultMail { // Authentication sur le serveur de mail
 
 	auth := smtp.PlainAuth("", config.Username, config.Password, config.SmtpHost)
 	c := make(chan ResultMail)
@@ -442,7 +452,7 @@ func sendMail(etudiants []BDD.EtudiantMail, nbDefis int, config SenderData) []Re
 	return resultatsEnvois
 }
 
-func sendMailCorrecteur(etudiant BDD.EtudiantMail, nbDefi int, config SenderData) ResultMail {
+func sendMailCorrecteur(etudiant config.EtudiantMail, nbDefi int, config SenderData) ResultMail {
 	// Authentication sur le serveur de mail
 
 	auth := smtp.PlainAuth("", config.Username, config.Password, config.SmtpHost)

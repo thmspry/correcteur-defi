@@ -19,7 +19,6 @@ func main() {
 		set GOOS=linux
 		set GOARCH=amd64
 	*/
-
 	mode := os.Args[1]
 	if mode == "init" {
 		fmt.Println("init")
@@ -30,6 +29,8 @@ func main() {
 	} else if mode == "start" {
 		fmt.Println("start")
 		web.InitWeb()
+	} else if mode == "test" {
+		fmt.Println(BDD.GetResultatActuel("E197051L"))
 	} else {
 		web.InitWeb()
 	}
