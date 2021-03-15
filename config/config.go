@@ -25,7 +25,7 @@ type Etudiant struct {
 	Nom           string
 	Mail          string
 	Correcteur    bool
-	ResDefiActuel Resultat
+	ResDefiActuel []Resultat
 }
 
 type Admin struct {

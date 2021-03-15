@@ -203,7 +203,7 @@ func GetEtudiant(id string) config.Etudiant {
 	var etu config.Etudiant
 	row := db.QueryRow("SELECT * FROM Etudiant WHERE login = $1", id)
 	err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur, &etu.ResDefiActuel)
-	if err != nil {
+	if err != nil && etu.ResDefiActuel != nil {
 		logs.WriteLog("BDD.GetEtudiant", err.Error())
 	}
 	return etu
@@ -330,8 +330,11 @@ func SaveResultat(lelogin string, lenum_defi int, letat int, resultat []config.R
 
 	if resultat != nil {
 		resJson, _ := json.Marshal(resultat)
-		stmt, _ := db.Prepare("UPDATE Etudiant SET resDefiActuel = ? WHERE login = ?")
-		_, err := stmt.Exec(string(resJson), lelogin)
+		stmt, err := db.Prepare("UPDATE Etudiant SET resDefiActuel = ? WHERE login = ?")
+		if err != nil {
+			logs.WriteLog("BDD.SaveResultat", err.Error())
+		}
+		_, err = stmt.Exec(string(resJson), lelogin)
 		if err != nil {
 			logs.WriteLog("BDD DeleteToken", err.Error())
 		}
@@ -399,7 +402,7 @@ func GetEtudiants() []config.Etudiant {
 	}
 	for row.Next() {
 		err = row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur, &etu.ResDefiActuel)
-		if err != nil {
+		if err != nil && etu.ResDefiActuel != nil {
 			logs.WriteLog("BDD GetEtudiants", err.Error())
 		}
 		etudiants = append(etudiants, etu)

@@ -75,6 +75,7 @@ func Test(login string) (string, []config.Resultat) {
 	if manipStockage.Contains(Path_dir_test+jeuDeTest, "config") {
 		configTest = getConfigTest(Path_dir_test+jeuDeTest, jeuDeTest)
 	} else {
+		etatTestGlobal = 0
 		logs.WriteLog("testeur", "pas de fichier config dans le dossier "+Path_dir_test+jeuDeTest)
 		messageDeRetour = "Pas de fichier de config"
 		resTest = nil
@@ -99,7 +100,7 @@ func Test(login string) (string, []config.Resultat) {
 		if res.Etat == -1 {
 			BDD.SaveResultat(login, numDefi, 0, resTest, false)
 			messageDeRetour = "Il y a eu un erreur lors du CasTest n°" + strconv.Itoa(i)
-			etatTestGlobal = -1
+			etatTestGlobal = 0
 			i = len(configTest.CasDeTest)
 		}
 	}
