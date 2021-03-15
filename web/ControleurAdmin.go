@@ -234,6 +234,20 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if r.URL.Query()["form"][0] == "DeleteDefi" {
+			lastDefi := data.ListeDefis[0]
+			os.Remove(config.Path_defis + "correction_" + strconv.Itoa(lastDefi.Num))
+			err := os.RemoveAll(config.Path_jeu_de_tests + "test_defi_" + strconv.Itoa(lastDefi.Num))
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			BDD.DeleteLastDefi(lastDefi.Num)
+			logs.WriteLog("Delete défi", "vous avez supprimer le défi N°"+strconv.Itoa(lastDefi.Num))
+			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
+			return
+
+		}
+
 		r.ParseMultipartForm(10 << 20)
 
 		file, fileHeader, errorFile := r.FormFile("upload")
@@ -247,7 +261,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 		if r.URL.Query()["form"][0] == "modify-defi" {
 			numDefi, _ := strconv.Atoi(r.FormValue("defiSelectModif")) // Et le num du defi
-			fmt.Println("numDefi : ", numDefi)
+
 			if r.FormValue("date_debut") != "" {
 				fmt.Println("change date defi")
 				logs.WriteLog("Admin", "modification de la date de rendu")
@@ -294,9 +308,10 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 			num2, _ := strconv.Atoi(num)
 			defi := BDD.GetDefi(num2)
-			typeTest := fileHeader.Header.Values("Content-Type")
+			typeArchive := fileHeader.Header.Values("Content-Type")
+			fmt.Println(typeArchive)
 
-			if typeTest[0] != "application/zip" && typeTest[0] != "application/x-tar" && typeTest[0] != "application/tar" {
+			if typeArchive[0] != "application/zip" && typeArchive[0] != "application/x-tar" && typeArchive[0] != "application/tar" {
 				logs.WriteLog("upload test", "format de l'upload incompatible")
 				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 				return
@@ -322,7 +337,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			io.Copy(fichier, file)
 			os.Chmod(fichier.Name(), 777)
 
-			if typeTest[0] == "application/zip" {
+			if typeArchive[0] == "application/zip" {
 				cmd := exec.Command("unzip", "-d",
 					"test_defi_"+strconv.Itoa(num_defi_actuel),
 					fileHeader.Filename)
@@ -334,7 +349,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 					os.RemoveAll(pathTest)
 					os.Rename(config.Path_jeu_de_tests+"temp", pathTest)
 				}
-			} else if typeTest[0] == "application/x-tar" || typeTest[0] == "application/tar" {
+			} else if typeArchive[0] == "application/x-tar" || typeArchive[0] == "application/tar" {
 				cmd := exec.Command("tar", "tf", fileHeader.Filename)
 				cmd.Dir = config.Path_jeu_de_tests
 				output, _ := cmd.CombinedOutput()

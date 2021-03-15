@@ -523,6 +523,31 @@ func GetDefi(num int) config.Defi {
 	return config.Defi{}
 }
 
+func DeleteLastDefi(num int) {
+	stmt, err := db.Prepare("DELETE FROM Defis WHERE numero = ?")
+	_, err = stmt.Exec(num)
+	if err != nil {
+		logs.WriteLog("BDD.DeleteDefi", err.Error())
+	}
+	stmt.Close()
+	stmt, err = db.Prepare("UPDATE SQLITE_SEQUENCE SET SEQ= ? WHERE NAME='Defis'")
+	if err != nil {
+		logs.WriteLog("Reset SQLITE SEQ", err.Error())
+	}
+	_, err = stmt.Exec(num - 1)
+	if err != nil {
+		logs.WriteLog("Reset SQLITE SEQ", err.Error())
+	}
+	stmt.Close()
+	stmt, err = db.Prepare("DELETE FROM Resultat WHERE defi = ?")
+	_, err = stmt.Exec(num)
+	if err != nil {
+		logs.WriteLog("BDD.DeleteDefi", err.Error())
+	}
+	stmt.Close()
+
+}
+
 /**
 Fonction qui va mettre jeu de test à true pour signaler qu'un jeu de test a été upload pour le défi du num donné en argument
 */

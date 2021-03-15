@@ -63,6 +63,13 @@
                     <input type="submit" class="button" value="déposer" name="submit"/>
                 </div>
             </form>
+            <div class="separator"></div>
+            <div id="delete">
+                <h2>Supprimer le dernier défi envoyé</h2>
+                <form action="/pageAdmin?form=DeleteDefi" method="post">
+                    <input type="submit" class="button" value="Supprimer" name="submit">
+                </form>
+            </div>
         </div>
         <div id="modif-date" class="col s12">
             <h3>Modifier la date du défi et le fichier de correction du défi sélectionné :</h3>
@@ -99,7 +106,7 @@
                 </div>
                     <br>
                 </div>
-                <input class="button" type="submit">
+                <input class="button" type="submit" name="action" value="Envoyer">
             </form>
         </div>
         <div id="up-test" class="col s12">

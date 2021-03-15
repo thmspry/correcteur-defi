@@ -235,6 +235,14 @@ h3 {
     align-items: center;
     width: 50%;
 }
+#delete {
+    display: flex;
+    align-items: center;
+}
+#delete h2 {
+    margin: 0px 0px 0px 30px;
+    padding-right: 30px;
+}
 
 #mail h2 {
     margin: 0;
