@@ -23,9 +23,12 @@ type Etudiant struct {
 	Password      string
 	Prenom        string
 	Nom           string
-	Mail          string
 	Correcteur    bool
 	ResDefiActuel []Resultat
+}
+
+func (e Etudiant) Mail() string {
+	return e.Login + "@etu.univ-nantes.fr"
 }
 
 type Admin struct {
@@ -37,8 +40,11 @@ type EtudiantMail struct {
 	Login  string
 	Prenom string
 	Nom    string
-	Mail   string
 	Defis  []ResBDD
+}
+
+func (e EtudiantMail) Mail() string {
+	return e.Login + "@etu.univ-nantes.fr"
 }
 
 type ResBDD struct {

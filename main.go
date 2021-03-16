@@ -6,7 +6,6 @@ import (
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/manipStockage"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/testeur"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
 	"os"
 )
@@ -31,8 +30,7 @@ func main() {
 		fmt.Println("start")
 		web.InitWeb()
 	} else if mode == "test" {
-		_, res := testeur.TestArtificiel("E197051L")
-		BDD.SaveResultat("E197051L", 1, 1, res, false)
+		BDD.DeleteLastDefi(1)
 	} else {
 		web.InitWeb()
 	}

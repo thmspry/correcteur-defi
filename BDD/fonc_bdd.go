@@ -28,7 +28,6 @@ func InitBDD() {
 		"password TEXT NOT NULL, " +
 		"prenom TEXT NOT NULL," +
 		"nom TEXT NOT NULL," +
-		"mail TEXT NOT NULL," +
 		"correcteur BOOLEAN NOT NULL," +
 		"resDefiActuel TEXT" +
 		");")
@@ -96,11 +95,11 @@ Enregistre un étudiant dans la table Etudiant
 */
 func Register(etu config.Etudiant) bool {
 	m.Lock()
-	stmt, err := db.Prepare("INSERT INTO Etudiant(login,password,prenom,nom,mail,correcteur) values(?,?,?,?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO Etudiant(login,password,prenom,nom,correcteur) values(?,?,?,?,?)")
 	if err != nil {
 		logs.WriteLog("BDD register étudiant : ", err.Error())
 	}
-	_, err = stmt.Exec(etu.Login, etu.Password, etu.Prenom, etu.Nom, etu.Mail, false)
+	_, err = stmt.Exec(etu.Login, etu.Password, etu.Prenom, etu.Nom, false)
 	if err != nil {
 		logs.WriteLog("BDD register étudiant : ", err.Error())
 		m.Unlock()
@@ -202,7 +201,7 @@ récupère les informations personnelles d'un étudiant
 func GetEtudiant(id string) config.Etudiant {
 	var etu config.Etudiant
 	row := db.QueryRow("SELECT * FROM Etudiant WHERE login = $1", id)
-	err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur, &etu.ResDefiActuel)
+	err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Correcteur, &etu.ResDefiActuel)
 	if err != nil && etu.ResDefiActuel != nil {
 		logs.WriteLog("BDD.GetEtudiant", err.Error())
 	}
@@ -401,7 +400,7 @@ func GetEtudiants() []config.Etudiant {
 		logs.WriteLog("BDD GetEtudiants", err.Error())
 	}
 	for row.Next() {
-		err = row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur, &etu.ResDefiActuel)
+		err = row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Correcteur, &etu.ResDefiActuel)
 		if err != nil && etu.ResDefiActuel != nil {
 			logs.WriteLog("BDD GetEtudiants", err.Error())
 		}
@@ -589,7 +588,7 @@ func GenerateCorrecteur(num_defi int) {
 		logs.WriteLog("BDD GenerateCorrecteur", err.Error())
 	} else {
 		for row.Next() {
-			err = row.Scan(&etu.Login, &etu.Password, &etu.Nom, &etu.Prenom, &etu.Mail, &etu.Correcteur, &etu.ResDefiActuel)
+			err = row.Scan(&etu.Login, &etu.Password, &etu.Nom, &etu.Prenom, &etu.Correcteur, &etu.ResDefiActuel)
 			if err != nil {
 				logs.WriteLog("BDD GenerateCorrecteur", err.Error())
 			}
@@ -615,7 +614,7 @@ func GenerateCorrecteur(num_defi int) {
 func GetCorrecteur(num int) config.Etudiant {
 	var etu config.Etudiant
 	row := db.QueryRow("SELECT e.* FROM Etudiant e, Defis d WHERE d.numero = $1 AND e.login = d.correcteur", num)
-	if err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Mail, &etu.Correcteur, &etu.ResDefiActuel); err != nil {
+	if err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Correcteur, &etu.ResDefiActuel); err != nil {
 		logs.WriteLog("BDD.GetCorrecteur", err.Error())
 	}
 	return etu
@@ -655,7 +654,7 @@ func GetParticipant(num_defi int) []config.ParticipantDefi {
 	}
 	for row.Next() {
 		err = row.Scan(&res.Etudiant.Login, &res.Etudiant.Password, &res.Etudiant.Prenom, &res.Etudiant.Nom,
-			&res.Etudiant.Mail, &res.Etudiant.Correcteur, &res.Etudiant.ResDefiActuel,
+			&res.Etudiant.Correcteur, &res.Etudiant.ResDefiActuel,
 			&res.Resultat.Login, &res.Resultat.Defi, &res.Resultat.Etat, &res.Resultat.Tentative)
 		if err != nil {
 			logs.WriteLog("Bdd GetParticipants", err.Error())
@@ -671,12 +670,12 @@ func GetEtudiantsMail() []config.EtudiantMail {
 	var res config.EtudiantMail
 	resT := make([]config.EtudiantMail, 0)
 
-	row, err := db.Query("SELECT  login, prenom, nom, mail FROM Etudiant;")
+	row, err := db.Query("SELECT  login, prenom, nom FROM Etudiant;")
 	if err != nil {
 		logs.WriteLog("BDD.GetEtudiantsMail", err.Error())
 	} else if row != nil {
 		for row.Next() {
-			err = row.Scan(&res.Login, &res.Prenom, &res.Nom, &res.Mail)
+			err = row.Scan(&res.Login, &res.Prenom, &res.Nom)
 			if err != nil {
 				panic(err)
 			}
