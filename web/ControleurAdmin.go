@@ -206,7 +206,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			}
 			defer file.Close()
 
-			resultatsEnvois := sendMail(etudiants, nbDefis, configSender)
+			resultatsEnvois := sendMailResults(etudiants, nbDefis, configSender)
 			for _, res := range resultatsEnvois {
 				if res.send == false {
 					logs.WriteLog("Envoi de mails : ", "Erreur lors de l'envoi de mails à l'adresse : "+res.adress)
@@ -322,10 +322,33 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			} else if defi.Num == defi_actuel.Num {
 				// Si on change le défi ACTUEL
 				BDD.ResetEtatDefi(num2)
-				/* TODO envoyer un mail aux étudiants
+				/*
 				 * (soit tous les étudiants, soit uniquement les étudiant ayant envoyé un script (enregistré dans Resultat)
 				 * pour leur dire que le jeu de test a changé et que leur résultat est repassé à "non testé"
 				 */
+				etudiants := BDD.GetEtudiantsMail()
+
+				file, err := os.Open("mailConf.json")
+				if err != nil {
+					fmt.Println(err)
+				}
+				byteValue, err := ioutil.ReadAll(file)
+				if err != nil {
+					fmt.Println(err)
+				}
+				var configSender SenderData
+				err = json.Unmarshal(byteValue, &configSender)
+				if err != nil {
+					fmt.Println(err)
+				}
+				defer file.Close()
+
+				resultatsEnvois := sendMailChange(etudiants, defi_actuel.Num, configSender)
+				for _, res := range resultatsEnvois {
+					if res.send == false {
+						logs.WriteLog("Envoi de mails : ", "Erreur lors de l'envoi de mails à l'adresse : "+res.adress)
+					}
+				}
 			}
 			//if dossier de test existe déjà, on le supprime
 			pathTest := config.Path_jeu_de_tests + "test_defi_" + num
@@ -377,7 +400,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func sendMail(etudiants []config.EtudiantMail, nbDefis int, config SenderData) []ResultMail { // Authentication sur le serveur de mail
+func sendMailResults(etudiants []config.EtudiantMail, nbDefis int, config SenderData) []ResultMail { // Authentication sur le serveur de mail
 
 	auth := smtp.PlainAuth("", config.Username, config.Password, config.SmtpHost)
 	c := make(chan ResultMail)
@@ -507,4 +530,57 @@ func sendMailCorrecteur(etudiant config.EtudiantMail, nbDefi int, config SenderD
 	} else {
 		return ResultMail{adress: etudiant.Mail, send: true}
 	}
+}
+
+func sendMailChange(etudiants []config.EtudiantMail, nbDefi int, config SenderData) []ResultMail { // Authentication sur le serveur de mail
+
+	auth := smtp.PlainAuth("", config.Username, config.Password, config.SmtpHost)
+	c := make(chan ResultMail)
+	var resultatsEnvois []ResultMail
+
+	for _, etu := range etudiants {
+
+		etudiant := etu
+		go func() {
+
+			// adresse du destinataire
+			to := []string{
+				etudiant.Mail,
+			}
+
+			// En-tête du mail
+			header := make(map[string]string)
+			header["From"] = config.FromMail
+			header["To"] = to[0]
+			header["Subject"] = "Defis du lundi : Changement jeu de test"
+			header["MIME-Version"] = "1.0"
+			header["Content-Type"] = "text/plain; charset= utf-8"
+			header["Content-Transfer-Encoding"] = "base64"
+
+			// Création du contenu du mail
+			message := ""
+			for champ, valeur := range header {
+				message += fmt.Sprintf("%s : %s\r\n", champ, valeur)
+			}
+
+			body := "Changement des jeux de test pour le défis n°" + strconv.Itoa(nbDefi) + "\n\n" +
+				"Bonjour " + etudiant.Prenom + " " + etudiant.Nom + "\n" +
+				"Les test de correction ont été changés, ainsi votre script n'est plus enregistré comme testé" +
+				"et n'est peut être plus valide. \n" +
+				"Veuillez le retester afin de valider le défis"
+
+			// encodage du contenu en UTF-8 pour que les caractères spéciaux s'affichent
+			message += base64.StdEncoding.EncodeToString([]byte(body))
+
+			// Envoi du mail
+			err := smtp.SendMail(config.SmtpHost+":"+config.SmtpPort, auth, config.FromMail, to, []byte(message))
+			if err != nil {
+				c <- ResultMail{adress: etudiant.Mail, send: false}
+			} else {
+				c <- ResultMail{adress: etudiant.Mail, send: true}
+			}
+		}()
+		resultatsEnvois = append(resultatsEnvois, <-c)
+	}
+	return resultatsEnvois
 }
