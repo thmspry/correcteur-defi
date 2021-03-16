@@ -398,6 +398,38 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 		}
+
+		if r.URL.Query()["form"][0] == "changeConfig" {
+
+			/* Données du form */
+			mail := r.FormValue("mailConf")
+			username := r.FormValue("usernameConf")
+			password := r.FormValue("passwordConf")
+			host := r.FormValue("hostConf")
+			port := r.FormValue("portConf")
+
+			//Fichier de config
+			err := os.Remove(config.Path_root + "mailConf.json")
+			if err != nil {
+				fmt.Println("Pas de fichier mailConf.json")
+			}
+			fConf, err := os.OpenFile(config.Path_root+"mailConf.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModeAppend)
+			if err != nil {
+				data.Log = []string{"Erreur pour récupérer le fichier de config de mail"}
+			} else {
+				newConfString := "{\n  \"fromMail\" : \" " + mail + "\",\n  \"username\" : \"" + username + "\",\n  \"password\" : \"" + password + "\",\n  \"smtpHost\" : \"" + host + "\",\n  \"smtpPort\" : \"" + port + "\"\n}"
+				_, err := fConf.Write([]byte(newConfString))
+				if err != nil {
+					fmt.Println("ERREUR DE WRITE dans le fichier mailConf.json: ", err)
+				}
+			}
+
+			fConf.Close()
+
+			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
+			return
+		}
+
 	}
 }
 
