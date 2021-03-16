@@ -103,7 +103,7 @@ h3 {
     margin-bottom: 10px;
 }
 
-.chose-file input#input-file-defi, input#input-file-test, .chose-file input#input-file-defi-modify, input#input-file-defi-modify  {
+.chose-file input#input-file-defi, input#input-file-test, .chose-file input#input-file-defi-modify  {
     width: 0.1px;
     height: 0.1px;
     opacity: 0;

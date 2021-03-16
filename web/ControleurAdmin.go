@@ -141,7 +141,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Query()["Correcteur"] != nil {
 				BDD.GenerateCorrecteur(num)
 				etudiant := BDD.GetCorrecteur(num)
-				etudiantMail := config.EtudiantMail{Prenom: etudiant.Prenom, Nom: etudiant.Nom, Mail: etudiant.Mail}
+				etudiantMail := config.EtudiantMail{Prenom: etudiant.Prenom, Nom: etudiant.Nom}
 				file, err := os.Open("mailConf.json")
 				if err != nil {
 					fmt.Println(err)
@@ -158,9 +158,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				defer file.Close()
 				resultMail := sendMailCorrecteur(etudiantMail, num, configSender)
 				if resultMail.send == false {
-					logs.WriteLog("Envoi de mail correcteur", "Erreur lors de l'envoi de mail du correcteur du défi "+strconv.Itoa(num)+" à l'adresse : "+etudiantMail.Mail)
+					logs.WriteLog("Envoi de mail correcteur", "Erreur lors de l'envoi de mail du correcteur du défi "+strconv.Itoa(num)+" à l'adresse : "+etudiantMail.Mail())
 				} else {
-					logs.WriteLog("Envoi de mail correcteur", "envoi de mail du correcteur du défi "+strconv.Itoa(num)+" à l'adresse : "+etudiantMail.Mail)
+					logs.WriteLog("Envoi de mail correcteur", "envoi de mail du correcteur du défi "+strconv.Itoa(num)+" à l'adresse : "+etudiantMail.Mail())
 				}
 				http.Redirect(w, r, "/pageAdmin?Defi="+strconv.Itoa(num), http.StatusFound)
 				return
@@ -413,7 +413,7 @@ func sendMailResults(etudiants []config.EtudiantMail, nbDefis int, config Sender
 
 			// adresse du destinataire
 			to := []string{
-				etudiant.Mail,
+				etudiant.Mail(),
 			}
 
 			// En-tête du mail
@@ -480,9 +480,9 @@ func sendMailResults(etudiants []config.EtudiantMail, nbDefis int, config Sender
 			// Envoi du mail
 			err := smtp.SendMail(config.SmtpHost+":"+config.SmtpPort, auth, config.FromMail, to, []byte(message))
 			if err != nil {
-				c <- ResultMail{adress: etudiant.Mail, send: false}
+				c <- ResultMail{adress: etudiant.Mail(), send: false}
 			} else {
-				c <- ResultMail{adress: etudiant.Mail, send: true}
+				c <- ResultMail{adress: etudiant.Mail(), send: true}
 			}
 		}()
 		resultatsEnvois = append(resultatsEnvois, <-c)
@@ -496,7 +496,7 @@ func sendMailCorrecteur(etudiant config.EtudiantMail, nbDefi int, config SenderD
 	auth := smtp.PlainAuth("", config.Username, config.Password, config.SmtpHost)
 
 	to := []string{
-		etudiant.Mail,
+		etudiant.Mail(),
 	}
 
 	// En-tête du mail
@@ -526,9 +526,9 @@ func sendMailCorrecteur(etudiant config.EtudiantMail, nbDefi int, config SenderD
 	// Envoi du mail
 	err := smtp.SendMail(config.SmtpHost+":"+config.SmtpPort, auth, config.FromMail, to, []byte(message))
 	if err != nil {
-		return ResultMail{adress: etudiant.Mail, send: false}
+		return ResultMail{adress: etudiant.Mail(), send: false}
 	} else {
-		return ResultMail{adress: etudiant.Mail, send: true}
+		return ResultMail{adress: etudiant.Mail(), send: true}
 	}
 }
 

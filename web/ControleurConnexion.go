@@ -89,7 +89,6 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 					Password: r.FormValue("password"),
 					Prenom:   r.FormValue("prenom"),
 					Nom:      r.FormValue("nom"),
-					Mail:     r.FormValue("mail"),
 				}
 				passwordHashed, err := bcrypt.GenerateFromPassword([]byte(etu.Password), 14) // hashage du mot de passe
 				if err == nil {

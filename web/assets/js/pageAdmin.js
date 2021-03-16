@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
     // Change les labels des chose-file de défi et de test
     changeInputFile("#file-defi");
     changeInputFile("#file-test");
+    changeInputFile("#file-defi-modify");
 
 });
 
