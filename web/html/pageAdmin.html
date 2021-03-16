@@ -251,18 +251,16 @@
     </div>
     <div class="separator"></div>
     <div id="mail">
-        <div>
-            <h2>Envoyer le résultat par mail aux étudiants</h2>
-            <form action="/pageAdmin?form=sendMail" method="post">
-                <input type="submit" class="button" value="Envoyer Mail" name="submit">
-            </form>
-        </div>
+        <h2>Envoyer le résultat par mail aux étudiants</h2>
+        <form action="/pageAdmin?form=sendMail" method="post">
+            <input type="submit" class="button" value="Envoyer Mail" name="submit">
+        </form>
     </div>
     <div class="separator"></div>
     <div id="changeID">
 
         <h2>Changer ses identifiants de connexion</h2>
-        <form action="/pageAdmin?form=changeId" method="post">
+        <form action="/pageAdmin?form=changeId" method="post" class="edit-form">
             <p>
                 <input type="text" id="loginAd" name="loginAd" required="required" >
                 <label for="loginAd">Login</label>
@@ -274,10 +272,37 @@
             <input type="submit" class="button" value="Modifier" name="submit">
         </form>
     </div>
+    <div class="separator"></div>
+    <div id="config-file">
+        <h2>Changer le fichier de configuration d'envoi de mail</h2>
+        <form action="/pageAdmin?form=changeConfig" method="post" class="edit-form">
+            <p>
+                <input type="text" id="mailConf" name="mailConf" required="required" >
+                <label for="mailConf">Mail d'envoi</label>
+            </p>
+            <p>
+                <input type="text" id="usernameConf" name="usernameConf" required="required" >
+                <label for="usernameConf">Username</label>
+            </p>
+            <p>
+                <input type="text" id="passwordConf" name="passwordConf" required="required" >
+                <label for="passwordConf">Password</label>
+            </p>
+            <p>
+                <input type="text" id="hostConf" name="hostConf" required="required" >
+                <label for="hostConf">Host SMTP</label>
+            </p>
+            <p>
+                <input type="text" id="portConf" name="portConf" required="required" >
+                <label for="portConf">SMTP Port</label>
+            </p>
+            <input type="submit" class="button" value="Modifier" name="submit">
+        </form>
+    </div>
 </div>
 <div id="footer">
     <p>Projet réalisé sous l'initiative de Loïg Jezequel</p>
-    <p>Par Paul Vernin, Mattéo Ordrenneau, Thomas Peray et Antoine Gru</p>
+    <p>Par Paul Vernin, Matteo Ordrenneau, Thomas Peray et Antoine Gru</p>
     <p><a href="https://gitlab.univ-nantes.fr/E192543L/projet-s3/">
         <img src="./web/assets/images/gitlab-logo.png">
         GitLab du projet

@@ -67,7 +67,7 @@ h1 {
 
 h2 {
     font-size: 25px;
-    margin-left: 5%;
+    margin-left: 2.5%;
 }
 
 h3 {
@@ -253,10 +253,14 @@ h3 {
     color: #50a969;
 }
 
-#changeID form {
+.edit-form {
     display: flex;
     justify-content: space-between;
     width: 50%;
+}
+
+#config-file form {
+    width: 100%;
 }
 
 .button:hover {
@@ -318,6 +322,10 @@ input[type=text].datepicker {
 
 .tabs .tab.disabled a, .tabs .tab.disabled a:hover {
     color: rgba(58, 186, 89, 0.4);
+}
+
+input[type=text]:not(.browser-default):focus:not([readonly]) {
+    border-bottom: 1px solid #50a969;
 }
 
 /* --- */

@@ -86,7 +86,7 @@ func CreateCSV(file_name string, num int) {
 		line := []string{value.Resultat.Login,
 			value.Etudiant.Nom,
 			value.Etudiant.Prenom,
-			value.Etudiant.Mail,
+			value.Etudiant.Mail(),
 			strconv.Itoa(value.Resultat.Defi),
 			strconv.Itoa(value.Resultat.Etat),
 			strconv.Itoa(value.Resultat.Tentative)}
