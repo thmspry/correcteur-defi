@@ -52,6 +52,7 @@ type SenderData struct { /* Structure utile pour l'envoi de mail */
 type ResultMail struct { /* Structure de retour de l'envoi de mail */
 	adress string
 	send   bool
+	erreur string
 }
 
 type Admin struct {
@@ -346,7 +347,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				resultatsEnvois := sendMailChange(etudiants, defi_actuel.Num, configSender)
 				for _, res := range resultatsEnvois {
 					if res.send == false {
-						logs.WriteLog("Envoi de mails : ", "Erreur lors de l'envoi de mails à l'adresse : "+res.adress)
+						logs.WriteLog("Envoi de mails : ", "Erreur lors de l'envoi de mails à l'adresse : "+res.adress+" erreur : "+res.erreur)
 					}
 				}
 			}
@@ -545,7 +546,7 @@ func sendMailChange(etudiants []config.EtudiantMail, nbDefi int, config SenderDa
 
 			// adresse du destinataire
 			to := []string{
-				etudiant.Mail,
+				etudiant.Mail(),
 			}
 
 			// En-tête du mail
@@ -575,9 +576,9 @@ func sendMailChange(etudiants []config.EtudiantMail, nbDefi int, config SenderDa
 			// Envoi du mail
 			err := smtp.SendMail(config.SmtpHost+":"+config.SmtpPort, auth, config.FromMail, to, []byte(message))
 			if err != nil {
-				c <- ResultMail{adress: etudiant.Mail, send: false}
+				c <- ResultMail{adress: etudiant.Mail(), send: false, erreur: err.Error()}
 			} else {
-				c <- ResultMail{adress: etudiant.Mail, send: true}
+				c <- ResultMail{adress: etudiant.Mail(), send: true}
 			}
 		}()
 		resultatsEnvois = append(resultatsEnvois, <-c)

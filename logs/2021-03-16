@@ -1,23 +1,17 @@
-0:18:8, admin : connexion admin réussie, création d'un token
-0:18:17, Admin : ajout d'un nouveau défi du 2021-03-14 au 2021-03-24
-0:18:28, upload test : format de l'upload incompatible
-0:19:22, Admin : upload d'un test pour le défi n°1
-0:21:24, Admin : upload d'un test pour le défi n°1
-0:23:8, admin : Déconnexion du serveur
-0:24:12, admin : connexion admin réussie, création d'un token
-0:24:15, Delete défi : vous avez supprimer le défi N°1
-0:24:38, Admin : ajout d'un nouveau défi du 2021-03-14 au 2021-03-19
-0:26:26, Admin : ajout d'un nouveau défi du 2021-03-14 au 2021-03-18
-0:26:33, Delete défi : vous avez supprimer le défi N°1
-0:26:43, Admin : ajout d'un nouveau défi du 2021-03-15 au 2021-03-20
-0:31:13, admin : connexion admin réussie, création d'un token
-0:31:19, Delete défi : vous avez supprimer le défi N°2
-0:31:27, Admin : ajout d'un nouveau défi du 2021-03-21 au 2021-03-25
-0:31:38, Delete défi : vous avez supprimer le défi N°2
-0:31:46, Admin : ajout d'un nouveau défi du 2021-03-07 au 2021-03-22
-0:31:52, Delete défi : vous avez supprimer le défi N°2
-0:31:59, Admin : ajout d'un nouveau défi du 2021-03-15 au 2021-03-23
-0:32:1, Delete défi : vous avez supprimer le défi N°2
-9:47:52, admin : connexion admin réussie, création d'un token
-9:48:3, Admin : ajout d'un nouveau défi du 2021-03-14 au 2021-03-18
-9:52:52, admin : Déconnexion du serveur
+10:40:24, BDD register admin :  : UNIQUE constraint failed: Administrateur.login
+10:40:40, adminn : login admin inconnu
+10:40:40, adminn : mot de passe incorrecte connexion admin
+10:40:47, admin : connexion admin réussie, création d'un token
+10:41:34, Admin : ajout d'un nouveau défi du 2021-03-16 au 2021-03-18
+10:41:45, Admin : upload d'un test pour le défi n°1
+10:42:10, Admin : upload d'un test pour le défi n°1
+10:42:11, Envoi de mails :  : Erreur lors de l'envoi de mails à l'adresse : E197051L@etu.univ-nantes.fr
+10:42:11, Envoi de mails :  : Erreur lors de l'envoi de mails à l'adresse : E192193F@etu.univ-nantes.fr
+10:44:22, Admin : upload d'un test pour le défi n°1
+10:44:23, Envoi de mails :  : Erreur lors de l'envoi de mails à l'adresse : E197051L@etu.univ-nantes.fr
+10:44:23, Envoi de mails :  : Erreur lors de l'envoi de mails à l'adresse : E192193F@etu.univ-nantes.fr
+10:45:57, admin : connexion admin réussie, création d'un token
+10:46:3, Admin : upload d'un test pour le défi n°1
+10:46:4, Envoi de mails :  : Erreur lors de l'envoi de mails à l'adresse : E197051L@etu.univ-nantes.fr erreur : 535 5.7.8 Error: authentication failed: authentication failure
+10:46:4, Envoi de mails :  : Erreur lors de l'envoi de mails à l'adresse : E192193F@etu.univ-nantes.fr erreur : 535 5.7.8 Error: authentication failed: authentication failure
+10:46:41, Admin : upload d'un test pour le défi n°1
