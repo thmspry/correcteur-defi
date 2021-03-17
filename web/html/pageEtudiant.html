@@ -37,10 +37,10 @@
                         {{else}}
                             <p>Votre script est incorrect.</p>
                         {{end}}
-                    <p>Vous pouvez le modifier jusqu'au {{.Defi_actuel.Date_fin}}.</p>
+                    <p>Vous pouvez le modifier jusqu'au {{.Defi_actuel.DateFin}}.</p>
                     {{else}}
                         <p>Vous n'avez pas encore envoyé de script pour ce défi. <br>
-                        Vous avez jusqu'au {{.Defi_actuel.Date_fin}} pour le rendre.</p>
+                        Vous avez jusqu'au {{.Defi_actuel.DateFin}} pour le rendre.</p>
                     {{end}}
                 <p>IMPORTANT : le script doit contenir "!/bin/bash"</p>
                 </div>
@@ -85,17 +85,20 @@
         <h1 id="message-res" class="">{{.Msg_res}}</h1>
         <div class="res-test">
             {{range .ResTest}}
-                <p>Test "{{.CasTest.Nom}}" :
+                <div class="separator"></div>
+                <div class="testHeader">
+                <p>Test N°{{.CasTest.Nom}} :</p>
                 {{if eq .Etat 1}}
-                    <span class="win-text">Vous avez réussi ce test</span>
+                    <p class="win-text">Vous avez réussi ce test</p>
                     <img src="./web/assets/images/green-light.png">
                 {{else if eq .Etat 0}}
-                    <span class="fail-text">Vous avez échoué ce test</span>
+                    <p class="fail-text">Vous avez échoué ce test</p>
                     <img src="./web/assets/images/red-light.png">
                 {{else if eq .Etat -1}}
-                    <span class="error-text">Il y a eu une erreur durant ce test</span>
+                    <p class="error-text">Il y a eu une erreur durant ce test</p>
                     <img src="./web/assets/images/yellow-light.png">
-                {{end}}</p>
+                {{end}}
+                </div>
             <div class="res-output box-gauche">
                 <div class="res-individuel box-gauche">
                     <div class="title-res">

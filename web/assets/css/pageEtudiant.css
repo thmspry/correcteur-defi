@@ -278,3 +278,22 @@ a#test-script {
     border-radius:  15px 15px 15px 15px ;
     border-color: red;
 }
+
+.testHeader {
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    margin: 10px 0px 10px 5px;
+}
+.testHeader p {
+    margin-right: 15px;
+    font-size: 1.5em;
+}
+
+.separator {
+    width: 100%;
+    height: 2px;
+    background-color: #838383;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}

@@ -80,7 +80,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 	//if date actuelle > defi actel.datefin alors defiactuel.num = -1
 	if data.DefiActuel.Num != -1 {
-		if !date.Today().Within(date.NewRange(data.DefiActuel.Date_debut, data.DefiActuel.Date_fin)) {
+		if !date.Today().Within(date.NewRange(data.DefiActuel.DateDebut, data.DefiActuel.DateFin)) {
 			data.DefiActuel.Num = -1
 		}
 	}

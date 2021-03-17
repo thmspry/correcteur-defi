@@ -20,8 +20,8 @@
         <h2>Il n'y a pas de défi en cours</h2>
         {{else}}
         <h2>Défi actuel : défi n°{{.DefiActuel.Num}}</h2>
-        <h2>Il a commencé le {{.DefiActuel.Date_debut}}
-            et se termine le {{.DefiActuel.Date_fin}}</h2>
+        <h2>Il a commencé le {{.DefiActuel.DateDebut}}
+            et se termine le {{.DefiActuel.DateFin}}</h2>
         {{end}}
     </div>
     <div class="separator"></div>
@@ -52,11 +52,11 @@
                 <div class="dates">
                     <div class="date-selector">
                         <p>Date de début :</p>
-                        <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.Date_debut}}" {{end}}>
+                        <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.DateDebut}}" {{end}}>
                     </div>
                     <div class="date-selector">
                         <p>Date de fin :</p>
-                        <input type="text" class="datepicker" name="date_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.Date_fin}}" {{end}}>
+                        <input type="text" class="datepicker" name="date_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.DateFin}}" {{end}}>
                     </div>
                 </div>
                 <div>
@@ -87,11 +87,11 @@
                 <div class="dates">
                     <div class="date-selector">
                         <p>Date de début :</p>
-                        <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.Date_debut}}" {{end}}>
+                        <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.DateDebut}}" {{end}}>
                     </div>
                     <div class="date-selector">
                         <p>Date de fin : </p>
-                        <input type="text" class="datepicker"  name="date_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.Date_fin}}" {{end}}>
+                        <input type="text" class="datepicker"  name="date_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.DateFin}}" {{end}}>
                     </div>
                 </div>
                 <br>
@@ -152,7 +152,7 @@
             <h3>Liste des défis enregistrés : </h3>
             {{range .ListeDefis}}
             <p class="{{if eq $.DefiActuel.Num .Num}}red-actuel{{end}}">
-                Défi n°{{.Num}} du {{.Date_debut}} au {{.Date_fin}}
+                Défi n°{{.Num}} du {{.DateDebut}} au {{.DateFin}}
                 <a href="pageAdmin?Defi={{.Num}}">Afficher les participants</a></p>
             {{end}}
             {{if eq .DefiSelect.Num 0}}

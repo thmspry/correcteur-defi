@@ -38,9 +38,9 @@ func InitBDD() {
 
 	stmt, err = db.Prepare("CREATE TABLE IF NOT EXISTS Defis (" +
 		"numero INTEGER PRIMARY KEY AUTOINCREMENT," +
-		"date_debut TEXT NOT NULL," +
-		"date_fin TEXT NOT NULL," +
-		"jeu_de_test BOOL NOT NULL," +
+		"dateDebut TEXT NOT NULL," +
+		"dateFin TEXT NOT NULL," +
+		"jeuDeTest BOOL NOT NULL," +
 		"correcteur TEXT," +
 		"FOREIGN KEY (correcteur) REFERENCES Etudiant(login)" +
 		")")
@@ -324,7 +324,7 @@ admin == true : fonction lancé par l'admin pour modifier les valeurs
 admin == false : fonction lancé par un étudiant lors d'une nouvelle tentative de test
 (si c'est false, tentative++)
 */
-func SaveResultat(lelogin string, lenum_defi int, letat int, resultat []config.Resultat, admin bool) {
+func SaveResultat(login string, numDefi int, etat int, resultat []config.Resultat, admin bool) {
 	m.Lock()
 
 	if resultat != nil {
@@ -333,7 +333,7 @@ func SaveResultat(lelogin string, lenum_defi int, letat int, resultat []config.R
 		if err != nil {
 			logs.WriteLog("BDD.SaveResultat", err.Error())
 		}
-		_, err = stmt.Exec(string(resJson), lelogin)
+		_, err = stmt.Exec(string(resJson), login)
 		if err != nil {
 			logs.WriteLog("BDD DeleteToken", err.Error())
 		}
@@ -341,11 +341,11 @@ func SaveResultat(lelogin string, lenum_defi int, letat int, resultat []config.R
 	}
 
 	var res config.ResBDD
-	row := db.QueryRow("SELECT * FROM Resultat WHERE login = $1 AND defi = $2", lelogin, lenum_defi)
+	row := db.QueryRow("SELECT * FROM Resultat WHERE login = $1 AND defi = $2", login, numDefi)
 
 	if err := row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative); err != nil {
 		stmt, _ := db.Prepare("INSERT INTO Resultat values(?,?,?,?)")
-		_, err = stmt.Exec(lelogin, lenum_defi, letat, 1)
+		_, err = stmt.Exec(login, numDefi, etat, 1)
 		err = stmt.Close()
 		if err != nil {
 			logs.WriteLog("BDD SaveResultat", err.Error())
@@ -427,7 +427,7 @@ Ajoute un défi à la table Defis
 */
 func AddDefi(dateD date.Date, dateF date.Date) {
 	m.Lock()
-	stmt, err := db.Prepare("INSERT INTO Defis(date_debut,date_fin, jeu_de_test) values(?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO Defis(dateDebut,dateFin, jeuDeTest) values(?,?,?)")
 	if err != nil {
 		logs.WriteLog("BDD AddeDefi", err.Error())
 	} else {
@@ -444,7 +444,7 @@ func AddDefi(dateD date.Date, dateF date.Date) {
 Modifie le défi de numéro num
 */
 func ModifyDefi(num int, dateD date.Date, dateF date.Date) {
-	stmt, err := db.Prepare("UPDATE Defis SET date_debut = ?, date_fin = ? where numero = ?")
+	stmt, err := db.Prepare("UPDATE Defis SET dateDebut = ?, dateFin = ? where numero = ?")
 	if err != nil {
 		logs.WriteLog("BDD modify defi", err.Error())
 	}
@@ -476,8 +476,8 @@ func GetDefis() []config.Defi {
 		if err != nil && defi.Correcteur != "" {
 			logs.WriteLog("BDD GetDefis", err.Error())
 		}
-		defi.Date_debut, _ = date.Parse(debutString)
-		defi.Date_fin, _ = date.Parse(finString)
+		defi.DateDebut, _ = date.Parse(debutString)
+		defi.DateFin, _ = date.Parse(finString)
 		defis = append(defis, defi)
 		defi = config.Defi{}
 	}
@@ -496,12 +496,12 @@ func GetDefiActuel() config.Defi {
 
 	defiActuel := config.Defi{
 		Num:        0,
-		Date_debut: date.Date{},
-		Date_fin:   date.Date{},
+		DateDebut:  date.Date{},
+		DateFin:    date.Date{},
 		Correcteur: "",
 	}
 	for _, d := range defis {
-		if date.Today().Within(date.NewRange(d.Date_debut, d.Date_fin)) {
+		if date.Today().Within(date.NewRange(d.DateDebut, d.DateFin)) {
 			defiActuel = d
 		}
 	}
@@ -551,7 +551,7 @@ func DeleteLastDefi(num int) {
 Fonction qui va mettre jeu de test à true pour signaler qu'un jeu de test a été upload pour le défi du num donné en argument
 */
 func AddJeuDeTest(num int) {
-	stmt, err := db.Prepare("UPDATE Defis SET jeu_de_test = ? where numero = ?")
+	stmt, err := db.Prepare("UPDATE Defis SET jeuDeTest = ? where numero = ?")
 	if err != nil {
 		logs.WriteLog("BDD.AddJeuDeTest n°"+strconv.Itoa(num), err.Error())
 	}
@@ -579,11 +579,11 @@ func ResetEtatDefi(num int) {
 }
 
 //selectionne quel étudiant sera correcteur en fonction de si il a réussi et si il a déjà été correcteur
-func GenerateCorrecteur(num_defi int) {
+func GenerateCorrecteur(numDefi int) {
 	m.Lock()
 	var t = make([]config.Etudiant, 0)
 	var etu config.Etudiant
-	row, err := db.Query("Select e.* FROM Resultat r, Etudiant e WHERE r.Defi = $1 AND r.Etat = 1 AND e.Correcteur= 0 AND r.Login =e.Login", num_defi)
+	row, err := db.Query("Select e.* FROM Resultat r, Etudiant e WHERE r.Defi = $1 AND r.Etat = 1 AND e.Correcteur= 0 AND r.Login =e.Login", numDefi)
 	if err != nil {
 		logs.WriteLog("BDD GenerateCorrecteur", err.Error())
 	} else {
@@ -606,7 +606,7 @@ func GenerateCorrecteur(num_defi int) {
 	sqlStatement := "UPDATE Etudiant  SET correcteur = 1 WHERE login = $1 "
 	db.Exec(sqlStatement, correcteur.Login)
 	sqlStatement = "UPDATE Defis SET correcteur = $1 WHERE numero = $2"
-	db.Exec(sqlStatement, correcteur.Login, num_defi)
+	db.Exec(sqlStatement, correcteur.Login, numDefi)
 	fmt.Println("correcteur généré : ", correcteur)
 	m.Unlock()
 }
@@ -644,11 +644,11 @@ func GetAllResultat(login string) []config.ResBDD {
 /**
 Récupère tous les résultats de tous les étudiants pour un défi spécifique
 */
-func GetParticipant(num_defi int) []config.ParticipantDefi {
+func GetParticipant(numDefi int) []config.ParticipantDefi {
 	var res config.ParticipantDefi
 	resT := make([]config.ParticipantDefi, 0)
 
-	row, err := db.Query("SELECT * FROM Etudiant e, Resultat r WHERE e.login = r.login AND r.defi = ? ORDER BY nom", num_defi)
+	row, err := db.Query("SELECT * FROM Etudiant e, Resultat r WHERE e.login = r.login AND r.defi = ? ORDER BY nom", numDefi)
 	if err != nil {
 		logs.WriteLog("BDD.GetParticipant", err.Error())
 	}

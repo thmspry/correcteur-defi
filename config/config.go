@@ -60,8 +60,8 @@ type ParticipantDefi struct {
 
 type Defi struct {
 	Num        int
-	Date_debut date.Date
-	Date_fin   date.Date
+	DateDebut  date.Date
+	DateFin    date.Date
 	JeuDeTest  bool
 	Correcteur string
 }

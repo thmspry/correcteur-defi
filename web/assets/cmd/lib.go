@@ -11,7 +11,7 @@ func getDefis(this js.Value, inputs []js.Value) interface{} {
 	defis := BDD.GetDefis()
 
 	for _, defi := range defis {
-		res = append(res, []interface{}{defi.Num, defi.Date_debut.String(), defi.Date_fin.String(), defi.Correcteur})
+		res = append(res, []interface{}{defi.Num, defi.DateDebut.String(), defi.DateFin.String(), defi.Correcteur})
 	}
 
 	return res

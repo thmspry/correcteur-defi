@@ -53,7 +53,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if data.Defi_actuel.Num != -1 {
-		if !date.Today().Within(date.NewRange(data.Defi_actuel.Date_debut, data.Defi_actuel.Date_fin)) {
+		if !date.Today().Within(date.NewRange(data.Defi_actuel.DateDebut, data.Defi_actuel.DateFin)) {
 			data.Defi_actuel.Num = -1
 		}
 	}
