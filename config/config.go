@@ -79,10 +79,6 @@ type Retour struct { // changer le Nom --> dossier/fichier
 	Contenu string
 }
 
-type JeuDeTest struct {
-	CasDeTest []CasTest
-}
-
 type CasTest struct {
 	Nom       string
 	Arguments []Retour

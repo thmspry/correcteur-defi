@@ -27,8 +27,8 @@ Par la suite, les exécution future nécessiteront uniquement la commande `go ru
 Pour arrêter l'exécution de l'application, le raccourci Ctrl + C suffit.
 
 Pour générer un nouvel exécutable, saisissez dans le terminal :
-> set GOOS=linux \
-> set GOARCH=amd6 \
+> set GOOS=linux | export GOOS=linux \
+> set GOARCH=amd64 | export GOARCH=amd64 \
 > go build
 
 ##2. Utilisation
