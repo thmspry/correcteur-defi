@@ -245,6 +245,10 @@ a#test-script {
     border-radius: 5px;
     text-decoration: none;
 }
+
+.button:hover {
+    cursor: pointer;
+}
 .italic {
     font-style: italic;
 }

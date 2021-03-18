@@ -1,5 +1,10 @@
 "use strict";
 
+
+/**
+ * Fonction assyncrone pour récuperer tous les défis en Json
+ * @returns {Promise<*>}
+ */
 async function getDefis() {
     let response = await fetch("/GetDefis");
     let data = await response.json();
@@ -11,11 +16,13 @@ async function getDefis() {
 document.addEventListener('DOMContentLoaded', function() { // Au chargement de la page
 
     getDefis().then(data => {
+        // Initialisation du sélecteur de dates Materialiaze
         var elems = document.querySelectorAll('.datepicker');
-        if (data!=null) {
-            // Instanciation des "date pickers" de Materialize
-            let maxDate = data[data.length - 1].Date_fin;
-
+        if (data!=null) { // S'il y a un/des défi(s)
+            console.log(data)
+            // La date minimale qu'on peut choisir pour un date est la date de fin du dernier défi le plus récent
+            let maxDate = data[data.length - 1].DateFin;
+            console.log("La max date est alors : "+ maxDate)
             let currentDate = new Date();
             let currentYear = currentDate.getFullYear();
             let nextYear = currentYear + 1;
@@ -26,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
                 defaultDate: currentDate
             }
             var instances = M.Datepicker.init(elems, optionsDatePicker);
-        } else {
+        } else { // S'il n'y a pas de défi
             let currentDate = new Date();
             let currentYear = currentDate.getFullYear();
             let nextYear = currentYear + 1;
@@ -64,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
 
 });
 
-// Stock dans le localstorage le dernier onglet selectionner, pour se replacer dessus au rechargement de la page
+// Stock dans le localstorage le dernier onglet sélectionné, pour se replacer dessus au rechargement de la page
 let tabLi = document.querySelectorAll(".tabs a")
 tabLi.forEach(li => li.addEventListener('click', function() {
     let href = li.getAttribute("href").substring(1);
@@ -75,7 +82,7 @@ tabLi.forEach(li => li.addEventListener('click', function() {
 // -------------- Fonctions --------------
 
 /*
-Fonction qui permet de récuper seulement le nom du fichier à partir d'un path en paramètre
+Fonction qui permet de récupérer seulement le nom du fichier à partir d'un path en paramètre
  */
 function getFileName(filePath) {
     let filePathSplit;

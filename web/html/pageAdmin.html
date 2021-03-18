@@ -277,7 +277,7 @@
         <h2>Changer le fichier de configuration d'envoi de mail</h2>
         <form action="/pageAdmin?form=changeConfig" method="post" class="edit-form">
             <p>
-                <input type="text" id="mailConf" name="mailConf" required="required" >
+                <input type="text" id="mailConf" name="mailConf" required="required"  >
                 <label for="mailConf">Mail d'envoi</label>
             </p>
             <p>
@@ -293,7 +293,7 @@
                 <label for="hostConf">Host SMTP</label>
             </p>
             <p>
-                <input type="text" id="portConf" name="portConf" required="required" >
+                <input type="text" id="portConf" name="portConf" required="required" pattern="[0-9]*">
                 <label for="portConf">SMTP Port</label>
             </p>
             <input type="submit" class="button" value="Modifier" name="submit">

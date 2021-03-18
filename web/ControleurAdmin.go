@@ -60,6 +60,9 @@ type Admin struct {
 	Password string
 }
 
+/**
+Main : traite toutes les requettes de la page Admin
+*/
 func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	//Si il y a n'y a pas de token dans les cookies alors l'utilisateur est redirigé vers la page de login
 	if token, err := r.Cookie("token"); err != nil || !BDD.TokenExiste(token.Value) {
@@ -87,7 +90,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(r.URL.String())
 	if r.Method == "GET" {
 
-		//Permet d'afficher les logs d'une date précise
+		// Permet d'afficher les logs d'une date précise
 		if r.URL.Query()["Log"] != nil {
 			log := r.URL.Query()["Log"][0]
 			data.LogDate = log
@@ -102,6 +105,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		//
 		if r.URL.Query()["Defi"] != nil {
 			num, _ := strconv.Atoi(r.URL.Query()["Defi"][0])
 			data.DefiSelect = BDD.GetDefi(num)
@@ -139,6 +143,8 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 				return
 			}
+
+			// Choisi l'étudiant correcteur et lui envoi un mail
 			if r.URL.Query()["Correcteur"] != nil {
 				BDD.GenerateCorrecteur(num)
 				etudiant := BDD.GetCorrecteur(num)
@@ -171,10 +177,11 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		// Lors de la deconnexion
 		if r.URL.Query()["logout"] != nil {
 			fmt.Println("logout " + admin.Login)
-			DeleteToken(admin.Login, time.Second*0)
-			http.Redirect(w, r, "/loginAdmin", http.StatusFound)
+			DeleteToken(admin.Login, time.Second*0)              // Le token est supprimé
+			http.Redirect(w, r, "/loginAdmin", http.StatusFound) // On retourne à la page de connexion (celle de l'admin)
 			return
 		}
 
@@ -187,6 +194,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "POST" {
 
+		// Envoi de mail
 		if r.URL.Query()["form"][0] == "sendMail" {
 
 			etudiants := BDD.GetEtudiantsMail()
@@ -391,6 +399,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Ajoute un nouveau couple login:passwd dans la table Admin
 		if r.URL.Query()["form"][0] == "changeId" {
 			login := r.FormValue("loginAd")
 			password := r.FormValue("passwordAd")
@@ -399,6 +408,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Changer la configuation de l'envoi de mail (mailConf.json)
 		if r.URL.Query()["form"][0] == "changeConfig" {
 
 			/* Données du form */
@@ -409,14 +419,15 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			port := r.FormValue("portConf")
 
 			//Fichier de config
-			err := os.Remove(config.Path_root + "mailConf.json")
+			err := os.Remove(config.Path_root + "mailConf.json") // On le suppr pour être sûr
 			if err != nil {
 				fmt.Println("Pas de fichier mailConf.json")
 			}
-			fConf, err := os.OpenFile(config.Path_root+"mailConf.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModeAppend)
+			fConf, err := os.OpenFile(config.Path_root+"mailConf.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModeAppend) // On l'ouvre
 			if err != nil {
 				data.Log = []string{"Erreur pour récupérer le fichier de config de mail"}
 			} else {
+				// On écrit dedans sous forme d'un Json ce qui est utile
 				newConfString := "{\n  \"fromMail\" : \" " + mail + "\",\n  \"username\" : \"" + username + "\",\n  \"password\" : \"" + password + "\",\n  \"smtpHost\" : \"" + host + "\",\n  \"smtpPort\" : \"" + port + "\"\n}"
 				_, err := fConf.Write([]byte(newConfString))
 				if err != nil {
