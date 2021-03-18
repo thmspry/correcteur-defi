@@ -82,8 +82,8 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if r.URL.Query()["test"] != nil {
-			//data.Msg_res, data.ResTest = testeur.Test(etu.Login)
-			data.Msg_res, data.ResTest = testeur.TestArtificiel("E197051L")
+			data.Msg_res, data.ResTest = testeur.Test(etu.Login)
+			//data.Msg_res, data.ResTest = testeur.TestArtificiel("E197051L")
 		}
 
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
