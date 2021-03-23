@@ -97,16 +97,16 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "POST" {
 		if r.URL.Query()["upload"] != nil {
 
-			r.ParseMultipartForm(10 << 20)
+			r.ParseMultipartForm(10 << 20) //sert à télécharger des fichiers et le stock sur le serveur
 
-			file, _, _ := r.FormFile("script_etu")
+			file, _, _ := r.FormFile("script_etu") // sert à obtenir le descripteur de fichier
 
 			script, _ := os.Create(config.Path_scripts + "script_" + etu.Login + "_" + strconv.Itoa(num_defi_actuel)) // remplacer handler.Filename par le nom et on le place où on veut
 			BDD.SaveResultat(etu.Login, num_defi_actuel, -1, nil, false)
 
-			_, err = io.Copy(script, file)
+			_, err = io.Copy(script, file) //on l'enregistre dans notre système de fichier
 
-			os.Chmod(config.Path_scripts+"script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel), 770)
+			os.Chmod(config.Path_scripts+"script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel), 770) //change le chmode du fichier
 			file.Close()
 			script.Close()
 			logs.WriteLog(etu.Login, "upload de script du défis "+strconv.Itoa(num_defi_actuel))
