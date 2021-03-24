@@ -327,7 +327,7 @@ admin == false : fonction lancé par un étudiant lors d'une nouvelle tentative 
 func SaveResultat(login string, numDefi int, etat int, resultat []config.Resultat, admin bool) {
 	m.Lock()
 
-	if resultat != nil {
+	if resultat != nil { //ajout du résultat obtenu à l'étudiant
 		resJson, _ := json.Marshal(resultat)
 		stmt, err := db.Prepare("UPDATE Etudiant SET resDefiActuel = ? WHERE login = ?")
 		if err != nil {
@@ -344,6 +344,7 @@ func SaveResultat(login string, numDefi int, etat int, resultat []config.Resulta
 	row := db.QueryRow("SELECT * FROM Resultat WHERE login = $1 AND defi = $2", login, numDefi)
 
 	if err := row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative); err != nil {
+		//si err diff nil, cela veut dire qu'il n'a pas réussi à scan car il n'y a pas de ligne dans row
 		stmt, _ := db.Prepare("INSERT INTO Resultat values(?,?,?,?)")
 		_, err = stmt.Exec(login, numDefi, etat, 1)
 		err = stmt.Close()
@@ -356,13 +357,13 @@ func SaveResultat(login string, numDefi int, etat int, resultat []config.Resulta
 			logs.WriteLog("BDD SaveResultats", err.Error())
 		} else {
 			if admin {
-				_, err = stmt.Exec(res.Etat, res.Tentative, res.Login, res.Defi)
+				_, err = stmt.Exec(etat, res.Tentative, res.Login, res.Defi)
 				if err != nil {
 					logs.WriteLog("BDD SaveResultats", err.Error())
 				}
 
 			} else {
-				_, err = stmt.Exec(res.Etat, res.Tentative+1, res.Login, res.Defi)
+				_, err = stmt.Exec(etat, res.Tentative+1, res.Login, res.Defi)
 				if err != nil {
 					logs.WriteLog("BDD SaveResultats", err.Error())
 				}

@@ -41,11 +41,11 @@ func Test(login string) (string, []config.Resultat) {
 		return "Erreur création du dossier de l'utilisateur", nil
 	}
 	//Associe le chemin de CasTest au dossier créé
-	Path_dir_test := "/home/" + login + "/"
-	if err := exec.Command("chmod", "770", Path_dir_test).Run(); err != nil {
-		logs.WriteLog("testeur", "Erreur chmod du dossier "+Path_dir_test)
+	PathDirTest := "/home/" + login + "/"
+	if err := exec.Command("chmod", "770", PathDirTest).Run(); err != nil {
+		logs.WriteLog("testeur", "Erreur chmod du dossier "+PathDirTest)
 	}
-	manipStockage.Clear(Path_dir_test, nil)
+	manipStockage.Clear(PathDirTest, nil)
 
 	//Récupérer le défi actuel
 	numDefi := BDD.GetDefiActuel().Num
@@ -56,34 +56,34 @@ func Test(login string) (string, []config.Resultat) {
 	// Début du testUnique
 
 	// Donne les droits d'accès et de modifications à l'étudiant
-	exec.Command("sudo", "chown", login, config.Path_scripts+scriptEtu).Run()
-	exec.Command("sudo", "chown", login, Path_dir_test).Run()
+	exec.Command("sudo", "chown", login, config.PathScripts+scriptEtu).Run()
+	exec.Command("sudo", "chown", login, PathDirTest).Run()
 
-	os.Rename(config.Path_defis+correction, Path_dir_test+correction)
-	os.Rename(config.Path_scripts+scriptEtu, Path_dir_test+scriptEtu)
-	os.Rename(config.Path_jeu_de_tests+jeuDeTest, Path_dir_test+jeuDeTest)
+	os.Rename(config.PathDefis+correction, PathDirTest+correction)
+	os.Rename(config.PathScripts+scriptEtu, PathDirTest+scriptEtu)
+	os.Rename(config.PathJeuDeTests+jeuDeTest, PathDirTest+jeuDeTest)
 
-	os.Chmod(Path_dir_test+scriptEtu, 0700) // script exécutable uniquement par l'utilisateur qui le possède
-	os.Chmod(Path_dir_test+correction, 0700)
-	exec.Command("chmod", "-R", "555", Path_dir_test+jeuDeTest).Run() //5 = r-x
+	os.Chmod(PathDirTest+scriptEtu, 0700) // script exécutable uniquement par l'utilisateur qui le possède
+	os.Chmod(PathDirTest+correction, 0700)
+	exec.Command("chmod", "-R", "555", PathDirTest+jeuDeTest).Run() //5 = r-x
 	// r pour que les scripts puissent lire le contenu des cas de test
 	// x pour qu'il puisse accéder/entrer dans le dossier de cas de test
 
-	tabTest, err := getConfigTest(Path_dir_test+jeuDeTest, jeuDeTest)
+	tabTest, err := getConfigTest(PathDirTest+jeuDeTest, jeuDeTest)
 	if err != nil {
 		etatTestGlobal = 0
-		logs.WriteLog("testeur", "pas de fichier config dans le dossier "+Path_dir_test+jeuDeTest)
+		logs.WriteLog("testeur", "pas de fichier config dans le dossier "+PathDirTest+jeuDeTest)
 		messageDeRetour = "Pas de fichier de config"
 		resTest = nil
 	}
 
 	for i := 0; i < len(tabTest); i++ {
 
-		res := testeurUnique(correction, scriptEtu, login, tabTest[i], Path_dir_test)
+		res := testeurUnique(correction, scriptEtu, login, tabTest[i], PathDirTest)
 		res.CasTest = tabTest[i]
 		resTest = append(resTest, res)
 
-		manipStockage.Clear(Path_dir_test, []string{jeuDeTest, correction, scriptEtu})
+		manipStockage.Clear(PathDirTest, []string{jeuDeTest, correction, scriptEtu})
 
 		if res.Etat == 0 {
 			BDD.SaveResultat(login, numDefi, 0, resTest, false)
@@ -98,9 +98,9 @@ func Test(login string) (string, []config.Resultat) {
 			i = len(tabTest)
 		}
 	}
-	os.Rename(Path_dir_test+correction, config.Path_defis+correction)
-	os.Rename(Path_dir_test+scriptEtu, config.Path_scripts+scriptEtu)
-	os.Rename(Path_dir_test+jeuDeTest, config.Path_jeu_de_tests+jeuDeTest)
+	os.Rename(PathDirTest+correction, config.PathDefis+correction)
+	os.Rename(PathDirTest+scriptEtu, config.PathScripts+scriptEtu)
+	os.Rename(PathDirTest+jeuDeTest, config.PathJeuDeTests+jeuDeTest)
 
 	//supprime l'user et son dossier
 	exec.Command("sudo", "userdel", login).Run()
@@ -109,6 +109,7 @@ func Test(login string) (string, []config.Resultat) {
 	if etatTestGlobal == 1 {
 		messageDeRetour = "Vous avez passé tous les tests avec succès"
 	}
+	logs.WriteLog(login, "testeur défi"+strconv.Itoa(numDefi)+", état : "+strconv.Itoa(etatTestGlobal))
 	BDD.SaveResultat(login, numDefi, etatTestGlobal, resTest, false)
 	return messageDeRetour, resTest
 }

@@ -79,7 +79,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		Etudiants:  BDD.GetEtudiants(),
 		DefiActuel: BDD.GetDefiActuel(),
 		ListeDefis: BDD.GetDefis(),
-		Logs:       manipStockage.GetFiles(config.Path_log),
+		Logs:       manipStockage.GetFiles(config.PathLog),
 	}
 	//if date actuelle > defi actel.datefin alors defiactuel.num = -1
 	if data.DefiActuel.Num != -1 {
@@ -94,7 +94,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query()["Log"] != nil {
 			log := r.URL.Query()["Log"][0]
 			data.LogDate = log
-			f, err := os.Open(config.Path_log + log)
+			f, err := os.Open(config.PathLog + log)
 			if err != nil {
 				data.Log = []string{"erreur pour récupérer le fichier de log"}
 			} else {
@@ -114,7 +114,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			data.Participants = BDD.GetParticipant(num)
 			if etu := r.URL.Query()["Etudiant"]; etu != nil {
 				fmt.Println(etu)
-				f, err := os.Open(config.Path_scripts + "script_" + etu[0] + "_" + strconv.Itoa(data.DefiSelect.Num))
+				f, err := os.Open(config.PathScripts + "script_" + etu[0] + "_" + strconv.Itoa(data.DefiSelect.Num))
 				if err != nil {
 					data.File[0] = "erreur pour récupérer le script de l'étudiant"
 				} else {
@@ -245,8 +245,8 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 		if r.URL.Query()["form"][0] == "DeleteDefi" {
 			lastDefi := data.ListeDefis[0]
-			os.Remove(config.Path_defis + "correction_" + strconv.Itoa(lastDefi.Num))
-			err := os.RemoveAll(config.Path_jeu_de_tests + "test_defi_" + strconv.Itoa(lastDefi.Num))
+			os.Remove(config.PathDefis + "correction_" + strconv.Itoa(lastDefi.Num))
+			err := os.RemoveAll(config.PathJeuDeTests + "test_defi_" + strconv.Itoa(lastDefi.Num))
 			if err != nil {
 				fmt.Println(err.Error())
 			}
@@ -280,7 +280,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			}
 			if errorFile == nil {
 				logs.WriteLog("Admin", "modification du défi actuel")
-				path = config.Path_defis + "correction_" + strconv.Itoa(num_defi_actuel)
+				path = config.PathDefis + "correction_" + strconv.Itoa(num_defi_actuel)
 				script, _ := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
 				defer script.Close()
 				io.Copy(script, file)
@@ -296,9 +296,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			logs.WriteLog("Admin", "ajout d'un nouveau défi du "+date_debut.String()+" au "+date_fin.String())
 			// ajouter a la table défis
 			BDD.AddDefi(date_debut, date_fin)
-			os.Mkdir(config.Path_jeu_de_tests+"test_defi_"+strconv.Itoa(num_defi_actuel+1), os.ModePerm)
+			os.Mkdir(config.PathJeuDeTests+"test_defi_"+strconv.Itoa(num_defi_actuel+1), os.ModePerm)
 			num_defi_actuel = num_defi_actuel + 1
-			path = config.Path_defis + "correction_" + strconv.Itoa(num_defi_actuel)
+			path = config.PathDefis + "correction_" + strconv.Itoa(num_defi_actuel)
 
 			script, _ := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
 			defer script.Close()
@@ -360,11 +360,11 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			//if dossier de test existe déjà, on le supprime
-			pathTest := config.Path_jeu_de_tests + "test_defi_" + num
-			if manipStockage.Contains(config.Path_jeu_de_tests, "test_defi_"+num) {
+			pathTest := config.PathJeuDeTests + "test_defi_" + num
+			if manipStockage.Contains(config.PathJeuDeTests, "test_defi_"+num) {
 				os.RemoveAll(pathTest)
 			}
-			fichier, _ := os.Create(config.Path_jeu_de_tests + fileHeader.Filename) // remplacer handler.Filename par le nom et on le place où on veut
+			fichier, _ := os.Create(config.PathJeuDeTests + fileHeader.Filename) // remplacer handler.Filename par le nom et on le place où on veut
 			defer fichier.Close()
 			io.Copy(fichier, file)
 			os.Chmod(fichier.Name(), 777)
@@ -373,25 +373,25 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				cmd := exec.Command("unzip", "-d",
 					"test_defi_"+strconv.Itoa(num_defi_actuel),
 					fileHeader.Filename)
-				cmd.Dir = config.Path_jeu_de_tests
+				cmd.Dir = config.PathJeuDeTests
 				cmd.Run()
 				dosTest := manipStockage.GetFiles(pathTest)
 				if len(dosTest) == 1 {
-					os.Rename(pathTest+"/"+dosTest[0], config.Path_jeu_de_tests+"temp")
+					os.Rename(pathTest+"/"+dosTest[0], config.PathJeuDeTests+"temp")
 					os.RemoveAll(pathTest)
-					os.Rename(config.Path_jeu_de_tests+"temp", pathTest)
+					os.Rename(config.PathJeuDeTests+"temp", pathTest)
 				}
 			} else if typeArchive[0] == "application/x-tar" || typeArchive[0] == "application/tar" {
 				cmd := exec.Command("tar", "tf", fileHeader.Filename)
-				cmd.Dir = config.Path_jeu_de_tests
+				cmd.Dir = config.PathJeuDeTests
 				output, _ := cmd.CombinedOutput()
 				nomArchive := strings.Split(string(output), "\n")[0]
 				cmd = exec.Command("tar", "xvf", fileHeader.Filename)
-				cmd.Dir = config.Path_jeu_de_tests
+				cmd.Dir = config.PathJeuDeTests
 				if err := cmd.Run(); err != nil {
 					fmt.Println(err.Error())
 				}
-				os.Rename(config.Path_jeu_de_tests+nomArchive, pathTest)
+				os.Rename(config.PathJeuDeTests+nomArchive, pathTest)
 			}
 
 			os.Remove(fichier.Name())
@@ -419,11 +419,11 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			port := r.FormValue("portConf")
 
 			//Fichier de config
-			err := os.Remove(config.Path_root + "mailConf.json") // On le suppr pour être sûr
+			err := os.Remove(config.PathRoot + "mailConf.json") // On le suppr pour être sûr
 			if err != nil {
 				fmt.Println("Pas de fichier mailConf.json")
 			}
-			fConf, err := os.OpenFile(config.Path_root+"mailConf.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModeAppend) // On l'ouvre
+			fConf, err := os.OpenFile(config.PathRoot+"mailConf.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModeAppend) // On l'ouvre
 			if err != nil {
 				data.Log = []string{"Erreur pour récupérer le fichier de config de mail"}
 			} else {

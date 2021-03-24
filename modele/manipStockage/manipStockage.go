@@ -126,7 +126,7 @@ func GetTriche(numDefi int) [][]string {
 
 	for _, part := range participants {
 		s.Login = part.Etudiant.Login
-		f, _ := ioutil.ReadFile(config.Path_scripts + "script_" + s.Login + "_" + strconv.Itoa(numDefi))
+		f, _ := ioutil.ReadFile(config.PathScripts + "script_" + s.Login + "_" + strconv.Itoa(numDefi))
 		s.Contenu = string(f)
 		TabParticipants = append(TabParticipants, s)
 	}
@@ -151,7 +151,7 @@ func GetTriche(numDefi int) [][]string {
 		for _, tricheur := range groupe {
 			g = append(g, tricheur.Login)
 		}
-		if len(g) > 2 {
+		if len(g) >= 2 {
 			res = append(res, g)
 		}
 	}

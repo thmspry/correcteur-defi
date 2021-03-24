@@ -59,13 +59,13 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if data.Defi_actuel.Num != -1 {
-		data.Defi_sent = manipStockage.Contains(config.Path_scripts, "script_"+etu.Login+"_"+strconv.Itoa(data.Defi_actuel.Num))
+		data.Defi_sent = manipStockage.Contains(config.PathScripts, "script_"+etu.Login+"_"+strconv.Itoa(data.Defi_actuel.Num))
 		if data.Defi_sent {
 			data.Resultat_defi = BDD.GetResult(etu.Login, data.Defi_actuel.Num)
 		}
 	}
 
-	f, err := os.Open(config.Path_scripts + "script_" + etu.Login + "_" + strconv.Itoa(data.Defi_actuel.Num))
+	f, err := os.Open(config.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(data.Defi_actuel.Num))
 	if err == nil {
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
@@ -101,12 +101,12 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 
 			file, _, _ := r.FormFile("script_etu") // sert à obtenir le descripteur de fichier
 
-			script, _ := os.Create(config.Path_scripts + "script_" + etu.Login + "_" + strconv.Itoa(num_defi_actuel)) // remplacer handler.Filename par le nom et on le place où on veut
+			script, _ := os.Create(config.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(num_defi_actuel)) // remplacer handler.Filename par le nom et on le place où on veut
 			BDD.SaveResultat(etu.Login, num_defi_actuel, -1, nil, false)
 
 			_, err = io.Copy(script, file) //on l'enregistre dans notre système de fichier
 
-			os.Chmod(config.Path_scripts+"script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel), 770) //change le chmode du fichier
+			os.Chmod(config.PathScripts+"script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel), 770) //change le chmode du fichier
 			file.Close()
 			script.Close()
 			logs.WriteLog(etu.Login, "upload de script du défis "+strconv.Itoa(num_defi_actuel))

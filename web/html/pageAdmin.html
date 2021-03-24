@@ -155,8 +155,7 @@
                 Défi n°{{.Num}} du {{.DateDebut}} au {{.DateFin}}
                 <a href="pageAdmin?Defi={{.Num}}">Afficher les participants</a></p>
             {{end}}
-            {{if eq .DefiSelect.Num 0}}
-            {{else}}
+            {{if not eq .DefiSelect.Num 0}}
             <h4>Liste des participants au défi {{$.DefiSelect.Num}}</h4>
             {{if not .Participants}}
             <p>Aucun participants</p>
@@ -184,6 +183,8 @@
                         <span class="etat-text win">Réussi</span>
                         {{else if eq .Resultat.Etat 0}}
                         <span class="etat-text lose">Échoué</span>
+                        {{else if eq .Resultat.Etat -1}}
+                        <span class="etat-text untested">Non testé</span>
                         {{end}}
                     </td>
                     <td>{{.Resultat.Tentative}}</td>
