@@ -75,6 +75,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	//Check la méthode utilisé par le formulaire
 	if r.Method == "GET" {
 		//Charge la template html
+		fmt.Println("ghfueggfekufg")
 
 		if r.URL.Query()["logout"] != nil {
 			DeleteToken(etu.Login, time.Second*0)
@@ -105,7 +106,10 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			BDD.SaveResultat(etu.Login, num_defi_actuel, -1, nil, false)
 
 			_, err = io.Copy(script, file) //on l'enregistre dans notre système de fichier
-
+			fmt.Println("teststetesttestestestesteste")
+			//b, _ := ioutil.ReadFile(script.Name())
+			//fmt.Printf(string(b))
+			//fmt.Printf(ioutil.ReadFile(script.Name()))
 			os.Chmod(config.PathScripts+"script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel), 770) //change le chmode du fichier
 			file.Close()
 			script.Close()
