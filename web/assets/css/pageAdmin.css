@@ -158,6 +158,8 @@ h3 {
     flex-flow: column;
     width: -moz-fit-content;
     width: fit-content;
+    margin-right: 10px;
+    margin-left: 10px;
 }
 
 .explication {

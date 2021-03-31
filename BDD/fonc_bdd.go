@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/aodin/date"
 	_ "github.com/aodin/date"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
@@ -426,13 +425,18 @@ func GetResult(login string, defi int) config.ResBDD {
 /**
 Ajoute un défi à la table Defis
 */
-func AddDefi(dateD date.Date, dateF date.Date) {
+func AddDefi(dateD time.Time, dateF time.Time) {
 	m.Lock()
+	tDeb, err := dateD.MarshalText()
+	tFin, err := dateF.MarshalText()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	stmt, err := db.Prepare("INSERT INTO Defis(dateDebut,dateFin, jeuDeTest) values(?,?,?)")
 	if err != nil {
 		logs.WriteLog("BDD AddeDefi", err.Error())
 	} else {
-		_, err = stmt.Exec(dateD.String(), dateF.String(), false)
+		_, err = stmt.Exec(string(tDeb), string(tFin), false)
 		if err != nil {
 			logs.WriteLog("BDD AddDefi", err.Error())
 		}
@@ -444,12 +448,17 @@ func AddDefi(dateD date.Date, dateF date.Date) {
 /**
 Modifie le défi de numéro num
 */
-func ModifyDefi(num int, dateD date.Date, dateF date.Date) {
+func ModifyDefi(num int, dateD time.Time, dateF time.Time) {
+	tDeb, err := dateD.MarshalText()
+	tFin, err := dateF.MarshalText()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	stmt, err := db.Prepare("UPDATE Defis SET dateDebut = ?, dateFin = ? where numero = ?")
 	if err != nil {
 		logs.WriteLog("BDD modify defi", err.Error())
 	}
-	if _, err := stmt.Exec(dateD.String(), dateF.String(), num); err != nil {
+	if _, err := stmt.Exec(string(tDeb), string(tFin), num); err != nil {
 		logs.WriteLog("BDD.ModifyDefi", err.Error())
 	}
 	err = stmt.Close()
@@ -466,6 +475,7 @@ func GetDefis() []config.Defi {
 		debutString string
 		finString   string
 		defi        config.Defi
+		time        time.Time = time.Now()
 	)
 	defis := make([]config.Defi, 0)
 	row, err := db.Query("SELECT * FROM Defis")
@@ -477,8 +487,14 @@ func GetDefis() []config.Defi {
 		if err != nil && defi.Correcteur != "" {
 			logs.WriteLog("BDD GetDefis", err.Error())
 		}
-		defi.DateDebut, _ = date.Parse(debutString)
-		defi.DateFin, _ = date.Parse(finString)
+		if err = time.UnmarshalText([]byte(debutString)); err != nil {
+			fmt.Println(err.Error())
+		}
+		defi.DateDebut = time
+		if err = time.UnmarshalText([]byte(finString)); err != nil {
+			fmt.Println(err.Error())
+		}
+		defi.DateFin = time
 		defis = append(defis, defi)
 		defi = config.Defi{}
 	}
@@ -497,12 +513,14 @@ func GetDefiActuel() config.Defi {
 
 	defiActuel := config.Defi{
 		Num:        0,
-		DateDebut:  date.Date{},
-		DateFin:    date.Date{},
+		DateDebut:  time.Time{},
+		DateFin:    time.Time{},
+		JeuDeTest:  false,
 		Correcteur: "",
 	}
+	today := time.Now()
 	for _, d := range defis {
-		if date.Today().Within(date.NewRange(d.DateDebut, d.DateFin)) {
+		if today.Sub(d.DateDebut) > 0 && today.Sub(d.DateFin) < 0 {
 			defiActuel = d
 		}
 	}

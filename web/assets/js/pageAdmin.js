@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
     getDefis().then(data => {
         // Initialisation du sélecteur de dates Materialiaze
         var elems = document.querySelectorAll('.datepicker');
+        var optionsDatePicker = {}
+
         if (data!=null) { // S'il y a un/des défi(s)
             console.log(data)
             // La date minimale qu'on peut choisir pour un date est la date de fin du dernier défi le plus récent
@@ -26,26 +28,29 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
             let currentDate = new Date();
             let currentYear = currentDate.getFullYear();
             let nextYear = currentYear + 1;
-            let optionsDatePicker = {
+            optionsDatePicker = {
                 format: "yyyy-mm-dd",
                 minDate: new Date(maxDate),
                 maxDate: new Date(nextYear + "-06-30"),
                 defaultDate: currentDate
             }
-            var instances = M.Datepicker.init(elems, optionsDatePicker);
         } else { // S'il n'y a pas de défi
             let currentDate = new Date();
             let currentYear = currentDate.getFullYear();
             let nextYear = currentYear + 1;
-            let optionsDatePicker = {
+            optionsDatePicker = {
                 format: "yyyy-mm-dd",
                 minDate: new Date(currentYear + "-02-15"),
                 maxDate: new Date(nextYear + "-06-30"),
                 defaultDate: currentDate
             }
-            var instances = M.Datepicker.init(elems, optionsDatePicker);
 
         }
+        var instancesDate = M.Datepicker.init(elems, optionsDatePicker);
+        var timers = document.querySelectorAll('.timepicker')
+        var instancesTime = M.Timepicker.init(timers, {
+            twelveHour:false
+        });
 
     })
 
@@ -112,11 +117,16 @@ function ChangeDateInput(event, divID) {
     fetch("/GetDefis")
         .then(response => response.json())
         .then(data => {
-            let defiActuel = data.find(el => el.Num == event.target.value);
-            console.log(defiActuel)
-            let datepicker = document.querySelectorAll('div#'+divID+' input.datepicker')
-            datepicker[0].value = defiActuel.Date_debut;
-            datepicker[1].value = defiActuel.Date_fin;
+            let defiSelect = data.find(el => el.Num == event.target.value);
+            console.log(defiSelect)
+            let dateDParse = defiSelect.DateDebut.split('T')
+            let dateFParse = defiSelect.DateFin.split('T')
+            let datepicker = document.querySelectorAll(`div#${divID} input.datepicker`)
+            datepicker[0].value = dateDParse[0];
+            datepicker[1].value = dateFParse[0];
+            let timepicker = document.querySelectorAll(`div#${divID} input.timepicker`)
+            timepicker[0].value = dateDParse[1].slice(0,5)
+            timepicker[1].value = dateFParse[1].slice(0,5)
         })
         .catch(err => console.log(err))
 }
@@ -143,6 +153,8 @@ async function init() {
         return data
     });
     // waits until the request completes...
+    let dateDParse = defiActuel.DateDebut.split('T')
+    let dateFParse = defiActuel.DateFin.split('T')
     let para = document.querySelector('#TestDeposer');
     if (defiActuel.JeuDeTest) {
         para.innerHTML = "Vous avez déjà déposé un jeu de test pour ce défi."

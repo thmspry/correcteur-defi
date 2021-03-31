@@ -20,8 +20,8 @@
         <h2>Il n'y a pas de défi en cours</h2>
         {{else}}
         <h2>Défi actuel : défi n°{{.DefiActuel.Num}}</h2>
-        <h2>Il a commencé le {{.DefiActuel.DateDebut}}
-            et se termine le {{.DefiActuel.DateFin}}</h2>
+        <h2>Il a commencé le {{.DefiActuel.DateDebutString}}
+            et se termine le {{.DefiActuel.DateFinString}}</h2>
         {{end}}
     </div>
     <div class="separator"></div>
@@ -49,14 +49,24 @@
                         <input type="file" name="upload" id="input-file-defi" required="required">
                     </div>
                 </div>
-                <div class="dates">
+                <div class="dates date">
                     <div class="date-selector">
                         <p>Date de début :</p>
-                        <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.DateDebut}}" {{end}}>
+                        <input required type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.DateDebutString}}" {{end}}>
                     </div>
                     <div class="date-selector">
                         <p>Date de fin :</p>
-                        <input type="text" class="datepicker" name="date_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.DateFin}}" {{end}}>
+                        <input required type="text" class="datepicker" name="date_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.DateFinString}}" {{end}}>
+                    </div>
+                </div>
+                <div class="dates horaire">
+                    <div class="date-selector">
+                        <p>Heure de début : </p>
+                        <input required type="text" class="timepicker" name="time_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.TimeDebutString}}" {{end}}>
+                    </div>
+                    <div class="date-selector">
+                        <p>Heure de fin : </p>
+                        <input required type="text" class="timepicker" name="time_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.TimeFinString}}" {{end}}>
                     </div>
                 </div>
                 <div>
@@ -84,16 +94,30 @@
                     <option value="{{.Num}}">{{.Num}}</option>
                     {{end}}
                 </select>
-                <div class="dates">
+
+
+                <div class="dates date">
                     <div class="date-selector">
                         <p>Date de début :</p>
-                        <input type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.DateDebut}}" {{end}}>
+                        <input required type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.DateDebutString}}" {{end}}>
                     </div>
                     <div class="date-selector">
-                        <p>Date de fin : </p>
-                        <input type="text" class="datepicker"  name="date_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.DateFin}}" {{end}}>
+                        <p>Date de fin :</p>
+                        <input required type="text" class="datepicker" name="date_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.DateFinString}}" {{end}}>
                     </div>
                 </div>
+                <div class="dates horaire">
+                    <div class="date-selector">
+                        <p>Heure de début : </p>
+                        <input required type="text" class="timepicker" name="time_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.TimeDebutString}}" {{end}}>
+                    </div>
+                    <div class="date-selector">
+                        <p>Heure de fin : </p>
+                        <input required type="text" class="timepicker" name="time_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.TimeFinString}}" {{end}}>
+                    </div>
+                </div>
+
+
                 <br>
                 <div class="file-depot">
                 <p>Dépot de la correction :</p>
@@ -152,10 +176,11 @@
             <h3>Liste des défis enregistrés : </h3>
             {{range .ListeDefis}}
             <p class="{{if eq $.DefiActuel.Num .Num}}red-actuel{{end}}">
-                Défi n°{{.Num}} du {{.DateDebut}} au {{.DateFin}}
+                Défi n°{{.Num}} du {{.DateDebutString}} au {{.DateFinString}}
                 <a href="pageAdmin?Defi={{.Num}}">Afficher les participants</a></p>
             {{end}}
-            {{if not eq .DefiSelect.Num 0}}
+            {{if eq .DefiSelect.Num 0}}
+            {{else}}
             <h4>Liste des participants au défi {{$.DefiSelect.Num}}</h4>
             {{if not .Participants}}
             <p>Aucun participants</p>

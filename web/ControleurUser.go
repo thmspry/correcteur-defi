@@ -3,7 +3,6 @@ package web
 import (
 	"bufio"
 	"fmt"
-	"github.com/aodin/date"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
@@ -52,11 +51,11 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		ResTest:     BDD.GetResultatActuel(etu.Login),
 	}
 
-	if data.Defi_actuel.Num != -1 {
+	/*if data.Defi_actuel.Num != -1 {
 		if !date.Today().Within(date.NewRange(data.Defi_actuel.DateDebut, data.Defi_actuel.DateFin)) {
 			data.Defi_actuel.Num = -1
-		}
-	}
+		} //TODO
+	}*/
 
 	if data.Defi_actuel.Num != -1 {
 		data.Defi_sent = manipStockage.Contains(config.PathScripts, "script_"+etu.Login+"_"+strconv.Itoa(data.Defi_actuel.Num))

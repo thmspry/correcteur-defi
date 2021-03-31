@@ -82,11 +82,11 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		Logs:       manipStockage.GetFiles(config.PathLog),
 	}
 	//if date actuelle > defi actel.datefin alors defiactuel.num = -1
-	if data.DefiActuel.Num != -1 {
+	/*if data.DefiActuel.Num != -1 {
 		if !date.Today().Within(date.NewRange(data.DefiActuel.DateDebut, data.DefiActuel.DateFin)) {
 			data.DefiActuel.Num = -1
-		}
-	}
+		}//TODO
+	}*/
 	fmt.Println(r.URL.String())
 	if r.Method == "GET" {
 
@@ -276,7 +276,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				logs.WriteLog("Admin", "modification de la date de rendu")
 				debut, _ := date.Parse(r.FormValue("date_debut")) // On récupère les date modifiée
 				fin, _ := date.Parse(r.FormValue("date_fin"))
-				BDD.ModifyDefi(numDefi, debut, fin)
+				//BDD.ModifyDefi(numDefi, debut, fin)
+				fmt.Println(numDefi, debut, fin)
+				//TODO
 			}
 			if errorFile == nil {
 				logs.WriteLog("Admin", "modification du défi actuel")
@@ -290,12 +292,15 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if r.URL.Query()["form"][0] == "defi" { // ajout d'un défi
-			date_debut, _ := date.Parse(r.FormValue("date_debut"))
-			date_fin, _ := date.Parse(r.FormValue("date_fin"))
+			layout := "2006-01-02T15:04:05.000Z"
+			str := fmt.Sprintf("%sT%sZ", r.FormValue("date_debut"), r.FormValue("time_debut")+":00.000")
+			t_debut, _ := time.Parse(layout, str)
+			str = fmt.Sprintf("%sT%sZ", r.FormValue("date_fin"), r.FormValue("time_fin")+":00.000")
+			t_fin, _ := time.Parse(layout, str)
+			logs.WriteLog("Admin", "ajout d'un nouveau défi du "+t_debut.String()+" au "+t_fin.String())
 
-			logs.WriteLog("Admin", "ajout d'un nouveau défi du "+date_debut.String()+" au "+date_fin.String())
 			// ajouter a la table défis
-			BDD.AddDefi(date_debut, date_fin)
+			BDD.AddDefi(t_debut, t_fin)
 			os.Mkdir(config.PathJeuDeTests+"test_defi_"+strconv.Itoa(num_defi_actuel+1), os.ModePerm)
 			num_defi_actuel = num_defi_actuel + 1
 			path = config.PathDefis + "correction_" + strconv.Itoa(num_defi_actuel)

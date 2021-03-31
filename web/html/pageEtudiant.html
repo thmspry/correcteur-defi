@@ -37,10 +37,10 @@
                         {{else}}
                             <p>Votre script est incorrect.</p>
                         {{end}}
-                    <p>Vous pouvez le modifier jusqu'au {{.Defi_actuel.DateFin}}.</p>
+                    <p>Vous pouvez le modifier jusqu'au {{.Defi_actuel.DateFinString}}.</p>
                     {{else}}
                         <p>Vous n'avez pas encore envoyé de script pour ce défi. <br>
-                        Vous avez jusqu'au {{.Defi_actuel.DateFin}} pour le rendre.</p>
+                        Vous avez jusqu'au {{.Defi_actuel.DateFinString}} pour le rendre.</p>
                     {{end}}
                 <p>IMPORTANT : le script doit contenir "!/bin/bash"</p>
                 </div>

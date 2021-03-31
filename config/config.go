@@ -1,7 +1,8 @@
 package config
 
 import (
-	"github.com/aodin/date"
+	"strings"
+	"time"
 )
 
 var (
@@ -60,10 +61,25 @@ type ParticipantDefi struct {
 
 type Defi struct {
 	Num        int
-	DateDebut  date.Date
-	DateFin    date.Date
+	DateDebut  time.Time
+	DateFin    time.Time
 	JeuDeTest  bool
 	Correcteur string
+}
+
+func (d Defi) DateDebutString() string {
+	return strings.Split(d.DateDebut.String(), " ")[0]
+}
+func (d Defi) DateFinString() string {
+	return strings.Split(d.DateFin.String(), " ")[0]
+}
+func (d Defi) TimeDebutString() string {
+	e := strings.Split(strings.Split(d.DateDebut.String(), " ")[1], ":")
+	return strings.Join([]string{e[0], e[1]}, ":")
+}
+func (d Defi) TimeFinString() string {
+	e := strings.Split(strings.Split(d.DateDebut.String(), " ")[1], ":")
+	return strings.Join([]string{e[0], e[1]}, ":")
 }
 
 // structure
