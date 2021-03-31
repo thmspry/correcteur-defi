@@ -179,8 +179,7 @@
                 Défi n°{{.Num}} du {{.DateDebutString}} au {{.DateFinString}}
                 <a href="pageAdmin?Defi={{.Num}}">Afficher les participants</a></p>
             {{end}}
-            {{if eq .DefiSelect.Num 0}}
-            {{else}}
+            {{if not (eq .DefiSelect.Num 0)}}
             <h4>Liste des participants au défi {{$.DefiSelect.Num}}</h4>
             {{if not .Participants}}
             <p>Aucun participants</p>

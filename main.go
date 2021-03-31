@@ -19,6 +19,7 @@ func main() {
 		set GOOS=linux
 		set GOARCH=amd64
 	*/
+
 	mode := os.Args[1]
 	if mode == "init" {
 		fmt.Println("init")
