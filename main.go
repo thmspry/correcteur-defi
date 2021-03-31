@@ -69,7 +69,7 @@ func Init() {
 	os.Mkdir("./logs", 0755)
 	os.Mkdir("./BDD", 0755)
 
-	path := config.Path_root + "/ressource"
+	path := config.PathRoot + "/ressource"
 	os.Mkdir(path, 0755)
 	os.Mkdir(path+"/defis", 0755)
 	os.Mkdir(path+"/script_etudiants", 0755)
