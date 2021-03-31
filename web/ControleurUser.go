@@ -51,11 +51,11 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		ResTest:     BDD.GetResultatActuel(etu.Login),
 	}
 
-	/*if data.Defi_actuel.Num != -1 {
-		if !date.Today().Within(date.NewRange(data.Defi_actuel.DateDebut, data.Defi_actuel.DateFin)) {
+	if data.Defi_actuel.Num != -1 {
+		if time.Now().Sub(data.Defi_actuel.DateDebut) < 0 || time.Now().Sub(data.Defi_actuel.DateFin) > 0 {
 			data.Defi_actuel.Num = -1
-		} //TODO
-	}*/
+		}
+	}
 
 	if data.Defi_actuel.Num != -1 {
 		data.Defi_sent = manipStockage.Contains(config.PathScripts, "script_"+etu.Login+"_"+strconv.Itoa(data.Defi_actuel.Num))

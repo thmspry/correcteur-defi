@@ -8,6 +8,8 @@ import (
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/manipStockage"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
 	"os"
+	"strings"
+	"time"
 )
 
 //Main fonction du programme
@@ -31,7 +33,8 @@ func main() {
 		fmt.Println("start")
 		web.InitWeb()
 	} else if mode == "test" {
-		BDD.DeleteLastDefi(1)
+		t := time.Now()
+		fmt.Println(strings.Split(t.String(), " ")[0])
 	} else {
 		web.InitWeb()
 	}

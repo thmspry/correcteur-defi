@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	_ "github.com/aodin/date"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
 	"golang.org/x/crypto/bcrypt"
@@ -518,9 +517,8 @@ func GetDefiActuel() config.Defi {
 		JeuDeTest:  false,
 		Correcteur: "",
 	}
-	today := time.Now()
 	for _, d := range defis {
-		if today.Sub(d.DateDebut) > 0 && today.Sub(d.DateFin) < 0 {
+		if time.Now().Sub(d.DateDebut) > 0 && time.Now().Sub(d.DateFin) < 0 {
 			defiActuel = d
 		}
 	}

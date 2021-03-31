@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/aodin/date"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
@@ -82,11 +81,11 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		Logs:       manipStockage.GetFiles(config.PathLog),
 	}
 	//if date actuelle > defi actel.datefin alors defiactuel.num = -1
-	/*if data.DefiActuel.Num != -1 {
-		if !date.Today().Within(date.NewRange(data.DefiActuel.DateDebut, data.DefiActuel.DateFin)) {
+	if data.DefiActuel.Num != -1 {
+		if time.Now().Sub(data.DefiActuel.DateDebut) < 0 || time.Now().Sub(data.DefiActuel.DateFin) > 0 {
 			data.DefiActuel.Num = -1
-		}//TODO
-	}*/
+		}
+	}
 	fmt.Println(r.URL.String())
 	if r.Method == "GET" {
 
@@ -273,12 +272,14 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 			if r.FormValue("date_debut") != "" {
 				fmt.Println("change date defi")
-				logs.WriteLog("Admin", "modification de la date de rendu")
-				debut, _ := date.Parse(r.FormValue("date_debut")) // On récupère les date modifiée
-				fin, _ := date.Parse(r.FormValue("date_fin"))
-				//BDD.ModifyDefi(numDefi, debut, fin)
-				fmt.Println(numDefi, debut, fin)
-				//TODO
+				layout := "2006-01-02T15:04:05.000Z"
+				str := fmt.Sprintf("%sT%sZ", r.FormValue("date_debut"), r.FormValue("time_debut")+":00.000")
+				t_debut, _ := time.Parse(layout, str)
+				str = fmt.Sprintf("%sT%sZ", r.FormValue("date_fin"), r.FormValue("time_fin")+":00.000")
+				t_fin, _ := time.Parse(layout, str)
+				logs.WriteLog("Admin", "modification de la date de rendu du défi "+strconv.Itoa(numDefi))
+
+				BDD.ModifyDefi(numDefi, t_debut, t_fin)
 			}
 			if errorFile == nil {
 				logs.WriteLog("Admin", "modification du défi actuel")
