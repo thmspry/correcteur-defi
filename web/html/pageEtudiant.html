@@ -23,28 +23,27 @@
                 <p class="italic">{{.UserInfo.Mail}}</p>
             </div>
             <div id="content" class="block">
-                {{if eq .Defi_actuel.Num 0}}
-                    <h2>Il n'y a pas défi en cours.</h2>
-                    </div>
-        </div>
-    </div>
+                {{if eq .Defi_actuel.Num -1}}
+                <h2>Il n'y a pas défi en cours.</h2>
                 {{else}}
-                    <h2>Défi actuel : Défi n°{{.Defi_actuel.Num}}</h2>
-                    {{if .Defi_sent}}
-                        <p>Vous avez déjà rendu un script pour ce défi.</p>
-                        {{if eq .Resultat_defi.Etat 1}}
-                            <p>Votre script est correct.</p>
-                        {{else}}
-                            <p>Votre script est incorrect.</p>
-                        {{end}}
-                    <p>Vous pouvez le modifier jusqu'au {{.Defi_actuel.DateFinString}}.</p>
-                    {{else}}
-                        <p>Vous n'avez pas encore envoyé de script pour ce défi. <br>
-                        Vous avez jusqu'au {{.Defi_actuel.DateFinString}} pour le rendre.</p>
-                    {{end}}
+                <h2>Défi actuel : Défi n°{{.Defi_actuel.Num}}</h2>
+                {{if .Defi_sent}}
+                <p>Vous avez déjà rendu un script pour ce défi.</p>
+                {{if eq .Resultat_defi.Etat 1}}
+                <p>Votre script est correct.</p>
+                {{else}}
+                <p>Votre script est incorrect.</p>
+                {{end}}
+                <p>Vous pouvez le modifier jusqu'au {{.Defi_actuel.DateFinString}}.</p>
+                {{else}}
+                <p>Vous n'avez pas encore envoyé de script pour ce défi. <br>
+                    Vous avez jusqu'au {{.Defi_actuel.DateFinString}} pour le rendre.</p>
+                {{end}}
                 <p>IMPORTANT : le script doit contenir "!/bin/bash"</p>
-                </div>
-
+                {{end}}
+            </div>
+            {{if and (not (eq .Defi_actuel.Num -1)) .Defi_sent}}
+            {{if not (eq .Resultat_Defi.Etat 1)}}
             <div id="file">
                 <form enctype="multipart/form-data" action="/pageEtudiant?upload" method="post">
                     <div class="chose-file">
@@ -57,83 +56,87 @@
                     <input class="button" type="submit" id="upload" value="Upload"/>
                 </form>
             </div>
+            {{end}}{{end}}
         </div>
 
-        <div class="right-side">
-            <a class="twitter-timeline" data-width="450" margin-left:300 data-height="325" href="https://twitter.com/IutAsr?ref_src=twsrc%5Etfw">Tweets by IutAsr</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-        </div>
-    </div>
+<div class="right-side">
+    <a class="twitter-timeline" data-width="450" margin-left:300 data-height="325" href="https://twitter.com/IutAsr?ref_src=twsrc%5Etfw">Tweets by IutAsr</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</div>
+</div>
 
 {{if .Script}}
 <br>
-    <div class="block">
+<div class="block">
     <h2>Contenu du script envoyé :</h2>
     <div id="contenu">
         {{range .Script}}
-            <p>{{.}}</p>
+        <p>{{.}}</p>
         {{end}}
     </div>
-    </div>
+</div>
 {{end}}
-    <a href="/pageEtudiant?test" id="test-script">
-        <img src="./web/assets/images/play-triangle.png">
-        <p>Tester son script</p>
-    </a>
-
-    <div class="res">
-        <p id="ligne-commande"><span class="green-text"></span></p>
-        <h1 id="message-res" class="">{{.Msg_res}}</h1>
-        <div class="res-test">
-            {{range .ResTest}}
-                {{if not (eq .Etat 1) }}
-                    <div class="separator"></div>
-                    <div class="testHeader">
-                        <p>Test N°{{.CasTest.Nom}} :</p>
-                        {{if eq .Etat 0}}
-                            <p class="fail-text">Vous avez échoué ce test</p>
-                            <img src="./web/assets/images/red-light.png">
-                        {{else if eq .Etat -1}}
-                            <p class="error-text">Il y a eu une erreur durant ce test</p>
-                            <img src="./web/assets/images/yellow-light.png">
-                        {{end}}
-                    </div>
-                    <div class="res-output box-gauche">
-                        <div class="res-individuel box-gauche">
-                            <div class="title-res">
-                                <p> Contenu du test </p>
-                            </div>
-
-                            {{range .CasTest.Arguments}}
-                                <p> - {{.Nom}} contient : </p>
-                                <p> {{.Contenu}}</p>
-                            {{end}}
-                        </div>
-                        <div class="res-individuel ">
-                            <div class="title-res ">
-                                <p>Résultat de la correction</p>
-                            </div>
-                            {{range .Res_correction}}
-                                <p> - {{.Nom}} contient : </p>
-                                <p>{{.Contenu}}</p>
-                            {{end}}
-                        </div>
-                        <div class="res-individuel box-droite">
-                            <div class="title-res box-droite">
-                                <p>Résultat de votre script</p>
-                            </div>
-                            {{range .Res_etu}}
-                                <p> - {{.Nom}} contient : </p>
-                                <p>{{.Contenu}}</p>
-                            {{end}}
-                        </div>
-                    </div>
-                    {{if .Error_message}}
-                        <div  class="res-individuel errorMessage">{{.Error_message}}</div>
-                {{end}}
-                {{end}}
+{{if and (not (eq .Defi_actuel.Num -1)) .Defi_sent}}
+{{if not (eq .Resultat_Defi.Etat 1)}}
+<a href="/pageEtudiant?test" id="test-script">
+    <img src="./web/assets/images/play-triangle.png">
+    <p>Tester son script</p>
+</a>
+{{end}}
+{{end}}
+<div class="res">
+    <p id="ligne-commande"><span class="green-text"></span></p>
+    <h1 id="message-res" class="">{{.Msg_res}}</h1>
+    <div class="res-test">
+        {{range .ResTest}}
+        {{if not (eq .Etat 1) }}
+        <div class="separator"></div>
+        <div class="testHeader">
+            <p>Test N°{{.CasTest.Nom}} :</p>
+            {{if eq .Etat 0}}
+            <p class="fail-text">Vous avez échoué ce test</p>
+            <img src="./web/assets/images/red-light.png">
+            {{else if eq .Etat -1}}
+            <p class="error-text">Il y a eu une erreur durant ce test</p>
+            <img src="./web/assets/images/yellow-light.png">
+            {{end}}
         </div>
+        <div class="res-output box-gauche">
+            <div class="res-individuel box-gauche">
+                <div class="title-res">
+                    <p> Contenu du test </p>
+                </div>
+
+                {{range .CasTest.Arguments}}
+                <p> - {{.Nom}} contient : </p>
+                <p> {{.Contenu}}</p>
+                {{end}}
+            </div>
+            <div class="res-individuel ">
+                <div class="title-res ">
+                    <p>Résultat de la correction</p>
+                </div>
+                {{range .Res_correction}}
+                <p> - {{.Nom}} contient : </p>
+                <p>{{.Contenu}}</p>
+                {{end}}
+            </div>
+            <div class="res-individuel box-droite">
+                <div class="title-res box-droite">
+                    <p>Résultat de votre script</p>
+                </div>
+                {{range .Res_etu}}
+                <p> - {{.Nom}} contient : </p>
+                <p>{{.Contenu}}</p>
+                {{end}}
+            </div>
+        </div>
+        {{if .Error_message}}
+        <div  class="res-individuel errorMessage">{{.Error_message}}</div>
+        {{end}}
+        {{end}}
     </div>
-    {{end}}
+</div>
+{{end}}
 <div id="footer">
     <p>Projet réalisé sous l'initiative de Loïg Jezequel</p>
     <p>Par Paul Vernin, Matteo Ordrenneau, Thomas Peray et Antoine Gru</p>

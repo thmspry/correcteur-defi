@@ -381,7 +381,7 @@ func GetResultatActuel(login string) []config.Resultat {
 		res   []config.Resultat
 	)
 	row := db.QueryRow("SELECT resDefiActuel FROM Etudiant WHERE login = $1", login)
-	if err := row.Scan(&query); err != nil {
+	if err := row.Scan(&query); err != nil && query != "" {
 		logs.WriteLog("BDD.GetResultatActuel", err.Error())
 	}
 	json.Unmarshal([]byte(query), &res)

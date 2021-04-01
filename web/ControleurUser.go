@@ -74,7 +74,6 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	//Check la méthode utilisé par le formulaire
 	if r.Method == "GET" {
 		//Charge la template html
-		fmt.Println("ghfueggfekufg")
 
 		if r.URL.Query()["logout"] != nil {
 			DeleteToken(etu.Login, time.Second*0)

@@ -30,7 +30,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		} else {
-			logs.WriteLog("Erreur TOKEN : Le token n'existe pas : ", err.Error())
+			logs.WriteLog("Erreur TOKEN", "Le token n'existe pas")
 		}
 	} else {
 		logs.WriteLog("Erreur TOKEN : Problème dans la génération du token de connexion : ", err.Error())
@@ -82,7 +82,9 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 						ConnexionErreur: true,
 					}
 					err = page.Execute(w, data)
-					logs.WriteLog(login+" Erreur d'éxecution de la page accueil.html : ", err.Error())
+					if err != nil {
+						logs.WriteLog(login+" Erreur d'éxecution de la page accueil.html : ", err.Error())
+					}
 				}
 			}
 		} else if r.URL.String() == "/login?register" {
