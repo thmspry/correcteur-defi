@@ -29,12 +29,12 @@
             <form action="/login?register" method="post">
                 <div class="inputs">
                     <div class="part-form">
-                        <p>Identifiant:<input type="text" name="login" pattern="[E][0-9][0-9][0-9][0-9][0-9][0-9][A-Z]" placeholder="E21XXXXX"></p>
-                        <p>Mot de passe:<input type="password" name="password"> </p>
+                        <p>Identifiant:<input type="text" name="login" pattern="[E][0-9][0-9][0-9][0-9][0-9][0-9][A-Z]" placeholder="E21XXXXX" required="required"></p>
+                        <p>Mot de passe:<input type="password" name="password" required="required"> </p>
                     </div>
                     <div class="part-form">
-                        <p>Prénom : <input type="text" name="prenom"> </p>
-                        <p>Nom : <input type="text" name="nom"> </p>
+                        <p>Prénom : <input type="text" name="prenom" required="required"> </p>
+                        <p>Nom : <input type="text" name="nom" required="required"> </p>
                     </div>
                 </div>
                 <input class="button" type="submit" value="Register">
@@ -49,8 +49,13 @@
 
 <script src="./web/assets/js/materialize.min.js"></script>
 <script src="./web/assets/js/login.js"></script>
+
 {{if eq .ConnexionErreur true}}
 <script src="./web/assets/js/erreurConnexion.js"></script>
+{{end}}
+
+{{if eq .NumEtuExist true}}
+<script src="./web/assets/js/erreurNumEtuExist.js"></script>
 {{end}}
 
 

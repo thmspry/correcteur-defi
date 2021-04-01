@@ -14,11 +14,11 @@ import (
 
 type dataConnexion struct {
 	ConnexionErreur bool
+	NumEtuExist     bool
 }
 
 func accueil(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("methode de accueil :", r.Method)
-
+	fmt.Println("Méthode de accueil :", r.Method)
 	if tk, err := r.Cookie("token"); err == nil {
 		if BDD.TokenExiste(tk.Value) {
 			fmt.Println("Token existe : ", tk.Value)
@@ -29,13 +29,18 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			}
 			return
+		} else {
+			logs.WriteLog("Erreur TOKEN : Le token n'existe pas : ", err.Error())
 		}
+	} else {
+		logs.WriteLog("Erreur TOKEN : Problème dans la génération du token de connexion : ", err.Error())
 	}
 	if r.Method == "GET" {
 		if r.URL.String() == "/login" {
 			t, err := template.ParseFiles("./web/html/accueil.html")
 			if err != nil {
-				fmt.Print("erreur chargement accueil.html")
+				fmt.Print("Erreur chargement accueil.html")
+				logs.WriteLog("Erreur chargement accueil.html : ", err.Error())
 			}
 			_ = t.Execute(w, nil)
 		} else {
@@ -51,6 +56,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("Tentative de connexion avec :", login, " ", password)
 			existe := BDD.LoginCorrect(login, password) // on test le couple login/passwordHashé
 			if existe {
+				logs.WriteLog(login, "Le couple login/password est correct")
 				//Création du token
 				token := tokenGenerator()
 				temps := 20 * time.Minute // défini le temps d'attente
@@ -66,31 +72,49 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				go DeleteToken(login, temps)
 				return
 			} else {
-				logs.WriteLog(login, "mot de passe incorrecte connexion étudiant")
+				logs.WriteLog(login, "Mot de passe incorrecte connexion étudiant")
 				page, err := template.ParseFiles("./web/html/accueil.html")
 				if err != nil {
 					fmt.Print("erreur chargement accueil.html")
+					logs.WriteLog(login+" Erreur de chargement de la page accueil.html : ", err.Error())
 				} else {
 					data := dataConnexion{
 						ConnexionErreur: true,
 					}
 					err = page.Execute(w, data)
+					logs.WriteLog(login+" Erreur d'éxecution de la page accueil.html : ", err.Error())
 				}
 			}
 		} else if r.URL.String() == "/login?register" {
 			// request provient du formulaire pour s'enregistrer
-			// pas de vérification de champs implémenter pour l'instant
+			data := dataConnexion{}
 			if BDD.IsLoginUsed(r.FormValue("login")) {
-				fmt.Println("votre login existe déjà")
-				http.Redirect(w, r, "/login", http.StatusFound)
+				page, err := template.ParseFiles("./web/html/accueil.html")
+				if err != nil {
+					fmt.Print("erreur chargement accueil.html : ", err)
+					logs.WriteLog("Erreur chargement accueil.html : ", err.Error())
+				} else {
+					loginExist := r.FormValue("login")
+					data.NumEtuExist = true
+					fmt.Println("Ce login (", loginExist, ") existe déjà")
+					logs.WriteLog("Already Exist : ", "Ce login ("+loginExist+") existe déjà")
+					err = page.Execute(w, data)
+					if err != nil {
+						fmt.Print("Erreur affichage login.html : ", err)
+						logs.WriteLog("Erreur chargement login.html : ", err.Error())
+					}
+				}
 			} else {
+				data.NumEtuExist = false
 				etu := config.Etudiant{
 					Login:    r.FormValue("login"),
 					Password: r.FormValue("password"),
 					Prenom:   r.FormValue("prenom"),
 					Nom:      r.FormValue("nom"),
 				}
+
 				passwordHashed, err := bcrypt.GenerateFromPassword([]byte(etu.Password), 14) // hashage du mot de passe
+				//logs.WriteLog("Erreur lors du hashage du mot de passe : ", err.Error()) FAIT CRASH DE MON COTE
 				if err == nil {
 					etu.Password = string(passwordHashed) // le mot de passe à stocker est hashé
 					BDD.Register(etu)                     // ajouter l'etudiant dans la base de données.
@@ -136,6 +160,7 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 			page, err := template.ParseFiles("./web/html/connexionAdmin.html")
 			if err != nil {
 				fmt.Print("erreur chargement connexionAdmin.html : ", err)
+				logs.WriteLog("Erreur chargement connexionAdmin.html : ", err.Error())
 			} else {
 				data := dataConnexion{
 					ConnexionErreur: false,
@@ -143,6 +168,7 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 				err = page.Execute(w, data)
 				if err != nil {
 					fmt.Print("erreur affichage connexionAdmin.html : ", err)
+					logs.WriteLog("Erreur chargement connexionAdmin.html : ", err.Error())
 				}
 			}
 		} else {
@@ -174,6 +200,7 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 				page, err := template.ParseFiles("./web/html/connexionAdmin.html")
 				if err != nil {
 					fmt.Print("erreur chargement connexionAdmin.html")
+					logs.WriteLog("Erreur du chargement de la page connexionAdmin.html : ", err.Error())
 				} else {
 					data := dataConnexion{
 						ConnexionErreur: true,
@@ -181,6 +208,7 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 					err = page.Execute(w, data)
 					if err != nil {
 						fmt.Println("erreur affichage connexionAdmin.html : ", err)
+						logs.WriteLog("Erreur du chargement de la page connexionAdmin.html : ", err.Error())
 					}
 				}
 			}

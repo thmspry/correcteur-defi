@@ -91,6 +91,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		// execute la page avec la structure "etu" qui viendra remplacer les éléments de la page en fonction de l'étudiant (voir pageEtudiant.html)
 		if err := t.Execute(w, data); err != nil {
 			log.Printf("error exec template : ", err.Error())
+			logs.WriteLog("Erreur d'execution pageEtudiant.html : ", err.Error())
 		}
 
 		//Si la méthode est post c'est qu'on vient d'envoyer un fichier pour le faire tester

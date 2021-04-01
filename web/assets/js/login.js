@@ -6,11 +6,15 @@ document.addEventListener('DOMContentLoaded', function() {
     var instanceTab = M.Tabs.init(el, optionsTabs);
     instanceTab.select(localStorage.getItem("current-tab"));
 
+    let registerButton = document.querySelector("#register .button");
+    registerButton.addEventListener("click", function () {
+        localStorage.setItem("current-tab", "login");
+    })
+
 });
 
 let tabLi = document.querySelectorAll(".tabs a")
 tabLi.forEach(li => li.addEventListener('click', function() {
     let href = li.getAttribute("href").substring(1);
     localStorage.setItem("current-tab", href);
-    console.log("h");
 }));
