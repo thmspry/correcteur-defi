@@ -42,8 +42,7 @@
                 <p>IMPORTANT : le script doit contenir "!/bin/bash"</p>
                 {{end}}
             </div>
-            {{if and (not (eq .Defi_actuel.Num -1)) .Defi_sent}}
-            {{if not (eq .Resultat_Defi.Etat 1)}}
+            {{if not (eq .Resultat_defi.Etat 1)}}
             <div id="file">
                 <form enctype="multipart/form-data" action="/pageEtudiant?upload" method="post">
                     <div class="chose-file">
@@ -56,7 +55,7 @@
                     <input class="button" type="submit" id="upload" value="Upload"/>
                 </form>
             </div>
-            {{end}}{{end}}
+            {{end}}
         </div>
 
 <div class="right-side">
@@ -75,17 +74,20 @@
     </div>
 </div>
 {{end}}
-{{if and (not (eq .Defi_actuel.Num -1)) .Defi_sent}}
-{{if not (eq .Resultat_Defi.Etat 1)}}
+{{if not (eq .Resultat_defi.Etat 1)}}
 <a href="/pageEtudiant?test" id="test-script">
     <img src="./web/assets/images/play-triangle.png">
     <p>Tester son script</p>
 </a>
 {{end}}
-{{end}}
 <div class="res">
     <p id="ligne-commande"><span class="green-text"></span></p>
-    <h1 id="message-res" class="">{{.Msg_res}}</h1>
+    <h1 id="message-res" class="">
+        {{if eq .Resultat_defi.Etat 1}}Vous avez réussi ce défi
+        {{else}}
+            {{.Msg_res}}
+        {{end}}
+    </h1>
     <div class="res-test">
         {{range .ResTest}}
         {{if not (eq .Etat 1) }}

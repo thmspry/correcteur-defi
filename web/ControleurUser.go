@@ -32,7 +32,7 @@ Fonction pour afficher la page Etudiant à l'adresse /pageEtudiant
 */
 func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("methode de pageEtudiant :", r.Method)
-	num_defi_actuel := BDD.GetDefiActuel().Num
+	numDefiActuel := BDD.GetDefiActuel().Num
 
 	//Si il y a n'y a pas de token dans les cookies alors l'utilisateur est redirigé vers la page de login
 	if token, err := r.Cookie("token"); err != nil || !BDD.TokenExiste(token.Value) {
@@ -46,22 +46,18 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 
 	//Parse data
 	data := data_pageEtudiant{
-		UserInfo:    etu,
-		Defi_actuel: BDD.GetDefiActuel(),
-		ResTest:     BDD.GetResultatActuel(etu.Login),
+		UserInfo:      etu,
+		Defi_actuel:   BDD.GetDefiActuel(),
+		ResTest:       BDD.GetResultatActuel(etu.Login),
+		Resultat_defi: BDD.GetResult(etu.Login, numDefiActuel),
 	}
-
 	if data.Defi_actuel.Num != -1 {
 		if time.Now().Sub(data.Defi_actuel.DateDebut) < 0 || time.Now().Sub(data.Defi_actuel.DateFin) > 0 {
 			data.Defi_actuel.Num = -1
 		}
 	}
-
 	if data.Defi_actuel.Num != -1 {
 		data.Defi_sent = manipStockage.Contains(config.PathScripts, "script_"+etu.Login+"_"+strconv.Itoa(data.Defi_actuel.Num))
-		if data.Defi_sent {
-			data.Resultat_defi = BDD.GetResult(etu.Login, data.Defi_actuel.Num)
-		}
 	}
 
 	f, err := os.Open(config.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(data.Defi_actuel.Num))
@@ -101,18 +97,18 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 
 			file, _, _ := r.FormFile("script_etu") // sert à obtenir le descripteur de fichier
 
-			script, _ := os.Create(config.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(num_defi_actuel)) // remplacer handler.Filename par le nom et on le place où on veut
-			BDD.SaveResultat(etu.Login, num_defi_actuel, -1, nil, false)
+			script, _ := os.Create(config.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(numDefiActuel)) // remplacer handler.Filename par le nom et on le place où on veut
+			BDD.SaveResultat(etu.Login, numDefiActuel, -1, nil, false)
 
 			_, err = io.Copy(script, file) //on l'enregistre dans notre système de fichier
 			fmt.Println("teststetesttestestestesteste")
 			//b, _ := ioutil.ReadFile(script.Name())
 			//fmt.Printf(string(b))
 			//fmt.Printf(ioutil.ReadFile(script.Name()))
-			os.Chmod(config.PathScripts+"script_"+etu.Login+"_"+strconv.Itoa(num_defi_actuel), 770) //change le chmode du fichier
+			os.Chmod(config.PathScripts+"script_"+etu.Login+"_"+strconv.Itoa(numDefiActuel), 770) //change le chmode du fichier
 			file.Close()
 			script.Close()
-			logs.WriteLog(etu.Login, "upload de script du défis "+strconv.Itoa(num_defi_actuel))
+			logs.WriteLog(etu.Login, "upload de script du défis "+strconv.Itoa(numDefiActuel))
 			data.Msg_res, data.ResTest = testeur.Test(etu.Login)
 			t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
 			// execute la page avec la structure "etu" qui viendra remplacer les éléments de la page en fonction de l'étudiant (voir pageEtudiant.html)

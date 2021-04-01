@@ -417,6 +417,7 @@ func GetResult(login string, defi int) config.ResBDD {
 	row := db.QueryRow("SELECT * FROM Resultat WHERE login = $1 AND defi = $2", login, defi)
 	if err := row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative); err != nil {
 		logs.WriteLog("BDD.GetResult", err.Error())
+
 	}
 	return res
 }
