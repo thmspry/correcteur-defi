@@ -19,7 +19,7 @@ func WriteLog(titre string, msg string) {
 	/*if !manipStockage.Contains("./logs/", d.String()) {
 		ioutil.WriteFile("./logs/"+d.String(), nil, 0755)
 	}*/
-	d := strings.Split(time.Now().String(), "")[0]
+	d := strings.Split(time.Now().String(), " ")[0]
 	_, err := os.Stat("./logs/" + d)
 	if os.IsNotExist(err) {
 		ioutil.WriteFile("./logs/"+d, nil, 0755)

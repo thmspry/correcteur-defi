@@ -2,8 +2,8 @@ package manipStockage
 
 import (
 	"encoding/csv"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/DAO"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
 	"io/ioutil"
 	"log"
@@ -73,7 +73,7 @@ func Contains(path string, fileName string) bool {
 
 // https://golangcode.com/write-data-to-a-csv-file/
 func CreateCSV(file_name string, num int) {
-	ResultatCSV := BDD.GetParticipant(num)
+	ResultatCSV := DAO.GetParticipants(num)
 
 	file, _ := os.Create(file_name)
 	defer file.Close()
@@ -115,7 +115,7 @@ func Contenu(path string) string {
 }
 
 func GetTriche(numDefi int) [][]string {
-	participants := BDD.GetParticipant(numDefi)
+	participants := DAO.GetParticipants(numDefi)
 
 	type script struct {
 		Login   string
@@ -126,7 +126,7 @@ func GetTriche(numDefi int) [][]string {
 
 	for _, part := range participants {
 		s.Login = part.Etudiant.Login
-		f, _ := ioutil.ReadFile(config.PathScripts + "script_" + s.Login + "_" + strconv.Itoa(numDefi))
+		f, _ := ioutil.ReadFile(modele.PathScripts + "script_" + s.Login + "_" + strconv.Itoa(numDefi))
 		s.Contenu = string(f)
 		TabParticipants = append(TabParticipants, s)
 	}

@@ -3,8 +3,8 @@ package web
 import (
 	"crypto/rand"
 	"fmt"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/DAO"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
 	"golang.org/x/crypto/bcrypt"
 	"html/template"
@@ -25,10 +25,10 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 	// Verification s'il le client à un token enregistré
 	if tk, err := r.Cookie("token"); err == nil {
 		// S'il est stocké dans la BD : qu'il n'est pas expiré
-		if BDD.TokenExiste(tk.Value) {
+		if DAO.TokenExiste(tk.Value) {
 			fmt.Println("Token existe : ", tk.Value)
 			// On détermine s'il s'agit d'un token admin ou étudiant afin de faire les bonnes redirections
-			role := BDD.TokenRole(tk.Value)
+			role := DAO.TokenRole(tk.Value)
 			if role == "etudiants" {
 				http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 			} else if role == "administrateur" {
@@ -67,8 +67,8 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			password := r.FormValue("password")
 			// On récupère les arguments passés dans le body de la requête
 			fmt.Println("Tentative de connexion avec :", login, " ", password)
-			loginOk := BDD.LoginCorrect(login, password) // on test le couple login/password Hashé
-			if loginOk {
+			existe := DAO.LoginCorrect(login, password) // on test le couple login/passwordHashé
+			if existe {
 				logs.WriteLog(login, "Le couple login/password est correct")
 				//Création du token correspondant
 				token := tokenGenerator()
@@ -77,7 +77,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				cookie := http.Cookie{Name: "token", Value: token, Expires: expiration} // Création du token sous forme de cookie
 				http.SetCookie(w, &cookie)                                              // On envoit le cookie au client
 				fmt.Println("(login=", login, ",token=", token)
-				BDD.InsertToken(login, token) // On stocke ce cookie dans le BDD
+				DAO.InsertToken(login, token)
 				logs.WriteLog(login, "connexion étudiant")
 				http.Redirect(w, r, "/pageEtudiant", http.StatusFound) // On redirige vers la page etudiant correspondant
 				go DeleteToken(login, temps)                           // On lance une goroutine qui va supprimer ce token de la BDD lorsqu'il ne sera plus valide
@@ -105,7 +105,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			// request provient du formulaire pour s'enregistrer
 			data := dataConnexion{}
 			// Si le login est déjà utilisé
-			if BDD.IsLoginUsed(r.FormValue("login")) {
+			if DAO.IsLoginUsed(r.FormValue("login")) {
 				// On redirige le client s'il y a eu une erreur d'inscription
 				page, err := template.ParseFiles("./web/html/accueil.html")
 				if err != nil {
@@ -124,7 +124,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			} else {
 				// Si le login n'est pas déjà utilisé
 				data.NumEtuExist = false
-				etu := config.Etudiant{
+				etu := modele.Etudiant{
 					Login:    r.FormValue("login"),
 					Password: r.FormValue("password"),
 					Prenom:   r.FormValue("prenom"),
@@ -133,7 +133,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				passwordHashed, err := bcrypt.GenerateFromPassword([]byte(etu.Password), 14) // hashage du mot de passe
 				if err == nil {
 					etu.Password = string(passwordHashed) // le mot de passe à stocker est hashé
-					BDD.Register(etu)                     // ajouter l'etudiant dans la base de données.
+					DAO.Register(etu)                     // ajouter l'etudiant dans la base de données.
 					logs.WriteLog(etu.Login, "création du compte : "+etu.Login+":"+etu.Password)
 					http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 				} else {
@@ -153,9 +153,10 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("methode de connexion Admin :", r.Method)
 	// Verification s'il le client à un token enregistré
 	if tk, err := r.Cookie("token"); err == nil {
-		if BDD.TokenExiste(tk.Value) {
+		if DAO.TokenExiste(tk.Value) {
 			fmt.Println("Token existe : ", tk.Value)
-			role := BDD.TokenRole(tk.Value)
+			role := DAO.TokenRole(tk.Value)
+			fmt.Println(role)
 			if role == "etudiants" {
 				http.Redirect(w, r, "/pageEtudiant", http.StatusFound)
 			} else if role == "administrateur" {
@@ -197,7 +198,7 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 			login := r.FormValue("login")
 			password := r.FormValue("password")
 			fmt.Println("Tentative de connexion admin avec :", login, " ", password)
-			existe := BDD.LoginCorrectAdmin(login, password) // on test le couple login/passwordHashé
+			existe := DAO.LoginCorrectAdmin(login, password) // on test le couple login/passwordHashé
 			if existe {
 				//Création du token
 				token := tokenGenerator()
@@ -205,7 +206,7 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 				expiration := time.Now().Add(temps)
 				cookie := http.Cookie{Name: "token", Value: token, Expires: expiration}
 				http.SetCookie(w, &cookie)
-				BDD.InsertToken(login, token)
+				DAO.InsertToken(login, token)
 				logs.WriteLog(login, "connexion admin réussie, création d'un token")
 				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 				go DeleteToken(login, temps)
@@ -237,7 +238,7 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 func DeleteToken(login string, temps time.Duration) {
 	time.Sleep(temps)
 	logs.WriteLog(login, "Déconnexion du serveur")
-	BDD.DeleteToken(login)
+	DAO.DeleteToken(login)
 	return
 }
 

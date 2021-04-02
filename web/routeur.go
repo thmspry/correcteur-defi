@@ -3,7 +3,7 @@ package web
 import (
 	"encoding/json"
 	"fmt"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/DAO"
 	"net/http"
 )
 
@@ -34,7 +34,7 @@ func Redirection(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetDefis(w http.ResponseWriter, r *http.Request) {
-	if token, err := r.Cookie("token"); err != nil || !BDD.TokenExiste(token.Value) {
+	if token, err := r.Cookie("token"); err != nil || !DAO.TokenExiste(token.Value) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
@@ -42,11 +42,11 @@ func GetDefis(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "application/json;charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 
-	json.NewEncoder(w).Encode(BDD.GetDefis())
+	json.NewEncoder(w).Encode(DAO.GetDefis())
 }
 
 func GetDefiActuel(w http.ResponseWriter, r *http.Request) {
-	if token, err := r.Cookie("token"); err != nil || !BDD.TokenExiste(token.Value) {
+	if token, err := r.Cookie("token"); err != nil || !DAO.TokenExiste(token.Value) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
@@ -54,5 +54,5 @@ func GetDefiActuel(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "application/json;charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 
-	json.NewEncoder(w).Encode(BDD.GetDefiActuel())
+	json.NewEncoder(w).Encode(DAO.GetDefiActuel())
 }

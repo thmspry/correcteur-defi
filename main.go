@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/DAO"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/manipStockage"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
 	"os"
@@ -41,12 +41,12 @@ func main() {
 
 }
 
-//fonction pour reset les dossiers et la bdd
+//fonction pour reset les dossiers et la dao
 func reset() {
-	if manipStockage.Contains("./BDD/", "database.db") {
-		os.Remove("./BDD/database.db")
+	if manipStockage.Contains("./DAO/", "database.db") {
+		os.Remove("./DAO/database.db")
 	}
-	BDD.InitBDD()
+	DAO.InitDAO()
 	if len(manipStockage.GetFiles("./logs")) > 0 {
 		os.RemoveAll("./logs")
 		os.Mkdir("./logs", 0755)
@@ -71,13 +71,13 @@ func reset() {
 // fonction pour initialiser le serveur et les différents fichiers
 func Init() {
 	os.Mkdir("./logs", 0755)
-	os.Mkdir("./BDD", 0755)
+	os.Mkdir("./DAO", 0755)
 
-	path := config.PathRoot + "/ressource"
+	path := modele.PathRoot + "/ressource"
 	os.Mkdir(path, 0755)
 	os.Mkdir(path+"/defis", 0755)
 	os.Mkdir(path+"/script_etudiants", 0755)
 	os.Mkdir(path+"/jeu_de_test", 0755)
 
-	BDD.InitBDD()
+	DAO.InitDAO()
 }

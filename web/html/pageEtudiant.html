@@ -23,26 +23,26 @@
                 <p class="italic">{{.UserInfo.Mail}}</p>
             </div>
             <div id="content" class="block">
-                {{if eq .Defi_actuel.Num -1}}
+                {{if eq .DefiActuel.Num -1}}
                 <h2>Il n'y a pas défi en cours.</h2>
                 {{else}}
-                <h2>Défi actuel : Défi n°{{.Defi_actuel.Num}}</h2>
-                {{if .Defi_sent}}
+                <h2>Défi actuel : Défi n°{{.DefiActuel.Num}}</h2>
+                {{if .DefiSent}}
                 <p>Vous avez déjà rendu un script pour ce défi.</p>
-                {{if eq .Resultat_defi.Etat 1}}
+                {{if eq .ResultatDefi.Etat 1}}
                 <p>Votre script est correct.</p>
                 {{else}}
                 <p>Votre script est incorrect.</p>
                 {{end}}
-                <p>Vous pouvez le modifier jusqu'au {{.Defi_actuel.DateFinString}}.</p>
+                <p>Vous pouvez le modifier jusqu'au {{.DefiActuel.DateFinString}}.</p>
                 {{else}}
                 <p>Vous n'avez pas encore envoyé de script pour ce défi. <br>
-                    Vous avez jusqu'au {{.Defi_actuel.DateFinString}} pour le rendre.</p>
+                    Vous avez jusqu'au {{.DefiActuel.DateFinString}} pour le rendre.</p>
                 {{end}}
                 <p>IMPORTANT : le script doit contenir "!/bin/bash"</p>
                 {{end}}
             </div>
-            {{if not (eq .Resultat_defi.Etat 1)}}
+            {{if not (eq .ResultatDefi.Etat 1)}}
             <div id="file">
                 <form enctype="multipart/form-data" action="/pageEtudiant?upload" method="post">
                     <div class="chose-file">
@@ -74,7 +74,7 @@
     </div>
 </div>
 {{end}}
-{{if not (eq .Resultat_defi.Etat 1)}}
+{{if not (eq .ResultatDefi.Etat 1)}}
 <a href="/pageEtudiant?test" id="test-script">
     <img src="./web/assets/images/play-triangle.png">
     <p>Tester son script</p>
@@ -83,9 +83,9 @@
 <div class="res">
     <p id="ligne-commande"><span class="green-text"></span></p>
     <h1 id="message-res" class="">
-        {{if eq .Resultat_defi.Etat 1}}Vous avez réussi ce défi
+        {{if eq .ResultatDefi.Etat 1}}Vous avez réussi ce défi
         {{else}}
-            {{.Msg_res}}
+            {{.MsgRes}}
         {{end}}
     </h1>
     <div class="res-test">

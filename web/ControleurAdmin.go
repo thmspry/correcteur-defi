@@ -5,10 +5,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/DAO"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/manipStockage"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/testeur"
 	"html/template"
 	"io"
 	"io/ioutil"
@@ -24,16 +25,16 @@ import (
 
 type data_pageAdmin struct { /* Données envoyée à la page admin */
 	EtuSelect     string
-	DefiSelect    config.Defi
-	AdminInfo     config.Admin
-	Etudiants     []config.Etudiant
-	Res_etu       []config.ResBDD
-	ListeDefis    []config.Defi
+	DefiSelect    modele.Defi
+	AdminInfo     modele.Admin
+	Etudiants     []modele.Etudiant
+	Res_etu       []modele.Resultat
+	ListeDefis    []modele.Defi
 	File          []string
-	DefiActuel    config.Defi
+	DefiActuel    modele.Defi
 	JeuDeTestSent string
-	Participants  []config.ParticipantDefi
-	Correcteur    config.Etudiant
+	Participants  []modele.ParticipantDefi
+	Correcteur    modele.Etudiant
 	Tricheurs     [][]string
 	Logs          []string
 	Log           []string
@@ -64,21 +65,21 @@ Main : traite toutes les requettes de la page Admin
 */
 func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	//Si il y a n'y a pas de token dans les cookies alors l'utilisateur est redirigé vers la page de login
-	if token, err := r.Cookie("token"); err != nil || !BDD.TokenExiste(token.Value) {
+	if token, err := r.Cookie("token"); err != nil || !DAO.TokenExiste(token.Value) {
 		http.Redirect(w, r, "/loginAdmin", http.StatusFound)
 		return
 	}
 
 	token, _ := r.Cookie("token")            //récupère le token du cookie
-	login := BDD.GetNameByToken(token.Value) // récupère le login correspondant au token
-	admin := BDD.GetAdmin(login)             // récupère les informations de l'étudiant grâce au login
+	login := DAO.GetNameByToken(token.Value) // récupère le login correspondant au token
+	admin := DAO.GetAdmin(login)             // récupère les informations de l'étudiant grâce au login
 
 	data := data_pageAdmin{
 		AdminInfo:  admin,
-		Etudiants:  BDD.GetEtudiants(),
-		DefiActuel: BDD.GetDefiActuel(),
-		ListeDefis: BDD.GetDefis(),
-		Logs:       manipStockage.GetFiles(config.PathLog),
+		Etudiants:  DAO.GetEtudiants(),
+		DefiActuel: DAO.GetDefiActuel(),
+		ListeDefis: DAO.GetDefis(),
+		Logs:       manipStockage.GetFiles(modele.PathLog),
 	}
 	//if date actuelle > defi actel.datefin alors defiactuel.num = -1
 	if data.DefiActuel.Num != -1 {
@@ -93,7 +94,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query()["Log"] != nil {
 			log := r.URL.Query()["Log"][0]
 			data.LogDate = log
-			f, err := os.Open(config.PathLog + log)
+			f, err := os.Open(modele.PathLog + log)
 			if err != nil {
 				data.Log = []string{"erreur pour récupérer le fichier de log"}
 			} else {
@@ -107,13 +108,13 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		//
 		if r.URL.Query()["Defi"] != nil {
 			num, _ := strconv.Atoi(r.URL.Query()["Defi"][0])
-			data.DefiSelect = BDD.GetDefi(num)
-			data.Correcteur = BDD.GetCorrecteur(num)
+			data.DefiSelect = DAO.GetDefi(num)
+			data.Correcteur = DAO.GetCorrecteur(num)
 			fmt.Println("data.correcteur = ", data.Correcteur)
-			data.Participants = BDD.GetParticipant(num)
+			data.Participants = DAO.GetParticipants(num)
 			if etu := r.URL.Query()["Etudiant"]; etu != nil {
 				fmt.Println(etu)
-				f, err := os.Open(config.PathScripts + "script_" + etu[0] + "_" + strconv.Itoa(data.DefiSelect.Num))
+				f, err := os.Open(modele.PathScripts + "script_" + etu[0] + "_" + strconv.Itoa(data.DefiSelect.Num))
 				if err != nil {
 					data.File[0] = "erreur pour récupérer le script de l'étudiant"
 				} else {
@@ -125,9 +126,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				if etat := r.URL.Query()["Etat"]; etat != nil {
 
 					if etat[0] == "1" {
-						BDD.SaveResultat(etu[0], num, 0, nil, true)
+						DAO.SaveResultat(etu[0], num, 0, nil, true)
 					} else {
-						BDD.SaveResultat(etu[0], num, 1, nil, true)
+						DAO.SaveResultat(etu[0], num, 1, nil, true)
 					}
 				}
 			}
@@ -145,9 +146,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 			// Choisi l'étudiant correcteur et lui envoi un mail
 			if r.URL.Query()["Correcteur"] != nil {
-				BDD.GenerateCorrecteur(num)
-				etudiant := BDD.GetCorrecteur(num)
-				etudiantMail := config.EtudiantMail{Prenom: etudiant.Prenom, Nom: etudiant.Nom}
+				DAO.GenerateCorrecteur(num)
+				etudiant := DAO.GetCorrecteur(num)
+				etudiantMail := modele.EtudiantMail{Prenom: etudiant.Prenom, Nom: etudiant.Nom}
 				file, err := os.Open("mailConf.json")
 				if err != nil {
 					fmt.Println(err)
@@ -196,8 +197,8 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		// Envoi de mail
 		if r.URL.Query()["form"][0] == "sendMail" {
 
-			etudiants := BDD.GetEtudiantsMail()
-			nbDefis := len(BDD.GetDefis())
+			etudiants := DAO.GetEtudiantsMail()
+			nbDefis := len(DAO.GetDefis())
 
 			file, err := os.Open("mailConf.json")
 			if err != nil {
@@ -244,12 +245,12 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 		if r.URL.Query()["form"][0] == "DeleteDefi" {
 			lastDefi := data.ListeDefis[0]
-			os.Remove(config.PathDefis + "correction_" + strconv.Itoa(lastDefi.Num))
-			err := os.RemoveAll(config.PathJeuDeTests + "test_defi_" + strconv.Itoa(lastDefi.Num))
+			os.Remove(modele.PathDefis + "correction_" + strconv.Itoa(lastDefi.Num))
+			err := os.RemoveAll(modele.PathJeuDeTests + "test_defi_" + strconv.Itoa(lastDefi.Num))
 			if err != nil {
 				fmt.Println(err.Error())
 			}
-			BDD.DeleteLastDefi(lastDefi.Num)
+			DAO.DeleteLastDefi(lastDefi.Num)
 			logs.WriteLog("Delete défi", "vous avez supprimer le défi N°"+strconv.Itoa(lastDefi.Num))
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
@@ -263,7 +264,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			defer file.Close()
 		}
 
-		defi_actuel := BDD.GetDefiActuel()
+		defi_actuel := DAO.GetDefiActuel()
 		num_defi_actuel := defi_actuel.Num
 		path := ""
 
@@ -279,11 +280,11 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				t_fin, _ := time.Parse(layout, str)
 				logs.WriteLog("Admin", "modification de la date de rendu du défi "+strconv.Itoa(numDefi))
 
-				BDD.ModifyDefi(numDefi, t_debut, t_fin)
+				DAO.ModifyDefi(numDefi, t_debut, t_fin)
 			}
 			if errorFile == nil {
 				logs.WriteLog("Admin", "modification du défi actuel")
-				path = config.PathDefis + "correction_" + strconv.Itoa(num_defi_actuel)
+				path = modele.PathDefis + "correction_" + strconv.Itoa(num_defi_actuel)
 				script, _ := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
 				defer script.Close()
 				io.Copy(script, file)
@@ -301,10 +302,10 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			logs.WriteLog("Admin", "ajout d'un nouveau défi du "+t_debut.String()+" au "+t_fin.String())
 
 			// ajouter a la table défis
-			BDD.AddDefi(t_debut, t_fin)
-			os.Mkdir(config.PathJeuDeTests+"test_defi_"+strconv.Itoa(num_defi_actuel+1), os.ModePerm)
+			DAO.AddDefi(t_debut, t_fin)
+			os.Mkdir(modele.PathJeuDeTests+"test_defi_"+strconv.Itoa(num_defi_actuel+1), os.ModePerm)
 			num_defi_actuel = num_defi_actuel + 1
-			path = config.PathDefis + "correction_" + strconv.Itoa(num_defi_actuel)
+			path = modele.PathDefis + "correction_" + strconv.Itoa(num_defi_actuel)
 
 			script, _ := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
 			defer script.Close()
@@ -322,7 +323,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			}
 
 			num2, _ := strconv.Atoi(num)
-			defi := BDD.GetDefi(num2)
+			defi := DAO.GetDefi(num2)
 			typeArchive := fileHeader.Header.Values("Content-Type")
 			fmt.Println(typeArchive)
 
@@ -333,15 +334,31 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			}
 			logs.WriteLog("Admin", "upload d'un test pour le défi n°"+num)
 			if !defi.JeuDeTest {
-				BDD.AddJeuDeTest(num2)
+				DAO.AddJeuDeTest(num2)
 			} else if defi.Num == defi_actuel.Num {
 				// Si on change le défi ACTUEL
-				BDD.ResetEtatDefi(num2)
-				/*
-				 * (soit tous les étudiants, soit uniquement les étudiant ayant envoyé un script (enregistré dans Resultat)
-				 * pour leur dire que le jeu de test a changé et que leur résultat est repassé à "non testé"
-				 */
-				etudiants := BDD.GetEtudiantsMail()
+				//Récupère les étudiants ayant réussi le test avant que le jeu de test change
+				etudiantsReussi := DAO.GetResultatsByEtat(num2, 1)
+				for _, etu := range etudiantsReussi { //retest le scripts de ces étudiants
+					testeur.Test(etu.Login)
+				}
+				etudiantsFailed := DAO.GetResultatsByEtat(num2, 1)
+				//on récupère un string contenant tous les logins des étudiants qui sont passés de l'état réussi à échoué après avoir changé le jeu de test
+				loginToSendMail := ""
+				for _, etuFail := range etudiantsFailed {
+					for _, etuSucess := range etudiantsReussi {
+						if etuFail.Login == etuSucess.Login {
+							loginToSendMail = loginToSendMail + " " + etuFail.Login
+						}
+					}
+				}
+
+				etuToSendMail := make([]modele.EtudiantMail, 0)
+				for _, etu := range DAO.GetEtudiantsMail() { //Pour récupérer que les mails des étudiants à qui on veut envoyer un mail
+					if strings.Contains(loginToSendMail, etu.Login) {
+						etuToSendMail = append(etuToSendMail, etu)
+					}
+				}
 
 				file, err := os.Open("mailConf.json")
 				if err != nil {
@@ -358,7 +375,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				}
 				defer file.Close()
 
-				resultatsEnvois := sendMailChange(etudiants, defi_actuel.Num, configSender)
+				resultatsEnvois := sendMailChange(etuToSendMail, defi_actuel.Num, configSender)
 				for _, res := range resultatsEnvois {
 					if res.send == false {
 						logs.WriteLog("Envoi de mails : ", "Erreur lors de l'envoi de mails à l'adresse : "+res.adress+" erreur : "+res.erreur)
@@ -366,11 +383,11 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			//if dossier de test existe déjà, on le supprime
-			pathTest := config.PathJeuDeTests + "test_defi_" + num
-			if manipStockage.Contains(config.PathJeuDeTests, "test_defi_"+num) {
+			pathTest := modele.PathJeuDeTests + "test_defi_" + num
+			if manipStockage.Contains(modele.PathJeuDeTests, "test_defi_"+num) {
 				os.RemoveAll(pathTest)
 			}
-			fichier, _ := os.Create(config.PathJeuDeTests + fileHeader.Filename) // remplacer handler.Filename par le nom et on le place où on veut
+			fichier, _ := os.Create(modele.PathJeuDeTests + fileHeader.Filename) // remplacer handler.Filename par le nom et on le place où on veut
 			defer fichier.Close()
 			io.Copy(fichier, file)
 			os.Chmod(fichier.Name(), 777)
@@ -379,25 +396,25 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				cmd := exec.Command("unzip", "-d",
 					"test_defi_"+strconv.Itoa(num_defi_actuel),
 					fileHeader.Filename)
-				cmd.Dir = config.PathJeuDeTests
+				cmd.Dir = modele.PathJeuDeTests
 				cmd.Run()
 				dosTest := manipStockage.GetFiles(pathTest)
 				if len(dosTest) == 1 {
-					os.Rename(pathTest+"/"+dosTest[0], config.PathJeuDeTests+"temp")
+					os.Rename(pathTest+"/"+dosTest[0], modele.PathJeuDeTests+"temp")
 					os.RemoveAll(pathTest)
-					os.Rename(config.PathJeuDeTests+"temp", pathTest)
+					os.Rename(modele.PathJeuDeTests+"temp", pathTest)
 				}
 			} else if typeArchive[0] == "application/x-tar" || typeArchive[0] == "application/tar" {
 				cmd := exec.Command("tar", "tf", fileHeader.Filename)
-				cmd.Dir = config.PathJeuDeTests
+				cmd.Dir = modele.PathJeuDeTests
 				output, _ := cmd.CombinedOutput()
 				nomArchive := strings.Split(string(output), "\n")[0]
 				cmd = exec.Command("tar", "xvf", fileHeader.Filename)
-				cmd.Dir = config.PathJeuDeTests
+				cmd.Dir = modele.PathJeuDeTests
 				if err := cmd.Run(); err != nil {
 					fmt.Println(err.Error())
 				}
-				os.Rename(config.PathJeuDeTests+nomArchive, pathTest)
+				os.Rename(modele.PathJeuDeTests+nomArchive, pathTest)
 			}
 
 			os.Remove(fichier.Name())
@@ -409,7 +426,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query()["form"][0] == "changeId" {
 			login := r.FormValue("loginAd")
 			password := r.FormValue("passwordAd")
-			BDD.RegisterAdminString(login, password)
+			DAO.RegisterAdminString(login, password)
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 		}
@@ -425,11 +442,11 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			port := r.FormValue("portConf")
 
 			//Fichier de config
-			err := os.Remove(config.PathRoot + "mailConf.json") // On le suppr pour être sûr
+			err := os.Remove(modele.PathRoot + "mailConf.json") // On le suppr pour être sûr
 			if err != nil {
 				fmt.Println("Pas de fichier mailConf.json")
 			}
-			fConf, err := os.OpenFile(config.PathRoot+"mailConf.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModeAppend) // On l'ouvre
+			fConf, err := os.OpenFile(modele.PathRoot+"mailConf.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModeAppend) // On l'ouvre
 			if err != nil {
 				data.Log = []string{"Erreur pour récupérer le fichier de config de mail"}
 			} else {
@@ -450,7 +467,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func sendMailResults(etudiants []config.EtudiantMail, nbDefis int, config SenderData) []ResultMail { // Authentication sur le serveur de mail
+func sendMailResults(etudiants []modele.EtudiantMail, nbDefis int, config SenderData) []ResultMail { // Authentication sur le serveur de mail
 
 	auth := smtp.PlainAuth("", config.Username, config.Password, config.SmtpHost)
 	c := make(chan ResultMail)
@@ -540,7 +557,7 @@ func sendMailResults(etudiants []config.EtudiantMail, nbDefis int, config Sender
 	return resultatsEnvois
 }
 
-func sendMailCorrecteur(etudiant config.EtudiantMail, nbDefi int, config SenderData) ResultMail {
+func sendMailCorrecteur(etudiant modele.EtudiantMail, nbDefi int, config SenderData) ResultMail {
 	// Authentication sur le serveur de mail
 
 	auth := smtp.PlainAuth("", config.Username, config.Password, config.SmtpHost)
@@ -582,7 +599,7 @@ func sendMailCorrecteur(etudiant config.EtudiantMail, nbDefi int, config SenderD
 	}
 }
 
-func sendMailChange(etudiants []config.EtudiantMail, nbDefi int, config SenderData) []ResultMail { // Authentication sur le serveur de mail
+func sendMailChange(etudiants []modele.EtudiantMail, nbDefi int, config SenderData) []ResultMail { // Authentication sur le serveur de mail
 
 	auth := smtp.PlainAuth("", config.Username, config.Password, config.SmtpHost)
 	c := make(chan ResultMail)

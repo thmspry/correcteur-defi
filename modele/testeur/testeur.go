@@ -3,8 +3,8 @@ package testeur
 import (
 	"bufio"
 	"bytes"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/BDD"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/config"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/DAO"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/logs"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/manipStockage"
 	"os"
@@ -17,9 +17,9 @@ import (
 /*
 Fonction a appelé pour tester
 */
-func Test(login string) (string, []config.Resultat) {
+func Test(login string) (string, []modele.ResultatTest) {
 
-	var resTest = make([]config.Resultat, 0) // Resultat
+	var resTest = make([]modele.ResultatTest, 0) // ResultatTest
 	messageDeRetour := ""
 	etatTestGlobal := 1 // État du test des tests (1,0,-1)
 
@@ -48,7 +48,7 @@ func Test(login string) (string, []config.Resultat) {
 	manipStockage.Clear(PathDirTest, nil)
 
 	//Récupérer le défi actuel
-	numDefi := BDD.GetDefiActuel().Num
+	numDefi := DAO.GetDefiActuel().Num
 	correction := "correction_" + strconv.Itoa(numDefi)
 	scriptEtu := "script_" + login + "_" + strconv.Itoa(numDefi)
 	jeuDeTest := "test_defi_" + strconv.Itoa(numDefi) + "/"
@@ -56,12 +56,12 @@ func Test(login string) (string, []config.Resultat) {
 	// Début du testUnique
 
 	// Donne les droits d'accès et de modifications à l'étudiant
-	exec.Command("sudo", "chown", login, config.PathScripts+scriptEtu).Run()
+	exec.Command("sudo", "chown", login, modele.PathScripts+scriptEtu).Run()
 	exec.Command("sudo", "chown", login, PathDirTest).Run()
 
-	os.Rename(config.PathDefis+correction, PathDirTest+correction)
-	os.Rename(config.PathScripts+scriptEtu, PathDirTest+scriptEtu)
-	os.Rename(config.PathJeuDeTests+jeuDeTest, PathDirTest+jeuDeTest)
+	os.Rename(modele.PathDefis+correction, PathDirTest+correction)
+	os.Rename(modele.PathScripts+scriptEtu, PathDirTest+scriptEtu)
+	os.Rename(modele.PathJeuDeTests+jeuDeTest, PathDirTest+jeuDeTest)
 
 	os.Chmod(PathDirTest+scriptEtu, 0700) // script exécutable uniquement par l'utilisateur qui le possède
 	os.Chmod(PathDirTest+correction, 0700)
@@ -86,21 +86,21 @@ func Test(login string) (string, []config.Resultat) {
 		manipStockage.Clear(PathDirTest, []string{jeuDeTest, correction, scriptEtu})
 
 		if res.Etat == 0 {
-			BDD.SaveResultat(login, numDefi, 0, resTest, false)
+			DAO.SaveResultat(login, numDefi, 0, resTest, false)
 			messageDeRetour = "Le cas de test n°" + strconv.Itoa(i) + " n'est pas passé"
 			etatTestGlobal = 0
 			i = len(tabTest)
 		}
 		if res.Etat == -1 {
-			BDD.SaveResultat(login, numDefi, 0, resTest, false)
+			DAO.SaveResultat(login, numDefi, 0, resTest, false)
 			messageDeRetour = "Il y a eu un erreur lors du CasTest n°" + strconv.Itoa(i)
 			etatTestGlobal = 0
 			i = len(tabTest)
 		}
 	}
-	os.Rename(PathDirTest+correction, config.PathDefis+correction)
-	os.Rename(PathDirTest+scriptEtu, config.PathScripts+scriptEtu)
-	os.Rename(PathDirTest+jeuDeTest, config.PathJeuDeTests+jeuDeTest)
+	os.Rename(PathDirTest+correction, modele.PathDefis+correction)
+	os.Rename(PathDirTest+scriptEtu, modele.PathScripts+scriptEtu)
+	os.Rename(PathDirTest+jeuDeTest, modele.PathJeuDeTests+jeuDeTest)
 
 	//supprime l'user et son dossier
 	exec.Command("sudo", "userdel", login).Run()
@@ -110,7 +110,7 @@ func Test(login string) (string, []config.Resultat) {
 		messageDeRetour = "Vous avez passé tous les tests avec succès"
 	}
 	logs.WriteLog(login, "testeur défi"+strconv.Itoa(numDefi)+", état : "+strconv.Itoa(etatTestGlobal))
-	BDD.SaveResultat(login, numDefi, etatTestGlobal, resTest, false)
+	DAO.SaveResultat(login, numDefi, etatTestGlobal, resTest, false)
 	return messageDeRetour, resTest
 }
 
@@ -131,7 +131,7 @@ Si non :
 	- compare stdout du défis et de l'étudiant
 	- retunr 1 si c'est pareil, 0 sinon
 */
-func testeurUnique(correction string, script_user string, login string, test config.CasTest, PathDirTest string) config.Resultat {
+func testeurUnique(correction string, script_user string, login string, test modele.CasTest, PathDirTest string) modele.ResultatTest {
 	//o, _ := exec.Command("ls", "-R", "-l", PathDirTest).CombinedOutput()
 	//fmt.Println(string(o))
 	var stdoutEtu, stdoutCorrection, stderr bytes.Buffer
@@ -140,13 +140,13 @@ func testeurUnique(correction string, script_user string, login string, test con
 		args = append(args, arg.Nom)
 	}
 	argsString := strings.Join(args, " ")
-	res := config.Resultat{
+	res := modele.ResultatTest{
 		Etat:           0,
-		Res_etu:        make([]config.Retour, 0),
-		Res_correction: make([]config.Retour, 0),
+		Res_etu:        make([]modele.Retour, 0),
+		Res_correction: make([]modele.Retour, 0),
 		Error_message:  "",
 	}
-	retour := config.Retour{
+	retour := modele.Retour{
 		Nom:     "",
 		Contenu: "",
 	}
@@ -279,38 +279,38 @@ func difference(slice1 []string, slice2 []string) []string {
 	return diff
 }
 
-func TestArtificiel(login string) (string, []config.Resultat) {
+func TestArtificiel(login string) (string, []modele.ResultatTest) {
 
-	var resTest []config.Resultat
-	var res config.Resultat
+	var resTest []modele.ResultatTest
+	var res modele.ResultatTest
 
-	retour1 := config.Retour{
+	retour1 := modele.Retour{
 		Nom:     "test1",
 		Contenu: "plop",
 	}
-	retour2 := config.Retour{
+	retour2 := modele.Retour{
 		Nom:     "test1",
 		Contenu: "plop",
 	}
-	Castest := config.CasTest{
+	Castest := modele.CasTest{
 		Nom:       "1",
-		Arguments: []config.Retour{retour1, retour2},
+		Arguments: []modele.Retour{retour1, retour2},
 	}
-	res = config.Resultat{
+	res = modele.ResultatTest{
 		Etat:           1,
 		CasTest:        Castest,
-		Res_etu:        []config.Retour{retour1, retour2},
-		Res_correction: []config.Retour{retour1, retour2},
+		Res_etu:        []modele.Retour{retour1, retour2},
+		Res_correction: []modele.Retour{retour1, retour2},
 		Error_message:  "",
 	}
 
 	resTest = append(resTest, res)
 
-	res = config.Resultat{
+	res = modele.ResultatTest{
 		Etat:           0,
 		CasTest:        Castest,
-		Res_etu:        []config.Retour{retour1, retour2},
-		Res_correction: []config.Retour{retour1, retour2},
+		Res_etu:        []modele.Retour{retour1, retour2},
+		Res_correction: []modele.Retour{retour1, retour2},
 		Error_message:  "Il y a eu une erreur quelque part",
 	}
 
@@ -321,10 +321,10 @@ func TestArtificiel(login string) (string, []config.Resultat) {
 
 //testé
 
-func getConfigTest(path string, jt string) ([]config.CasTest, error) {
-	var tabTest []config.CasTest
-	var testUnique config.CasTest
-	var arg config.Retour
+func getConfigTest(path string, jt string) ([]modele.CasTest, error) {
+	var tabTest []modele.CasTest
+	var testUnique modele.CasTest
+	var arg modele.Retour
 	f, err := os.Open(path + "config")
 	if err != nil {
 		logs.WriteLog("getConfigTest open config", err.Error())
@@ -342,7 +342,7 @@ func getConfigTest(path string, jt string) ([]config.CasTest, error) {
 				arg.Nom = jt + argument
 			}
 			testUnique.Arguments = append(testUnique.Arguments, arg)
-			arg = config.Retour{}
+			arg = modele.Retour{}
 		}
 		tabTest = append(tabTest, testUnique)
 		testUnique.Arguments = nil
