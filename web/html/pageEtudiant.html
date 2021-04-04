@@ -23,10 +23,14 @@
                 <p class="italic">{{.UserInfo.Mail}}</p>
             </div>
             <div id="content" class="block">
-                {{if eq .DefiActuel.Num -1}}
+                {{if eq .DefiActuel.Num 0}}
                 <h2>Il n'y a pas défi en cours.</h2>
                 {{else}}
                 <h2>Défi actuel : Défi n°{{.DefiActuel.Num}}</h2>
+                {{if not .DefiActuel.JeuDeTest}}
+                <h3>Il n'y a pas encore de jeu de test enregistré</h3>
+                <h3>Vous ne pouvez donc pas encore envoyer de script</h3>
+                {{else}}
                 {{if .DefiSent}}
                 <p>Vous avez déjà rendu un script pour ce défi.</p>
                 {{if eq .ResultatDefi.Etat 1}}
@@ -41,8 +45,9 @@
                 {{end}}
                 <p>IMPORTANT : le script doit contenir "!/bin/bash"</p>
                 {{end}}
+                {{end}}
             </div>
-            {{if not (eq .ResultatDefi.Etat 1)}}
+            {{if and (.DefiActuel.JeuDeTest) (and (not (eq .DefiActuel.Num 0)) (not (eq .ResultatDefi.Etat 1)))}}
             <div id="file">
                 <form enctype="multipart/form-data" action="/pageEtudiant?upload" method="post">
                     <div class="chose-file">
@@ -74,7 +79,7 @@
     </div>
 </div>
 {{end}}
-{{if not (eq .ResultatDefi.Etat 1)}}
+{{if and (.DefiActuel.JeuDeTest) (and (not (eq .DefiActuel.Num 0)) (not (eq .ResultatDefi.Etat 1)))}}
 <a href="/pageEtudiant?test" id="test-script">
     <img src="./web/assets/images/play-triangle.png">
     <p>Tester son script</p>

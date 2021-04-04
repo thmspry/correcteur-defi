@@ -49,8 +49,10 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
         var instancesDate = M.Datepicker.init(elems, optionsDatePicker);
         var timers = document.querySelectorAll('.timepicker')
         var instancesTime = M.Timepicker.init(timers, {
-            twelveHour:false
+            twelveHour:false,
+            defaultTime: new Date().toLocaleTimeString()
         });
+
 
     })
 
@@ -153,6 +155,7 @@ async function init() {
         return data
     });
     // waits until the request completes...
+    console.log(defiActuel)
     let dateDParse = defiActuel.DateDebut.split('T')
     let dateFParse = defiActuel.DateFin.split('T')
     let para = document.querySelector('#TestDeposer');

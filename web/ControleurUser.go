@@ -51,12 +51,8 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		ResTest:      DAO.GetResultatTest(etu.Login),
 		ResultatDefi: DAO.GetResult(etu.Login, numDefiActuel),
 	}
-	if data.DefiActuel.Num != -1 {
-		if time.Now().Sub(data.DefiActuel.DateDebut) < 0 || time.Now().Sub(data.DefiActuel.DateFin) > 0 {
-			data.DefiActuel.Num = -1
-		}
-	}
-	if data.DefiActuel.Num != -1 {
+
+	if data.DefiActuel.Num != 0 {
 		data.DefiSent = manipStockage.Contains(modele.PathScripts, "script_"+etu.Login+"_"+strconv.Itoa(data.DefiActuel.Num))
 	}
 
@@ -77,8 +73,9 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if r.URL.Query()["test"] != nil {
-			data.MsgRes, data.ResTest = testeur.Test(etu.Login)
-			//data.MsgRes, data.ResTest = testeur.TestArtificiel("E197051L")
+			//data.MsgRes, data.ResTest = testeur.Test(etu.Login)
+			data.MsgRes, data.ResTest = testeur.TestArtificiel("E197051L")
+			DAO.SaveResultat("E197051L", 1, 1, data.ResTest, false)
 		}
 
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))

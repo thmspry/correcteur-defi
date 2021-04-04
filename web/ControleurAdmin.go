@@ -81,12 +81,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		ListeDefis: DAO.GetDefis(),
 		Logs:       manipStockage.GetFiles(modele.PathLog),
 	}
-	//if date actuelle > defi actel.datefin alors defiactuel.num = -1
-	if data.DefiActuel.Num != -1 {
-		if time.Now().Sub(data.DefiActuel.DateDebut) < 0 || time.Now().Sub(data.DefiActuel.DateFin) > 0 {
-			data.DefiActuel.Num = -1
-		}
-	}
+
 	fmt.Println(r.URL.String())
 	if r.Method == "GET" {
 
@@ -244,14 +239,18 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if r.URL.Query()["form"][0] == "DeleteDefi" {
-			lastDefi := data.ListeDefis[0]
-			os.Remove(modele.PathDefis + "correction_" + strconv.Itoa(lastDefi.Num))
-			err := os.RemoveAll(modele.PathJeuDeTests + "test_defi_" + strconv.Itoa(lastDefi.Num))
-			if err != nil {
-				fmt.Println(err.Error())
+			if len(data.ListeDefis) > 0 {
+				lastDefi := data.ListeDefis[len(data.ListeDefis)-1]
+				os.Remove(modele.PathDefis + "correction_" + strconv.Itoa(lastDefi.Num))
+				err := os.RemoveAll(modele.PathJeuDeTests + "test_defi_" + strconv.Itoa(lastDefi.Num))
+				if err != nil {
+					fmt.Println(err.Error())
+				}
+				DAO.DeleteLastDefi(lastDefi.Num)
+				logs.WriteLog("Delete défi", "vous avez supprimer le défi N°"+strconv.Itoa(lastDefi.Num))
+			} else {
+				logs.WriteLog("Delete défi", "vous ne pouvez pas supprimer un défi si la liste est vide")
 			}
-			DAO.DeleteLastDefi(lastDefi.Num)
-			logs.WriteLog("Delete défi", "vous avez supprimer le défi N°"+strconv.Itoa(lastDefi.Num))
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 
@@ -342,7 +341,8 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				for _, etu := range etudiantsReussi { //retest le scripts de ces étudiants
 					testeur.Test(etu.Login)
 				}
-				etudiantsFailed := DAO.GetResultatsByEtat(num2, 1)
+				etudiantsFailed := DAO.GetResultatsByEtat(num2, 0)
+				etudiantsFailed = append(etudiantsFailed, DAO.GetResultatsByEtat(num2, -1)...)
 				//on récupère un string contenant tous les logins des étudiants qui sont passés de l'état réussi à échoué après avoir changé le jeu de test
 				loginToSendMail := ""
 				for _, etuFail := range etudiantsFailed {
@@ -352,7 +352,6 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 						}
 					}
 				}
-
 				etuToSendMail := make([]modele.EtudiantMail, 0)
 				for _, etu := range DAO.GetEtudiantsMail() { //Pour récupérer que les mails des étudiants à qui on veut envoyer un mail
 					if strings.Contains(loginToSendMail, etu.Login) {
