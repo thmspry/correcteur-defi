@@ -100,18 +100,16 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		//
 		if r.URL.Query()["Defi"] != nil {
 			num, _ := strconv.Atoi(r.URL.Query()["Defi"][0])
 			data.DefiSelect = DAO.GetDefi(num)
 			data.Correcteur = DAO.GetCorrecteur(num)
-			fmt.Println("data.correcteur = ", data.Correcteur)
 			data.Participants = DAO.GetParticipants(num)
+			fmt.Println(data.Participants)
 			if etu := r.URL.Query()["Etudiant"]; etu != nil {
-				fmt.Println(etu)
 				f, err := os.Open(modele.PathScripts + "script_" + etu[0] + "_" + strconv.Itoa(data.DefiSelect.Num))
 				if err != nil {
-					data.File[0] = "erreur pour récupérer le script de l'étudiant"
+					data.File[0] = "erreur pour récupérer le script_E197051L_1 de l'étudiant"
 				} else {
 					scanner := bufio.NewScanner(f)
 					for scanner.Scan() {
@@ -119,12 +117,13 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 				if etat := r.URL.Query()["Etat"]; etat != nil {
-
 					if etat[0] == "1" {
 						DAO.SaveResultat(etu[0], num, 0, nil, true)
 					} else {
 						DAO.SaveResultat(etu[0], num, 1, nil, true)
 					}
+					http.Redirect(w, r, "/pageAdmin?Defi="+strconv.Itoa(num), http.StatusFound)
+					return
 				}
 			}
 
@@ -631,7 +630,7 @@ func sendMailChange(etudiants []modele.EtudiantMail, nbDefi int, config SenderDa
 
 			body := "Changement des jeux de test pour le défis n°" + strconv.Itoa(nbDefi) + "\n\n" +
 				"Bonjour " + etudiant.Prenom + " " + etudiant.Nom + "\n" +
-				"Les test de correction ont été changés, ainsi votre script n'est plus enregistré comme testé" +
+				"Les test de correction ont été changés, ainsi votre script_E197051L_1 n'est plus enregistré comme testé" +
 				"et n'est peut être plus valide. \n" +
 				"Veuillez le retester afin de valider le défis"
 

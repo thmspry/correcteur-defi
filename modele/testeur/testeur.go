@@ -63,7 +63,7 @@ func Test(login string) (string, []modele.ResultatTest) {
 	os.Rename(modele.PathScripts+scriptEtu, PathDirTest+scriptEtu)
 	os.Rename(modele.PathJeuDeTests+jeuDeTest, PathDirTest+jeuDeTest)
 
-	os.Chmod(PathDirTest+scriptEtu, 0700) // script exécutable uniquement par l'utilisateur qui le possède
+	os.Chmod(PathDirTest+scriptEtu, 0700) // script_E197051L_1 exécutable uniquement par l'utilisateur qui le possède
 	os.Chmod(PathDirTest+correction, 0700)
 	exec.Command("chmod", "-R", "555", PathDirTest+jeuDeTest).Run() //5 = r-x
 	// r pour que les scripts puissent lire le contenu des cas de test
@@ -116,17 +116,17 @@ func Test(login string) (string, []modele.ResultatTest) {
 
 /*
 Fonctionnement du testeur unique :
-- execute le script du defis
+- execute le script_E197051L_1 du defis
 - stock le résultat de celui-ci
 - regarde si il y a eu des nouveaux fichiers qui ont été crée ou non
 Si oui :
 	- stock le contenu des nouveaux fichiers et leurs Nom dans une map
-	- lance le script etu
+	- lance le script_E197051L_1 etu
 	- stock le contenu des fichiers et leurs noms dans une map étudiant
 	- compare le contenu des fichiers
 	- return 1 si c'est pareil, 0 sinon
 Si non :
-	- lance le script étu
+	- lance le script_E197051L_1 étu
 	- stock son retour imédiat (stdout)
 	- compare stdout du défis et de l'étudiant
 	- retunr 1 si c'est pareil, 0 sinon
@@ -158,8 +158,8 @@ func testeurUnique(correction string, script_user string, login string, test mod
 	cmd.Stdout = &stdoutCorrection
 	err := cmd.Run()
 	if err != nil {
-		logs.WriteLog("testeur ("+login+")", "Erreur execution script de correction : "+string(stderr.Bytes()))
-		res.Error_message = "erreur execution du script de correction\n" + string(stderr.Bytes())
+		logs.WriteLog("testeur ("+login+")", "Erreur execution script_E197051L_1 de correction : "+string(stderr.Bytes()))
+		res.Error_message = "erreur execution du script_E197051L_1 de correction\n" + string(stderr.Bytes())
 		res.Etat = -1
 		return res
 	}
@@ -170,7 +170,7 @@ func testeurUnique(correction string, script_user string, login string, test mod
 		diff := difference(arboAvant, arboApres)
 		mapCorrection := make(map[string]string)
 		mapEtu := make(map[string]string)
-		//boucle qui enregistre les fichiers créé par le script de correction
+		//boucle qui enregistre les fichiers créé par le script_E197051L_1 de correction
 		for _, name := range diff {
 			//On donne seulement le droit de lecture sur les jeux de CasTest
 			exec.Command("chmod", "777", PathDirTest+name).Run()
@@ -187,7 +187,7 @@ func testeurUnique(correction string, script_user string, login string, test mod
 
 			res.Res_correction = append(res.Res_correction, retour)
 		}
-		//execution script étudiant
+		//execution script_E197051L_1 étudiant
 
 		cmdUser := PathDirTest + script_user + " " + argsString
 		cmd := exec.Command("sudo", "-H", "-u", login, "bash", "-c", cmdUser)
@@ -195,13 +195,13 @@ func testeurUnique(correction string, script_user string, login string, test mod
 		cmd.Stderr = &stderr
 		err := cmd.Run()
 		if err != nil {
-			logs.WriteLog("testeur ("+login+")", "Erreur execution script etudiant "+login+": "+string(stderr.Bytes()))
-			res.Error_message = "erreur execution du script de l'étudiant\n" + string(stderr.Bytes())
+			logs.WriteLog("testeur ("+login+")", "Erreur execution script_E197051L_1 etudiant "+login+": "+string(stderr.Bytes()))
+			res.Error_message = "erreur execution du script_E197051L_1 de l'étudiant\n" + string(stderr.Bytes())
 			res.Etat = -1
 			return res
 		}
 
-		//boucle qui enregistre les fichiers créé par le script de l'étudiant
+		//boucle qui enregistre les fichiers créé par le script_E197051L_1 de l'étudiant
 		for _, name := range diff {
 			f, err := exec.Command("cat", PathDirTest+name).CombinedOutput()
 			if err != nil {
@@ -232,8 +232,8 @@ func testeurUnique(correction string, script_user string, login string, test mod
 		cmd.Stdout = &stdoutEtu
 		err := cmd.Run()
 		if err != nil {
-			logs.WriteLog("testeur ("+login+")", "Erreur execution du script étudiant : "+string(stderr.Bytes()))
-			res.Error_message = "erreur execution du script étudiant\n" + string(stderr.Bytes())
+			logs.WriteLog("testeur ("+login+")", "Erreur execution du script_E197051L_1 étudiant : "+string(stderr.Bytes()))
+			res.Error_message = "erreur execution du script_E197051L_1 étudiant\n" + string(stderr.Bytes())
 			res.Etat = -1
 			return res
 		}

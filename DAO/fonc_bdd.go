@@ -635,6 +635,12 @@ func GenerateCorrecteur(numDefi int) {
 		}
 	}
 	row.Close()
+
+	if len(t) == 0 {
+		m.Unlock()
+		logs.WriteLog("GetCorrecteur", "Aucun correcteur n'a pu être choisi car aucun étudiant n'a passé le défi")
+		return
+	}
 	rand.Seed(time.Now().UnixNano())
 	min := 0
 	max := len(t) - 1
@@ -715,14 +721,15 @@ func GetParticipants(numDefi int) []modele.ParticipantDefi {
 	var res modele.ParticipantDefi
 	resT := make([]modele.ParticipantDefi, 0)
 
-	row, err := db.Query("SELECT * FROM Etudiant e, Resultat r WHERE e.login = r.login AND r.defi = ? ORDER BY nom", numDefi)
+	row, err := db.Query("SELECT e.login, e.prenom, e.nom, r.defi, r.etat, r.tentative FROM Etudiant e, Resultat r WHERE e.login = r.login AND r.defi = ? ORDER BY nom", numDefi)
 	if err != nil {
 		logs.WriteLog("DAO.GetParticipants", err.Error())
 	}
 	for row.Next() {
-		err = row.Scan(&res.Etudiant.Login, &res.Etudiant.Password, &res.Etudiant.Prenom, &res.Etudiant.Nom,
-			&res.Etudiant.Correcteur, &res.Etudiant.ResDefiActuel,
-			&res.Resultat.Login, &res.Resultat.Defi, &res.Resultat.Etat, &res.Resultat.Tentative)
+		err = row.Scan(&res.Etudiant.Login, &res.Etudiant.Prenom, &res.Etudiant.Nom, &res.Resultat.Defi, &res.Resultat.Etat, &res.Resultat.Tentative)
+		//err = row.Scan(&res.Etudiant.Login, &res.Etudiant.Password, &res.Etudiant.Prenom, &res.Etudiant.Nom,
+		//	&res.Etudiant.Correcteur, &res.Etudiant.ResDefiActuel,
+		//	&res.Resultat.Login, &res.Resultat.Defi, &res.Resultat.Etat, &res.Resultat.Tentative)
 		if err != nil {
 			logs.WriteLog("DAO.GetParticipants", err.Error())
 		}
