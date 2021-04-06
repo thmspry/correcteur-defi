@@ -82,9 +82,9 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if r.URL.Query()["test"] != nil {
-			//data.MsgRes, data.ResTest = testeur.Test(etu.Login)
+			data.MsgRes, data.ResTest = testeur.Test(etu.Login)
 			//data.MsgRes, data.ResTest = testeur.TestArtificielEchec("E197051L")
-			data.MsgRes, data.ResTest = testeur.TestArtificielReussite("E197051L")
+			//data.MsgRes, data.ResTest = testeur.TestArtificielReussite("E197051L")
 			for _, test := range data.ResTest {
 				if test.Etat == 1 {
 					data.NbTestReussi++
