@@ -2,7 +2,7 @@
 
 
 /**
- * Fonction assyncrone pour récuperer tous les défis en Json
+ * Fonction asyncrone pour récupérer tous les défis en Json
  * @returns {Promise<*>}
  */
 async function getDefis() {
@@ -88,8 +88,12 @@ tabLi.forEach(li => li.addEventListener('click', function() {
 
 // -------------- Fonctions --------------
 
-/*
-Fonction qui permet de récupérer seulement le nom du fichier à partir d'un path en paramètre
+
+
+/**
+ * Fonction qui permet de récupérer seulement le nom du fichier à partir d'un path en paramètre
+ * @param filePath path du fichier comportant des '/' ou '\'
+ * @returns {*} le nom du fichier
  */
 function getFileName(filePath) {
     let filePathSplit;
@@ -101,8 +105,9 @@ function getFileName(filePath) {
     return filePathSplit[filePathSplit.length-1];
 }
 
-/*
-Function qui permet de modifier un label par le fichier entré dans un input
+/**
+ * Function qui permet de modifier un label par le fichier entré dans un input
+ * @param selector l'input voulu
  */
 function changeInputFile(selector) {
     let input = document.querySelector(selector + " input");
@@ -112,8 +117,12 @@ function changeInputFile(selector) {
     });
 }
 
-/*
-Function qui permet de modifier les valeur par défaut dans des input date, suivant le défi selectionné
+
+/**
+ * Function qui permet de modifier les valeur par défaut dans des input date, suivant le défi selectionné
+ * @param event l'événement
+ * @param divID l'ID de la div comportant l'input Date
+ * @constructor
  */
 function ChangeDateInput(event, divID) {
     fetch("/GetDefis")
@@ -133,6 +142,10 @@ function ChangeDateInput(event, divID) {
         .catch(err => console.log(err))
 }
 
+/**
+ * Vérifie si le jeu de test à été envoyé et modifier l'HTML en conséquence
+ * @param event l'événement
+ */
 function checkJeuDeTestSent(event) {
     fetch("/GetDefis")
         .then(response => response.json())
@@ -148,6 +161,10 @@ function checkJeuDeTestSent(event) {
         })
 }
 
+/**
+ * Mets en place les date au chargement de la page
+ * @returns {Promise<void>} la promesse
+ */
 async function init() {
     const defiActuel = await fetch('/GetDefiActuel')
         .then((response) => response.json())
@@ -166,5 +183,5 @@ async function init() {
     }
 }
 
-
+// Appelé à chaque (re)chargement
 init()

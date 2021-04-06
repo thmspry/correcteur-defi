@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var instanceTab = M.Tabs.init(el, optionsTabs);
     instanceTab.select(localStorage.getItem("current-tab"));
 
+    // Pour renvoyer sur l'onglet login après l'inscription
     let registerButton = document.querySelector("#register .button");
     registerButton.addEventListener("click", function () {
         localStorage.setItem("current-tab", "login");

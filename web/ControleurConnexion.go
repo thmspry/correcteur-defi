@@ -13,8 +13,8 @@ import (
 )
 
 type dataConnexion struct {
-	ConnexionErreur bool
-	NumEtuExist     bool
+	Error    bool
+	ErrorMsg string
 }
 
 /*
@@ -92,7 +92,8 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				} else {
 					// On passe des données à la vue pour faire afficher un message d'erreur
 					data := dataConnexion{
-						ConnexionErreur: true,
+						Error:    true,
+						ErrorMsg: "Une erreur login/mot de passe est survenue",
 					}
 					err = page.Execute(w, data)
 					if err != nil {
@@ -113,7 +114,8 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 					logs.WriteLog("Erreur chargement accueil.html : ", err.Error())
 				} else {
 					loginExist := r.FormValue("login")
-					data.NumEtuExist = true
+					data.Error = true
+					data.ErrorMsg = "L'identifiant entré est déjà utilisé"
 					fmt.Println("Ce login (", loginExist, ") existe déjà")
 					logs.WriteLog("Already Exist : ", "Ce login ("+loginExist+") existe déjà")
 					err = page.Execute(w, data)
@@ -123,7 +125,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				}
 			} else {
 				// Si le login n'est pas déjà utilisé
-				data.NumEtuExist = false
+				data.Error = false
 				etu := modele.Etudiant{
 					Login:    r.FormValue("login"),
 					Password: r.FormValue("password"),
@@ -179,7 +181,7 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 				logs.WriteLog("Erreur chargement connexionAdmin.html : ", err.Error())
 			} else {
 				data := dataConnexion{
-					ConnexionErreur: false,
+					Error: false,
 				}
 				err = page.Execute(w, data)
 				if err != nil {
@@ -219,7 +221,8 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 					logs.WriteLog("Erreur du chargement de la page connexionAdmin.html : ", err.Error())
 				} else {
 					data := dataConnexion{
-						ConnexionErreur: true,
+						Error:    true,
+						ErrorMsg: "Une erreur login/mot de passe est survenue",
 					}
 					err = page.Execute(w, data)
 					if err != nil {

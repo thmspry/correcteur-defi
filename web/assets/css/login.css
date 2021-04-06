@@ -43,10 +43,6 @@ input[type=submit]:hover {
     margin-bottom: 50px;
 }
 
-#login form {
-
-}
-
 /* Redefinition du framework */
 .row #login, #register {
     height: 400px;

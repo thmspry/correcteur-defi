@@ -5,6 +5,7 @@
     <title>Accueil</title>
     <link rel="icon" type="image/png" href="./web/assets/images/logo.png" />
     <link rel="stylesheet" href="./web/assets/css/materialize.min.css">
+    <link rel="stylesheet" href="./web/assets/css/global.css">
     <link rel="stylesheet" href="./web/assets/css/login.css">
 </head>
 <body>
@@ -47,17 +48,13 @@
     <a class="button change-page" href="/loginAdmin">Connexion Admin</a>
 </div>
 
+
+
 <script src="./web/assets/js/materialize.min.js"></script>
 <script src="./web/assets/js/login.js"></script>
-
-{{if eq .ConnexionErreur true}}
-<script src="./web/assets/js/erreurConnexion.js"></script>
+{{if .Error}}
+    <p id="MsgError">{{.ErrorMsg}}</p>
+    <script src="./web/assets/js/erreur.js"></script>
 {{end}}
-
-{{if eq .NumEtuExist true}}
-<script src="./web/assets/js/erreurNumEtuExist.js"></script>
-{{end}}
-
-
 </body>
 </html>
