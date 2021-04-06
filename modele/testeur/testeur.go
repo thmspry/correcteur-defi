@@ -279,7 +279,47 @@ func difference(slice1 []string, slice2 []string) []string {
 	return diff
 }
 
-func TestArtificiel(login string) (string, []modele.ResultatTest) {
+func TestArtificielReussite(login string) (string, []modele.ResultatTest) {
+
+	var resTest []modele.ResultatTest
+	var res modele.ResultatTest
+
+	retour1 := modele.Retour{
+		Nom:     "test1",
+		Contenu: "plop",
+	}
+	retour2 := modele.Retour{
+		Nom:     "test1",
+		Contenu: "plop",
+	}
+	Castest := modele.CasTest{
+		Nom:       "1",
+		Arguments: []modele.Retour{retour1, retour2},
+	}
+	res = modele.ResultatTest{
+		Etat:           1,
+		CasTest:        Castest,
+		Res_etu:        []modele.Retour{retour1, retour2},
+		Res_correction: []modele.Retour{retour1, retour2},
+		Error_message:  "",
+	}
+
+	resTest = append(resTest, res)
+
+	res = modele.ResultatTest{
+		Etat:           1,
+		CasTest:        Castest,
+		Res_etu:        []modele.Retour{retour1, retour2},
+		Res_correction: []modele.Retour{retour1, retour2},
+		Error_message:  "",
+	}
+
+	resTest = append(resTest, res)
+
+	return "Vous avez passé tous les tests avec succès", resTest
+}
+
+func TestArtificielEchec(login string) (string, []modele.ResultatTest) {
 
 	var resTest []modele.ResultatTest
 	var res modele.ResultatTest
@@ -316,7 +356,17 @@ func TestArtificiel(login string) (string, []modele.ResultatTest) {
 
 	resTest = append(resTest, res)
 
-	return "Vous avez passé tous les tests avec succès", resTest
+	res = modele.ResultatTest{
+		Etat:           0,
+		CasTest:        Castest,
+		Res_etu:        []modele.Retour{retour1, retour2},
+		Res_correction: []modele.Retour{retour1, retour2},
+		Error_message:  "Il y a eu une erreur quelque part",
+	}
+
+	resTest = append(resTest, res)
+
+	return "Un ou plusieurs cas de test ont échoués", resTest
 }
 
 //testé

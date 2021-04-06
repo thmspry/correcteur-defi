@@ -89,16 +89,22 @@
 {{end}}
 <div class="res">
     <p id="ligne-commande"><span class="green-text"></span></p>
-    <h1 id="message-res" class="">
+    <h1 id="message-res">
         {{if eq .ResultatDefi.Etat 1}}
-            Vous avez réussi ce défi
+            Vous avez réussi ce défi</h1>
+            <img src="./web/assets/images/green-light.png">
         {{else}}
-            {{.MsgRes}}
-        {{end}}
-    </h1>
+            {{.MsgRes}}<br>
+                {{if ne .NbTestEchoue 0}}
+                    Vous avez réussi {{.NbTestReussi}} test(s) (sur {{ len .ResTest }}), et échoué ce test. Il vous reste {{.NbTestEchoue}} test à passer
+                {{end}}
+             </h1>
+
+    {{ $failedTest := false }}              <!--- Variable de template pour stop la boucle au premier test échoué --->
+    {{range .ResTest}}
     <div class="res-test">
-        {{range .ResTest}}
-            {{if not (eq .Etat 1) }}
+            {{if and (not (eq .Etat 1)) (eq $failedTest false)}}
+                {{ $failedTest = true }}    <!--- On détecte un test échoué --->
                 <div class="separator"></div>
                 <div class="testHeader">
                     <p>Test N°{{.CasTest.Nom}} :</p>
@@ -142,10 +148,12 @@
                         {{end}}
                     </div>
                 </div>
-            {{if .Error_message}}
-                <div  class="res-individuel errorMessage">{{.Error_message}}</div>
+                {{if .Error_message}}
+                    <div  class="res-individuel errorMessage">{{.Error_message}}</div>
+                {{end}}
             {{end}}
     </div>
+
     {{end}}
     {{end}}
 </div>

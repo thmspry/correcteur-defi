@@ -29,6 +29,8 @@ type data_pageEtudiant struct { // Données transmises à la page Etudiant
 	Script       []string
 	Error        bool
 	ErrorMsg     string
+	NbTestReussi int
+	NbTestEchoue int
 }
 
 /**
@@ -56,6 +58,8 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		ResultatDefi: DAO.GetResult(etu.Login, numDefiActuel),
 		Error:        false,
 		ErrorMsg:     "",
+		NbTestReussi: 0,
+		NbTestEchoue: 0,
 	}
 
 	if data.DefiActuel.Num != 0 {
@@ -78,11 +82,17 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if r.URL.Query()["test"] != nil {
-			data.MsgRes, data.ResTest = testeur.Test(etu.Login)
-			//data.MsgRes, data.ResTest = testeur.TestArtificiel("E197051L")
+			//data.MsgRes, data.ResTest = testeur.Test(etu.Login)
+			//data.MsgRes, data.ResTest = testeur.TestArtificielReussite("E197051L")
+			data.MsgRes, data.ResTest = testeur.TestArtificielEchec("E197051L")
+			for _, test := range data.ResTest {
+				if test.Etat == 1 {
+					data.NbTestReussi++
+				}
+			}
+			data.NbTestEchoue = len(data.ResTest) - data.NbTestReussi
+
 			//DAO.SaveResultat("E197051L", 1, 1, data.ResTest, false)
-			data.Error = true
-			data.ErrorMsg = "oui"
 		}
 
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
