@@ -13,7 +13,6 @@ import (
 	"html/template"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/smtp"
 	"os"
@@ -39,6 +38,8 @@ type data_pageAdmin struct { /* Données envoyée à la page admin */
 	Logs          []string
 	Log           []string
 	LogDate       string
+	Error         bool
+	ErrorMsg      string
 }
 
 type SenderData struct { /* Structure utile pour l'envoi de mail */
@@ -80,6 +81,8 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		DefiActuel: DAO.GetDefiActuel(),
 		ListeDefis: DAO.GetDefis(),
 		Logs:       manipStockage.GetFiles(modele.PathLog),
+		Error:      false,
+		ErrorMsg:   "",
 	}
 
 	fmt.Println(r.URL.String())
@@ -92,6 +95,8 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			f, err := os.Open(modele.PathLog + log)
 			if err != nil {
 				data.Log = []string{"erreur pour récupérer le fichier de log"}
+				data.Error = true
+				data.ErrorMsg = "Erreur pour récupérer le fichier de log" + log
 			} else {
 				scanner := bufio.NewScanner(f)
 				for scanner.Scan() {
@@ -105,7 +110,6 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			data.DefiSelect = DAO.GetDefi(num)
 			data.Correcteur = DAO.GetCorrecteur(num)
 			data.Participants = DAO.GetParticipants(num)
-			fmt.Println(data.Participants)
 			if etu := r.URL.Query()["Etudiant"]; etu != nil {
 				f, err := os.Open(modele.PathScripts + "script_" + etu[0] + "_" + strconv.Itoa(data.DefiSelect.Num))
 				if err != nil {
@@ -145,21 +149,20 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				etudiantMail := modele.EtudiantMail{Prenom: etudiant.Prenom, Nom: etudiant.Nom}
 				file, err := os.Open("mailConf.json")
 				if err != nil {
-					fmt.Println(err)
+					logs.WriteLog("Envoie de mail correcteur", "Erreur mailConf.json est introuvable")
 				}
-				byteValue, err := ioutil.ReadAll(file)
-				if err != nil {
-					fmt.Println(err)
-				}
+				byteValue, _ := ioutil.ReadAll(file)
 				var configSender SenderData
 				err = json.Unmarshal(byteValue, &configSender)
 				if err != nil {
-					fmt.Println(err)
+					logs.WriteLog("Envoie de mail correcteur", "Erreur unmarshal mailConf.json")
 				}
 				defer file.Close()
 				resultMail := sendMailCorrecteur(etudiantMail, num, configSender)
 				if resultMail.send == false {
-					logs.WriteLog("Envoi de mail correcteur", "Erreur lors de l'envoi de mail du correcteur du défi "+strconv.Itoa(num)+" à l'adresse : "+etudiantMail.Mail())
+					data.Error = true
+					data.ErrorMsg = "Erreur lors de l'envoi de mail du correcteur du défi " + strconv.Itoa(num) + " à l'adresse : " + etudiantMail.Mail()
+					logs.WriteLog("Envoi de mail correcteur", data.ErrorMsg)
 				} else {
 					logs.WriteLog("Envoi de mail correcteur", "envoi de mail du correcteur du défi "+strconv.Itoa(num)+" à l'adresse : "+etudiantMail.Mail())
 				}
@@ -173,7 +176,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 		// Lors de la deconnexion
 		if r.URL.Query()["logout"] != nil {
-			fmt.Println("logout " + admin.Login)
+			logs.WriteLog("Page admin", "deconnexion de "+admin.Login)
 			DeleteToken(admin.Login, time.Second*0)              // Le token est supprimé
 			http.Redirect(w, r, "/loginAdmin", http.StatusFound) // On retourne à la page de connexion (celle de l'admin)
 			return
@@ -182,7 +185,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		t := template.Must(template.ParseFiles("./web/html/pageAdmin.html"))
 
 		if err := t.Execute(w, data); err != nil {
-			log.Printf("error exec template : ", err)
+			logs.WriteLog("Erreur execution template", err.Error())
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
 		}
 	}
 
@@ -225,14 +230,18 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			num := r.FormValue("num")
 			n, err := strconv.Atoi(num)
 			if err != nil {
-				fmt.Println(err.Error())
+				data.Error = true
+				data.ErrorMsg = "le numéro de défi entré n'est pas valide"
+				logs.WriteLog("getResult CSV", data.ErrorMsg)
+			} else {
+				file_name := "resultat_" + num + ".csv"
+				manipStockage.CreateCSV(file_name, n)
+				w.Header().Set("Content-Disposition", "attachment; filename="+file_name)
+				w.Header().Set("Content-Type", "application/octet-stream")
+				http.ServeFile(w, r, file_name)
+				os.Remove(file_name)
+
 			}
-			file_name := "resultat_" + num + ".csv"
-			manipStockage.CreateCSV(file_name, n)
-			w.Header().Set("Content-Disposition", "attachment; filename="+file_name)
-			w.Header().Set("Content-Type", "application/octet-stream")
-			http.ServeFile(w, r, file_name)
-			os.Remove(file_name)
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 		}
@@ -248,7 +257,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				DAO.DeleteLastDefi(lastDefi.Num)
 				logs.WriteLog("Delete défi", "vous avez supprimer le défi N°"+strconv.Itoa(lastDefi.Num))
 			} else {
-				logs.WriteLog("Delete défi", "vous ne pouvez pas supprimer un défi si la liste est vide")
+				data.Error = true
+				data.ErrorMsg = "vous ne pouvez pas supprimer un défi si la liste est vide"
+				logs.WriteLog("Delete défi", data.ErrorMsg)
 			}
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
@@ -269,8 +280,10 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query()["form"][0] == "modify-defi" {
 			numDefi, _ := strconv.Atoi(r.FormValue("defiSelectModif")) // Et le num du defi
 
-			if r.FormValue("date_debut") != "" {
+			if r.FormValue("date_debut") != defi_actuel.DateDebutString() && r.FormValue("date_fin") != defi_actuel.DateFinString() &&
+				r.FormValue("time_debut") != defi_actuel.TimeDebutString() && r.FormValue("time_fin") != defi_actuel.TimeFinString() {
 				fmt.Println("change date defi")
+
 				layout := "2006-01-02T15:04:05.000Z"
 				str := fmt.Sprintf("%sT%sZ", r.FormValue("date_debut"), r.FormValue("time_debut")+":00.000")
 				t_debut, _ := time.Parse(layout, str)
@@ -313,15 +326,13 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if r.URL.Query()["form"][0] == "test" { // Pour upload un test
-			num := r.FormValue("defiSelectTest")
-			if num == "" {
+			num, err := strconv.Atoi(r.FormValue("defiSelectTest"))
+			if err != nil {
 				logs.WriteLog("upload test", "aucun numéro de défis n'a été spécifié")
 				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 				return
 			}
-
-			num2, _ := strconv.Atoi(num)
-			defi := DAO.GetDefi(num2)
+			defi := DAO.GetDefi(num)
 			typeArchive := fileHeader.Header.Values("Content-Type")
 			fmt.Println(typeArchive)
 
@@ -330,18 +341,18 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 				return
 			}
-			logs.WriteLog("Admin", "upload d'un test pour le défi n°"+num)
+			logs.WriteLog("Admin", "upload d'un test pour le défi n°"+strconv.Itoa(num))
 			if !defi.JeuDeTest {
-				DAO.AddJeuDeTest(num2)
+				DAO.AddJeuDeTest(num)
 			} else if defi.Num == defi_actuel.Num {
 				// Si on change le défi ACTUEL
 				//Récupère les étudiants ayant réussi le test avant que le jeu de test change
-				etudiantsReussi := DAO.GetResultatsByEtat(num2, 1)
+				etudiantsReussi := DAO.GetResultatsByEtat(num, 1)
 				for _, etu := range etudiantsReussi { //retest le scripts de ces étudiants
 					testeur.Test(etu.Login)
 				}
-				etudiantsFailed := DAO.GetResultatsByEtat(num2, 0)
-				etudiantsFailed = append(etudiantsFailed, DAO.GetResultatsByEtat(num2, -1)...)
+				etudiantsFailed := DAO.GetResultatsByEtat(num, 0)
+				etudiantsFailed = append(etudiantsFailed, DAO.GetResultatsByEtat(num, -1)...)
 				//on récupère un string contenant tous les logins des étudiants qui sont passés de l'état réussi à échoué après avoir changé le jeu de test
 				loginToSendMail := ""
 				for _, etuFail := range etudiantsFailed {
@@ -381,8 +392,8 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			//if dossier de test existe déjà, on le supprime
-			pathTest := modele.PathJeuDeTests + "test_defi_" + num
-			if manipStockage.Contains(modele.PathJeuDeTests, "test_defi_"+num) {
+			pathTest := modele.PathJeuDeTests + "test_defi_" + strconv.Itoa(num)
+			if manipStockage.Contains(modele.PathJeuDeTests, "test_defi_"+strconv.Itoa(num)) {
 				os.RemoveAll(pathTest)
 			}
 			fichier, _ := os.Create(modele.PathJeuDeTests + fileHeader.Filename) // remplacer handler.Filename par le nom et on le place où on veut
@@ -392,7 +403,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 			if typeArchive[0] == "application/zip" {
 				cmd := exec.Command("unzip", "-d",
-					"test_defi_"+strconv.Itoa(num_defi_actuel),
+					"test_defi_"+strconv.Itoa(num),
 					fileHeader.Filename)
 				cmd.Dir = modele.PathJeuDeTests
 				cmd.Run()

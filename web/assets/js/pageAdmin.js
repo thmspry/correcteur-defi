@@ -172,10 +172,6 @@ async function init() {
         return data
     });
     // waits until the request completes...
-    console.log(defiActuel)
-    let dateDParse = defiActuel.DateDebut.split('T')
-    let dateFParse = defiActuel.DateFin.split('T')
-    let para = document.querySelector('#TestDeposer');
     if (defiActuel.JeuDeTest) {
         para.innerHTML = "Vous avez déjà déposé un jeu de test pour ce défi."
     } else {

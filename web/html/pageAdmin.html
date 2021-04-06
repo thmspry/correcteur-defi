@@ -102,21 +102,21 @@
                 <div class="dates date">
                     <div class="date-selector">
                         <p>Date de début :</p>
-                        <input required type="text" class="datepicker" name="date_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.DateDebutString}}" {{end}}>
+                        <input required type="text" class="datepicker" name="date_debut" {{if .ListeDefis}} value="{{(index .ListeDefis 0).DateDebutString}}" {{end}}>
                     </div>
                     <div class="date-selector">
                         <p>Date de fin :</p>
-                        <input required type="text" class="datepicker" name="date_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.DateFinString}}" {{end}}>
+                        <input required type="text" class="datepicker" name="date_fin" {{if .ListeDefis}} value="{{(index .ListeDefis 0).DateFinString}}" {{end}}>
                     </div>
                 </div>
                 <div class="dates horaire">
                     <div class="date-selector">
                         <p>Heure de début : </p>
-                        <input required type="text" class="timepicker" name="time_debut" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.TimeDebutString}}" {{end}}>
+                        <input required type="text" class="timepicker" name="time_debut" {{if .ListeDefis}} value="{{(index .ListeDefis 0).TimeDebutString}}" {{end}}>
                     </div>
                     <div class="date-selector">
                         <p>Heure de fin : </p>
-                        <input required type="text" class="timepicker" name="time_fin" {{if ne .DefiActuel.Num 0}} value="{{.DefiActuel.TimeFinString}}" {{end}}>
+                        <input required type="text" class="timepicker" name="time_fin" {{if .ListeDefis}} value="{{(index .ListeDefis 0).TimeFinString}}" {{end}}>
                     </div>
                 </div>
 
