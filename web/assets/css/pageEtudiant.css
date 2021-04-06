@@ -69,6 +69,7 @@
 #contenu {
     border-style: solid;
     padding: 10px 10px 10px 10px;
+    border-radius: 2em;
 }
 #file form {
     display: flex;
@@ -306,4 +307,14 @@ a#test-script {
     background-color: #838383;
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+#MsgError {
+    display: none;
+}
+
+h2 {
+    margin-top: 5px;
+    margin-bottom: 5px;
+
 }

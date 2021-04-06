@@ -5,6 +5,7 @@
     <title>Page Admin</title>
     <link rel="icon" type="image/png" href="./web/assets/images/logo.png" />
     <link rel="stylesheet" href="./web/assets/css/materialize.min.css">
+    <link rel="stylesheet" href="./web/assets/css/global.css">
     <link rel="stylesheet" href="./web/assets/css/pageAdmin.css">
 </head>
 <body>
@@ -203,7 +204,7 @@
                 </tr>
                 {{range .Participants}}
                 <tr>
-                    <td>{{.Etudiant.Login}}</td>
+                    <td>{{.Etudiant.Login}} ({{.Etudiant.Prenom}} {{.Etudiant.Nom}})</td>
                     <td>
                         {{if eq .Resultat.Etat 1}}
                         <span class="etat-text win">Réussi</span>

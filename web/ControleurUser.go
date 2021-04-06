@@ -27,6 +27,8 @@ type data_pageEtudiant struct { // Données transmises à la page Etudiant
 	ResTest      []modele.ResultatTest
 	MsgRes       string
 	Script       []string
+	Error        bool
+	ErrorMsg     string
 }
 
 /**
@@ -52,6 +54,8 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		DefiActuel:   DAO.GetDefiActuel(),
 		ResTest:      DAO.GetResultatTest(etu.Login),
 		ResultatDefi: DAO.GetResult(etu.Login, numDefiActuel),
+		Error:        false,
+		ErrorMsg:     "",
 	}
 
 	if data.DefiActuel.Num != 0 {
@@ -74,9 +78,11 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if r.URL.Query()["test"] != nil {
-			//data.MsgRes, data.ResTest = testeur.Test(etu.Login)
-			data.MsgRes, data.ResTest = testeur.TestArtificiel("E197051L")
-			DAO.SaveResultat("E197051L", 1, 1, data.ResTest, false)
+			data.MsgRes, data.ResTest = testeur.Test(etu.Login)
+			//data.MsgRes, data.ResTest = testeur.TestArtificiel("E197051L")
+			//DAO.SaveResultat("E197051L", 1, 1, data.ResTest, false)
+			data.Error = true
+			data.ErrorMsg = "oui"
 		}
 
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
