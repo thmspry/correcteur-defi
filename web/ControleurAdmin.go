@@ -71,9 +71,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, _ := r.Cookie("token")            //récupère le token du cookie
-	login := DAO.GetNameByToken(token.Value) // récupère le login correspondant au token
-	admin := DAO.GetAdmin(login)             // récupère les informations de l'étudiant grâce au login
+	token, _ := r.Cookie("token")             //récupère le token du cookie
+	login := DAO.GetLoginByToken(token.Value) // récupère le login correspondant au token
+	admin := DAO.GetAdmin(login)              // récupère les informations de l'étudiant grâce au login
 
 	data := data_pageAdmin{
 		AdminInfo:  admin,
@@ -337,7 +337,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(typeArchive)
 
 			if typeArchive[0] != "application/zip" && typeArchive[0] != "application/x-tar" && typeArchive[0] != "application/tar" {
-				logs.WriteLog("upload test", "format de l'upload incompatible")
+				data.Error = true
+				data.ErrorMsg = "Le format " + typeArchive[0] + " n'est pas supporté"
+				logs.WriteLog("upload test", data.ErrorMsg)
 				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 				return
 			}
@@ -387,6 +389,8 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				resultatsEnvois := sendMailChange(etuToSendMail, defi_actuel.Num, configSender)
 				for _, res := range resultatsEnvois {
 					if res.send == false {
+						data.Error = true
+						data.ErrorMsg = "Erreur lors de l'envoie d'un des mails (voir logs)"
 						logs.WriteLog("Envoi de mails : ", "Erreur lors de l'envoi de mails à l'adresse : "+res.adress+" erreur : "+res.erreur)
 					}
 				}

@@ -221,19 +221,21 @@ func GetAdmin(id string) modele.Admin {
 }
 
 /**
-
- */
-func GetNameByToken(token string) string {
+@GetLoginByToken récupère le login par le token
+*/
+func GetLoginByToken(token string) string {
 	var login string
 	row := db.QueryRow("SELECT * FROM token WHERE token = $1", token)
 	err := row.Scan(&login, &token)
 	if err != nil {
-		logs.WriteLog("DAO GetNameByToken "+token+" : ", err.Error())
+		logs.WriteLog("DAO GetLoginByToken "+token+" : ", err.Error())
 	}
 	return login
 }
 
-// testé
+/**
+@InsertToken, insert un token pour un étudiant, détruis tous les tokens de cet étudiant avant ça
+*/
 func InsertToken(login string, token string) {
 	m.Lock()
 	stmt, _ := db.Prepare("DELETE FROM Token where login = ?")
@@ -256,7 +258,10 @@ func InsertToken(login string, token string) {
 	m.Unlock()
 }
 
-// testé
+/**
+@DeleteToken, supprime le(s) token(s) correspondant au login donné
+@login login de l'étudiant ayant le token
+*/
 func DeleteToken(login string) {
 	m.Lock()
 	stmt, err := db.Prepare("DELETE FROM token WHERE login = ?")
@@ -318,9 +323,13 @@ func TokenRole(token string) string {
 }
 
 /**
-admin == true : fonction lancé par l'admin pour modifier les valeurs
-admin == false : fonction lancé par un étudiant lors d'une nouvelle tentative de test
-(si c'est false, tentative++)
+@SaveResultat permet d'enregistré le résultat obtenu d'un étudiant pour un défi
+@login le login de l'étudiant
+@numDefi le numéro du défi concerné
+@etat l'état du test effectué (1 : réussi, 0 : raté)
+@resultat le résultat obtenu par le test
+@admin == true : la fonction a été lancé par l'admin
+	   == false : la fonction a été lancé lorsque l'étudiant a testé son script (alors on augmente le compteur de tentative)
 */
 func SaveResultat(login string, numDefi int, etat int, resultat []modele.ResultatTest, admin bool) {
 	m.Lock()
@@ -375,6 +384,10 @@ func SaveResultat(login string, numDefi int, etat int, resultat []modele.Resulta
 	m.Unlock()
 }
 
+/**
+@GetResultatTest permet de récupérer le dernier résultat obtenu par un étudiant lorsqu'il test son script pour le défi actuel
+@login le login de l'étudiant
+*/
 func GetResultatTest(login string) []modele.ResultatTest {
 	var (
 		query string

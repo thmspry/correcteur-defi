@@ -46,9 +46,9 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, _ := r.Cookie("token")            //récupère le token du cookie
-	login := DAO.GetNameByToken(token.Value) // récupère le login correspondant au token
-	etu := DAO.GetEtudiant(login)            // récupère les informations de l'étudiant grâce au login
+	token, _ := r.Cookie("token")             //récupère le token du cookie
+	login := DAO.GetLoginByToken(token.Value) // récupère le login correspondant au token
+	etu := DAO.GetEtudiant(login)             // récupère les informations de l'étudiant grâce au login
 
 	//Parse data
 	data := data_pageEtudiant{
