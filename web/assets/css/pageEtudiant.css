@@ -58,8 +58,14 @@
     width: fit-content;
 }
 
-#user {
+.code {
+    background-color: #2d2d2d;
+    font-style: normal;
+    color: whitesmoke;
+    font-family: consolas, "Liberation Mono", courier, monospace;
+    padding: 10px;
 }
+
 #contenu {
     border-style: solid;
     padding: 10px 10px 10px 10px;
