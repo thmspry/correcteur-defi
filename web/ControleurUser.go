@@ -83,8 +83,8 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		}
 		if r.URL.Query()["test"] != nil {
 			//data.MsgRes, data.ResTest = testeur.Test(etu.Login)
-			//data.MsgRes, data.ResTest = testeur.TestArtificielReussite("E197051L")
-			data.MsgRes, data.ResTest = testeur.TestArtificielEchec("E197051L")
+			//data.MsgRes, data.ResTest = testeur.TestArtificielEchec("E197051L")
+			data.MsgRes, data.ResTest = testeur.TestArtificielReussite("E197051L")
 			for _, test := range data.ResTest {
 				if test.Etat == 1 {
 					data.NbTestReussi++
@@ -94,7 +94,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 
 			//DAO.SaveResultat("E197051L", 1, 1, data.ResTest, false)
 		}
-
+		fmt.Println(data.ResTest)
 		t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
 
 		// execute la page avec la structure "etu" qui viendra remplacer les éléments de la page en fonction de l'étudiant (voir pageEtudiant.html)
