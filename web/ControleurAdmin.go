@@ -193,34 +193,37 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "POST" {
 
-		// Envoi de mail
+		// Envoi de mail pour la progressions des étudiants
 		if r.URL.Query()["form"][0] == "sendMail" {
 
+			// On récupère les informations de la BDD
 			etudiants := DAO.GetEtudiantsMail()
 			nbDefis := len(DAO.GetDefis())
 
+			// On lit dans le fichier de configuration les informations pour l'envoi de mails
 			file, err := os.Open("mailConf.json")
 			if err != nil {
-				fmt.Println(err)
+				logs.WriteLog("Envoi de mails progression : ", err.Error())
 			}
 			byteValue, err := ioutil.ReadAll(file)
 			if err != nil {
-				fmt.Println(err)
+				logs.WriteLog("Envoi de mails progression : ", err.Error())
 			}
 			var configSender SenderData
 			err = json.Unmarshal(byteValue, &configSender)
 			if err != nil {
-				fmt.Println(err)
+				logs.WriteLog("Envoi de mails progression : ", err.Error())
 			}
 			defer file.Close()
 
+			// On appelle la fonction qui se charge de l'envoi de mails
 			resultatsEnvois := sendMailResults(etudiants, nbDefis, configSender)
+			fmt.Println(resultatsEnvois)
 			for _, res := range resultatsEnvois {
 				if res.send == false {
 					logs.WriteLog("Envoi de mails : ", "Erreur lors de l'envoi de mails à l'adresse : "+res.adress)
 				}
 			}
-
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 		}
@@ -480,17 +483,22 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func sendMailResults(etudiants []modele.EtudiantMail, nbDefis int, config SenderData) []ResultMail { // Authentication sur le serveur de mail
-
+/*
+	Fonction qui permet d'envoyer à tout les étudiants leurs progressions
+*/
+func sendMailResults(etudiants []modele.EtudiantMail, nbDefis int, config SenderData) []ResultMail {
+	// Authentication sur le serveur de mail
 	auth := smtp.PlainAuth("", config.Username, config.Password, config.SmtpHost)
+	// Canal pour recevoir les informations depuis les goroutines
 	c := make(chan ResultMail)
+	// Collections pour stocker des informations sur l'envoi de mails
 	var resultatsEnvois []ResultMail
 
+	// On boucle sur chaque étudiant
 	for _, etu := range etudiants {
 
 		etudiant := etu
 		go func() {
-
 			// adresse du destinataire
 			to := []string{
 				etudiant.Mail(),
@@ -561,11 +569,17 @@ func sendMailResults(etudiants []modele.EtudiantMail, nbDefis int, config Sender
 			err := smtp.SendMail(config.SmtpHost+":"+config.SmtpPort, auth, config.FromMail, to, []byte(message))
 			if err != nil {
 				c <- ResultMail{adress: etudiant.Mail(), send: false}
+				logs.WriteLog("Envoi de mails progression", err.Error())
 			} else {
 				c <- ResultMail{adress: etudiant.Mail(), send: true}
 			}
 		}()
+	}
+	i := 0
+	for i < len(etudiants) {
+		// On récupère via le canal le résultat de l'envoi pour chaque étudiant
 		resultatsEnvois = append(resultatsEnvois, <-c)
+		i++
 	}
 	return resultatsEnvois
 }
