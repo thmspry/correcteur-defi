@@ -286,12 +286,26 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 				layout := "2006-01-02T15:04:05.000Z"
 				str := fmt.Sprintf("%sT%sZ", r.FormValue("date_debut"), r.FormValue("time_debut")+":00.000")
-				t_debut, _ := time.Parse(layout, str)
+				t_debut, err := time.Parse(layout, str)
+				if err != nil {
+					data.Error = true
+					data.ErrorMsg = "la date de départ est mal formée"
+				}
 				str = fmt.Sprintf("%sT%sZ", r.FormValue("date_fin"), r.FormValue("time_fin")+":00.000")
-				t_fin, _ := time.Parse(layout, str)
-				logs.WriteLog("Admin", "modification de la date de rendu du défi "+strconv.Itoa(numDefi))
-
-				DAO.ModifyDefi(numDefi, t_debut, t_fin)
+				t_fin, err := time.Parse(layout, str)
+				if err != nil {
+					data.Error = true
+					data.ErrorMsg = "la date de fin est mal formée"
+				}
+				if !data.Error {
+					if t_fin.Sub(t_debut) < 0 { // t_fin est avant t_debut
+						data.Error = true
+						data.ErrorMsg = "la date de fin doit être après la date de début"
+					} else {
+						logs.WriteLog("Admin", "modification de la date de rendu du défi "+strconv.Itoa(numDefi))
+						DAO.ModifyDefi(numDefi, t_debut, t_fin)
+					}
+				}
 			}
 			if errorFile == nil {
 				logs.WriteLog("Admin", "modification du défi actuel")
@@ -307,21 +321,38 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query()["form"][0] == "defi" { // ajout d'un défi
 			layout := "2006-01-02T15:04:05.000Z"
 			str := fmt.Sprintf("%sT%sZ", r.FormValue("date_debut"), r.FormValue("time_debut")+":00.000")
-			t_debut, _ := time.Parse(layout, str)
+			t_debut, err := time.Parse(layout, str)
+			if err != nil {
+				data.Error = true
+				data.ErrorMsg = "la date de départ est mal formée"
+			}
 			str = fmt.Sprintf("%sT%sZ", r.FormValue("date_fin"), r.FormValue("time_fin")+":00.000")
-			t_fin, _ := time.Parse(layout, str)
-			logs.WriteLog("Admin", "ajout d'un nouveau défi du "+t_debut.String()+" au "+t_fin.String())
+			t_fin, err := time.Parse(layout, str)
+			if err != nil {
+				data.Error = true
+				data.ErrorMsg = "la date de fin est mal formée"
+			}
+			fmt.Println("errormsg ", data.ErrorMsg)
+			if !data.Error {
+				fmt.Println(t_debut, " et ", t_fin)
+				if t_fin.Sub(t_debut) < 0 { // t_fin est après t_debut
+					fmt.Println("if tfin sub t deb > 0")
+					data.Error = true
+					data.ErrorMsg = "la date de fin doit être après la date de début"
+				} else { // Si tout est bon, on ajoute dans la bdd et dans les ressource le script de correction et le dossier de test
+					logs.WriteLog("Admin", "ajout d'un nouveau défi du "+t_debut.String()+" au "+t_fin.String())
+					DAO.AddDefi(t_debut, t_fin)
+					os.Mkdir(modele.PathJeuDeTests+"test_defi_"+strconv.Itoa(num_defi_actuel+1), os.ModePerm)
+					num_defi_actuel = num_defi_actuel + 1
+					// TODO vérifier que correction contient bien "#!bin/bash
+					path = modele.PathDefis + "correction_" + strconv.Itoa(num_defi_actuel)
+					script, _ := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
+					defer script.Close()
+					io.Copy(script, file)
+					os.Chmod(path, 770)
+				}
+			}
 
-			// ajouter a la table défis
-			DAO.AddDefi(t_debut, t_fin)
-			os.Mkdir(modele.PathJeuDeTests+"test_defi_"+strconv.Itoa(num_defi_actuel+1), os.ModePerm)
-			num_defi_actuel = num_defi_actuel + 1
-			path = modele.PathDefis + "correction_" + strconv.Itoa(num_defi_actuel)
-
-			script, _ := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
-			defer script.Close()
-			io.Copy(script, file)
-			os.Chmod(path, 770)
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 		}

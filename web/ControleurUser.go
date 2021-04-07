@@ -1,7 +1,6 @@
 package web
 
 import (
-	"bufio"
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/DAO"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele"
@@ -66,13 +65,7 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		data.DefiSent = manipStockage.Contains(modele.PathScripts, "script_"+etu.Login+"_"+strconv.Itoa(data.DefiActuel.Num))
 	}
 
-	f, err := os.Open(modele.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(data.DefiActuel.Num))
-	if err == nil {
-		scanner := bufio.NewScanner(f)
-		for scanner.Scan() {
-			data.Script = append(data.Script, scanner.Text())
-		}
-	}
+	data.Script = manipStockage.GetFileLineByLine(modele.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(data.DefiActuel.Num))
 	//Check la méthode utilisé par le formulaire
 	if r.Method == "GET" {
 		//Charge la template html
@@ -122,14 +115,16 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			script, _ := os.Create(modele.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(numDefiActuel)) // remplacer handler.Filename par le nom et on le place où on veut
 			DAO.SaveResultat(etu.Login, numDefiActuel, -1, nil, false)
 
-			_, err = io.Copy(script, file) //on l'enregistre dans notre système de fichier
+			io.Copy(script, file) //on l'enregistre dans notre système de fichier
 			fmt.Println(modele.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(numDefiActuel))
 
-			os.Chmod(modele.PathScripts+"script_"+etu.Login+"_"+strconv.Itoa(numDefiActuel), 770) //change le chmode du fichier
+			//os.Chmod(modele.PathScripts+"script_"+etu.Login+"_"+strconv.Itoa(numDefiActuel), 770) //change le chmode du fichier (marche pas sous windows)
 			file.Close()
 			script.Close()
 			logs.WriteLog(etu.Login, "upload de script du défis "+strconv.Itoa(numDefiActuel))
 			data.MsgRes, data.ResTest = testeur.Test(etu.Login)
+			data.Script = manipStockage.GetFileLineByLine(modele.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(data.DefiActuel.Num))
+
 			t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
 			// execute la page avec la structure "etu" qui viendra remplacer les éléments de la page en fonction de l'étudiant (voir pageEtudiant.html)
 			if err := t.Execute(w, data); err != nil {

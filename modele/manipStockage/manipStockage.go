@@ -1,6 +1,7 @@
 package manipStockage
 
 import (
+	"bufio"
 	"encoding/csv"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/DAO"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele"
@@ -156,4 +157,16 @@ func GetTriche(numDefi int) [][]string {
 		}
 	}
 	return res
+}
+
+func GetFileLineByLine(path string) []string {
+	f, err := os.Open(path)
+	tab := make([]string, 0)
+	if err == nil {
+		scanner := bufio.NewScanner(f)
+		for scanner.Scan() {
+			tab = append(tab, scanner.Text())
+		}
+	}
+	return tab
 }
