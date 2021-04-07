@@ -65,8 +65,40 @@
             {{end}}
         </div>
 
-        <div class="right-side">
-            <a class="twitter-timeline" data-width="450" margin-left:300 data-height="325" href="https://twitter.com/IutAsr?ref_src=twsrc%5Etfw">Tweets by IutAsr</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+        <div class="right-side row">
+            <div class="col s12">
+                <ul class="tabs">
+                    <li class="tab col s3"><a href="#twitter">Twitter</a> </li>
+                    <li class="tab col s3 {{if not .Classement}}disabled{{end}}"><a href="#classement">Classement</a></li>
+                </ul>
+            </div>
+            <div id="twitter" class="col s12"><a class="twitter-timeline" data-width="450" margin-left:300 data-height="325" href="https://twitter.com/IutAsr?ref_src=twsrc%5Etfw">Tweets by IutAsr</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></div>
+            <div id="classement" class="col s12 scroll">
+                <table>
+                    <tbody>
+                    <tr>
+                        <td>Étudiant</td>
+                        <td>État</td>
+                        <td>Nombre de tentative</td>
+                    </tr>
+                    {{range .Classement}}
+                    <tr {{if eq $.UserInfo.Login .Login}} class="moi"{{end}}>
+                        <td>{{.Login}}</td>
+                        <td>
+                            {{if eq .Etat 1}}
+                            <span class="etat-text win">Réussi</span>
+                            {{else if eq .Etat 0}}
+                            <span class="etat-text lose">Échoué</span>
+                            {{else if eq .Etat -1}}
+                            <span class="etat-text untested">Non testé</span>
+                            {{end}}
+                        </td>
+                        <td>{{.Tentative}}</td>
+                    </tr>
+                    {{end}}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

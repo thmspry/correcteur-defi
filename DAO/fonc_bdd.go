@@ -785,7 +785,7 @@ func GetClassement(numDefi int) []modele.Resultat {
 	var res modele.Resultat
 	resT := make([]modele.Resultat, 0)
 
-	row, err := db.Query("SELECT from Resultat WHERE defi = $1 ORDER BY etat DESC", numDefi)
+	row, err := db.Query("SELECT * from Resultat WHERE defi = $1 ORDER BY etat DESC", numDefi)
 	if err != nil {
 		logs.WriteLog("DAO.GetClassement", err.Error())
 	} else if row != nil {
