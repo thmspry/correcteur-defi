@@ -102,27 +102,25 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			r.ParseMultipartForm(10 << 20) //sert à télécharger des fichiers et le stock sur le serveur
 
 			file, _, _ := r.FormFile("script_etu") // sert à obtenir le descripteur de fichier
-			b, _ := ioutil.ReadFile(modele.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(numDefiActuel))
-			contenuscript := string(b)
-			fmt.Printf(contenuscript)
-			value := strings.Contains(contenuscript, "!bin/bash")
-			if value == true {
-				fmt.Printf("ok")
-			} else {
-				fmt.Printf("ko")
-			}
 
 			script, _ := os.Create(modele.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(numDefiActuel)) // remplacer handler.Filename par le nom et on le place où on veut
-			DAO.SaveResultat(etu.Login, numDefiActuel, -1, nil, false)
 
 			io.Copy(script, file) //on l'enregistre dans notre système de fichier
-			fmt.Println(modele.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(numDefiActuel))
-
 			//os.Chmod(modele.PathScripts+"script_"+etu.Login+"_"+strconv.Itoa(numDefiActuel), 770) //change le chmode du fichier (marche pas sous windows)
 			file.Close()
 			script.Close()
-			logs.WriteLog(etu.Login, "upload de script du défis "+strconv.Itoa(numDefiActuel))
-			data.MsgRes, data.ResTest = testeur.Test(etu.Login)
+			b, _ := ioutil.ReadFile(modele.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(numDefiActuel))
+			contenuscript := string(b)
+			fmt.Println(contenuscript)
+			value := strings.Contains(contenuscript, "!/bin/bash")
+			if value == true {
+				logs.WriteLog(etu.Login, "upload de script du défis "+strconv.Itoa(numDefiActuel))
+				data.MsgRes, data.ResTest = testeur.Test(etu.Login)
+				DAO.SaveResultat(etu.Login, numDefiActuel, -1, nil, false)
+			} else {
+				fmt.Printf("le script ne contient pas !/bin/bash")
+			}
+
 			data.Script = manipStockage.GetFileLineByLine(modele.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(data.DefiActuel.Num))
 
 			t := template.Must(template.ParseFiles("./web/html/pageEtudiant.html"))
