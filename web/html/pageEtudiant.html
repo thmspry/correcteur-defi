@@ -170,9 +170,9 @@
 
 <script src="./web/assets/js/materialize.min.js"></script>
 <script src="./web/assets/js/pageEtudiant.js"></script>
-{{if .Error}}
-<p id="MsgError">{{.ErrorMsg}}</p>
-<script src="./web/assets/js/erreur.js"></script>
+{{if .Alert}}
+<p id="alertMsg">{{.AlertMsg}}</p>
+<script src="./web/assets/js/alert.js"></script>
 {{end}}
 </body>
 </html>

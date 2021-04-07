@@ -38,8 +38,8 @@ type data_pageAdmin struct { /* Données envoyée à la page admin */
 	Logs          []string
 	Log           []string
 	LogDate       string
-	Error         bool
-	ErrorMsg      string
+	Alert         bool
+	AlertMsg      string
 }
 
 type SenderData struct { /* Structure utile pour l'envoi de mail */
@@ -81,8 +81,8 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		DefiActuel: DAO.GetDefiActuel(),
 		ListeDefis: DAO.GetDefis(),
 		Logs:       manipStockage.GetFiles(modele.PathLog),
-		Error:      false,
-		ErrorMsg:   "",
+		Alert:      false,
+		AlertMsg:   "",
 	}
 
 	fmt.Println(r.URL.String())
@@ -95,8 +95,8 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			f, err := os.Open(modele.PathLog + log)
 			if err != nil {
 				data.Log = []string{"erreur pour récupérer le fichier de log"}
-				data.Error = true
-				data.ErrorMsg = "Erreur pour récupérer le fichier de log" + log
+				data.Alert = true
+				data.AlertMsg = "Erreur pour récupérer le fichier de log" + log
 			} else {
 				scanner := bufio.NewScanner(f)
 				for scanner.Scan() {
@@ -160,9 +160,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				defer file.Close()
 				resultMail := sendMailCorrecteur(etudiantMail, num, configSender)
 				if resultMail.send == false {
-					data.Error = true
-					data.ErrorMsg = "Erreur lors de l'envoi de mail du correcteur du défi " + strconv.Itoa(num) + " à l'adresse : " + etudiantMail.Mail()
-					logs.WriteLog("Envoi de mail correcteur", data.ErrorMsg)
+					data.Alert = true
+					data.AlertMsg = "Erreur lors de l'envoi de mail du correcteur du défi " + strconv.Itoa(num) + " à l'adresse : " + etudiantMail.Mail()
+					logs.WriteLog("Envoi de mail correcteur", data.AlertMsg)
 				} else {
 					logs.WriteLog("Envoi de mail correcteur", "envoi de mail du correcteur du défi "+strconv.Itoa(num)+" à l'adresse : "+etudiantMail.Mail())
 				}
@@ -230,9 +230,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			num := r.FormValue("num")
 			n, err := strconv.Atoi(num)
 			if err != nil {
-				data.Error = true
-				data.ErrorMsg = "le numéro de défi entré n'est pas valide"
-				logs.WriteLog("getResult CSV", data.ErrorMsg)
+				data.Alert = true
+				data.AlertMsg = "le numéro de défi entré n'est pas valide"
+				logs.WriteLog("getResult CSV", data.AlertMsg)
 			} else {
 				file_name := "resultat_" + num + ".csv"
 				manipStockage.CreateCSV(file_name, n)
@@ -257,13 +257,12 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				DAO.DeleteLastDefi(lastDefi.Num)
 				logs.WriteLog("Delete défi", "vous avez supprimer le défi N°"+strconv.Itoa(lastDefi.Num))
 			} else {
-				data.Error = true
-				data.ErrorMsg = "vous ne pouvez pas supprimer un défi si la liste est vide"
-				logs.WriteLog("Delete défi", data.ErrorMsg)
+				data.Alert = true
+				data.AlertMsg = "vous ne pouvez pas supprimer un défi si la liste est vide"
+				logs.WriteLog("Delete défi", data.AlertMsg)
 			}
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
-
 		}
 
 		r.ParseMultipartForm(10 << 20)
@@ -288,19 +287,19 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				str := fmt.Sprintf("%sT%sZ", r.FormValue("date_debut"), r.FormValue("time_debut")+":00.000")
 				t_debut, err := time.Parse(layout, str)
 				if err != nil {
-					data.Error = true
-					data.ErrorMsg = "la date de départ est mal formée"
+					data.Alert = true
+					data.AlertMsg = "la date de départ est mal formée"
 				}
 				str = fmt.Sprintf("%sT%sZ", r.FormValue("date_fin"), r.FormValue("time_fin")+":00.000")
 				t_fin, err := time.Parse(layout, str)
 				if err != nil {
-					data.Error = true
-					data.ErrorMsg = "la date de fin est mal formée"
+					data.Alert = true
+					data.AlertMsg = "la date de fin est mal formée"
 				}
-				if !data.Error {
+				if !data.Alert {
 					if t_fin.Sub(t_debut) < 0 { // t_fin est avant t_debut
-						data.Error = true
-						data.ErrorMsg = "la date de fin doit être après la date de début"
+						data.Alert = true
+						data.AlertMsg = "la date de fin doit être après la date de début"
 					} else {
 						logs.WriteLog("Admin", "modification de la date de rendu du défi "+strconv.Itoa(numDefi))
 						DAO.ModifyDefi(numDefi, t_debut, t_fin)
@@ -323,22 +322,22 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			str := fmt.Sprintf("%sT%sZ", r.FormValue("date_debut"), r.FormValue("time_debut")+":00.000")
 			t_debut, err := time.Parse(layout, str)
 			if err != nil {
-				data.Error = true
-				data.ErrorMsg = "la date de départ est mal formée"
+				data.Alert = true
+				data.AlertMsg = "la date de départ est mal formée"
 			}
 			str = fmt.Sprintf("%sT%sZ", r.FormValue("date_fin"), r.FormValue("time_fin")+":00.000")
 			t_fin, err := time.Parse(layout, str)
 			if err != nil {
-				data.Error = true
-				data.ErrorMsg = "la date de fin est mal formée"
+				data.Alert = true
+				data.AlertMsg = "la date de fin est mal formée"
 			}
-			fmt.Println("errormsg ", data.ErrorMsg)
-			if !data.Error {
+			fmt.Println("errormsg ", data.AlertMsg)
+			if !data.Alert {
 				fmt.Println(t_debut, " et ", t_fin)
 				if t_fin.Sub(t_debut) < 0 { // t_fin est après t_debut
 					fmt.Println("if tfin sub t deb > 0")
-					data.Error = true
-					data.ErrorMsg = "la date de fin doit être après la date de début"
+					data.Alert = true
+					data.AlertMsg = "la date de fin doit être après la date de début"
 				} else { // Si tout est bon, on ajoute dans la bdd et dans les ressource le script de correction et le dossier de test
 					logs.WriteLog("Admin", "ajout d'un nouveau défi du "+t_debut.String()+" au "+t_fin.String())
 					DAO.AddDefi(t_debut, t_fin)
@@ -352,7 +351,6 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 					os.Chmod(path, 770)
 				}
 			}
-
 			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			return
 		}
@@ -368,9 +366,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(typeArchive)
 
 			if typeArchive[0] != "application/zip" && typeArchive[0] != "application/x-tar" && typeArchive[0] != "application/tar" {
-				data.Error = true
-				data.ErrorMsg = "Le format " + typeArchive[0] + " n'est pas supporté"
-				logs.WriteLog("upload test", data.ErrorMsg)
+				data.Alert = true
+				data.AlertMsg = "Le format " + typeArchive[0] + " n'est pas supporté"
+				logs.WriteLog("upload test", data.AlertMsg)
 				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 				return
 			}
@@ -420,8 +418,8 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				resultatsEnvois := sendMailChange(etuToSendMail, defi_actuel.Num, configSender)
 				for _, res := range resultatsEnvois {
 					if res.send == false {
-						data.Error = true
-						data.ErrorMsg = "Erreur lors de l'envoie d'un des mails (voir logs)"
+						data.Alert = true
+						data.AlertMsg = "Erreur lors de l'envoie d'un des mails (voir logs)"
 						logs.WriteLog("Envoi de mails : ", "Erreur lors de l'envoi de mails à l'adresse : "+res.adress+" erreur : "+res.erreur)
 					}
 				}

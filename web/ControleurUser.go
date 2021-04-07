@@ -26,10 +26,11 @@ type data_pageEtudiant struct { // Données transmises à la page Etudiant
 	ResTest      []modele.ResultatTest
 	MsgRes       string
 	Script       []string
-	Error        bool
-	ErrorMsg     string
+	Alert        bool
+	AlertMsg     string
 	NbTestReussi int
 	NbTestEchoue int
+	Classement   []modele.Resultat
 }
 
 /**
@@ -55,10 +56,11 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		DefiActuel:   DAO.GetDefiActuel(),
 		ResTest:      DAO.GetResultatTest(etu.Login),
 		ResultatDefi: DAO.GetResult(etu.Login, numDefiActuel),
-		Error:        false,
-		ErrorMsg:     "",
+		Alert:        false,
+		AlertMsg:     "",
 		NbTestReussi: 0,
 		NbTestEchoue: 0,
+		Classement:   DAO.GetClassement(numDefiActuel),
 	}
 
 	if data.DefiActuel.Num != 0 {
