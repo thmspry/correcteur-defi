@@ -63,10 +63,11 @@ func (e EtudiantMail) Mail() string {
 @Resultat structure qui correspond à la table Resultat de la BDD
 */
 type Resultat struct {
-	Login     string
-	Defi      int
-	Etat      int
-	Tentative int
+	Login      string
+	Defi       int
+	Etat       int
+	Tentative  int
+	Classement int
 }
 
 /**

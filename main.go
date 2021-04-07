@@ -8,8 +8,6 @@ import (
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/manipStockage"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
 	"os"
-	"strings"
-	"time"
 )
 
 //Main fonction du programme
@@ -33,15 +31,15 @@ func main() {
 		fmt.Println("start")
 		web.InitWeb()
 	} else if mode == "test" {
-		t := time.Now()
-		fmt.Println(strings.Split(t.String(), " ")[0])
 	} else {
 		web.InitWeb()
 	}
 
 }
 
-//fonction pour reset les dossiers et la dao
+/**
+@reset fonction pour reset le contenu des dossiers et de la base de donnée
+*/
 func reset() {
 	if manipStockage.Contains("./DAO/", "database.db") {
 		os.Remove("./DAO/database.db")
@@ -68,7 +66,9 @@ func reset() {
 	}
 }
 
-// fonction pour initialiser le serveur et les différents fichiers
+/**
+@Init fonction pour initialiser le serveur et les différents répertoires
+*/
 func Init() {
 	os.Mkdir("./logs", 0755)
 	os.Mkdir("./DAO", 0755)
@@ -78,6 +78,6 @@ func Init() {
 	os.Mkdir(path+"/defis", 0755)
 	os.Mkdir(path+"/script_etudiants", 0755)
 	os.Mkdir(path+"/jeu_de_test", 0755)
-
+	//TODO create mailConf.json
 	DAO.InitDAO()
 }

@@ -84,6 +84,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println(r.URL.String())
+	fmt.Println("methode : " + r.Method)
 	if r.Method == "GET" {
 
 		// Permet d'afficher les logs d'une date précise
@@ -220,9 +221,7 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 					logs.WriteLog("Envoi de mails : ", "Erreur lors de l'envoi de mails à l'adresse : "+res.adress)
 				}
 			}
-
-			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
-			return
+			data.Alert = "L'envoie de mail a été effectué"
 		}
 
 		// Permet de récupérer les résultats de tous les étudiants ainsi que leurs informations pour un défi donné
@@ -241,14 +240,6 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				os.Remove(file_name)
 
 			}
-
-			t := template.Must(template.ParseFiles("./web/html/pageAdmin.html"))
-
-			if err := t.Execute(w, data); err != nil {
-				logs.WriteLog("Erreur execution template", err.Error())
-				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
-				return
-			}
 		}
 
 		if r.URL.Query()["form"][0] == "DeleteDefi" {
@@ -260,18 +251,12 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 					fmt.Println(err.Error())
 				}
 				DAO.DeleteLastDefi(lastDefi.Num)
-				logs.WriteLog("Delete défi", "vous avez supprimer le défi N°"+strconv.Itoa(lastDefi.Num))
+				data.Alert = "Vsou avez supprimé le défi N°" + strconv.Itoa(lastDefi.Num)
 			} else {
 				data.Alert = "Vous ne pouvez pas supprimer un défi si la liste est vide"
-				logs.WriteLog("Delete défi", data.Alert)
 			}
-			t := template.Must(template.ParseFiles("./web/html/pageAdmin.html"))
+			logs.WriteLog("Delete défi", data.Alert)
 
-			if err := t.Execute(w, data); err != nil {
-				logs.WriteLog("Erreur execution template", err.Error())
-				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
-				return
-			}
 		}
 
 		r.ParseMultipartForm(10 << 20)
@@ -321,12 +306,6 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				os.Chmod(path, 770)
 			}
 
-			t := template.Must(template.ParseFiles("./web/html/pageAdmin.html"))
-			if err := t.Execute(w, data); err != nil {
-				logs.WriteLog("Erreur execution template", err.Error())
-				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
-				return
-			}
 		}
 		if r.URL.Query()["form"][0] == "defi" { // ajout d'un défi
 			layout := "2006-01-02T15:04:05.000Z"
@@ -359,21 +338,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 					os.Chmod(path, 770)
 				}
 			}
-			t := template.Must(template.ParseFiles("./web/html/pageAdmin.html"))
-
-			if err := t.Execute(w, data); err != nil {
-				logs.WriteLog("Erreur execution template", err.Error())
-				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
-				return
-			}
 		}
 		if r.URL.Query()["form"][0] == "test" { // Pour upload un test
-			num, err := strconv.Atoi(r.FormValue("defiSelectTest"))
-			if err != nil {
-				logs.WriteLog("upload test", "aucun numéro de défis n'a été spécifié")
-				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
-				return
-			}
+			num, _ := strconv.Atoi(r.FormValue("defiSelectTest"))
 			defi := DAO.GetDefi(num)
 			typeArchive := fileHeader.Header.Values("Content-Type")
 			fmt.Println(typeArchive)
@@ -385,10 +352,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				t := template.Must(template.ParseFiles("./web/html/pageAdmin.html"))
 				if err := t.Execute(w, data); err != nil {
 					logs.WriteLog("Erreur execution template", err.Error())
-					http.Redirect(w, r, "/pageAdmin", http.StatusFound)
-					return
 				}
 			}
+
 			logs.WriteLog("Admin", "upload d'un test pour le défi n°"+strconv.Itoa(num))
 			if !defi.JeuDeTest {
 				DAO.AddJeuDeTest(num)
@@ -435,7 +401,6 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				resultatsEnvois := sendMailChange(etuToSendMail, defi_actuel.Num, configSender)
 				for _, res := range resultatsEnvois {
 					if res.send == false {
-						data.Alert = "Erreur lors de l'envoie d'un des mails (voir logs)"
 						logs.WriteLog("Envoi de mails : ", "Erreur lors de l'envoi de mails à l'adresse : "+res.adress+" erreur : "+res.erreur)
 					}
 				}
@@ -474,24 +439,18 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 				}
 				os.Rename(modele.PathJeuDeTests+nomArchive, pathTest)
 			}
-
 			os.Remove(fichier.Name())
-
-			t := template.Must(template.ParseFiles("./web/html/pageAdmin.html"))
-			if err := t.Execute(w, data); err != nil {
-				logs.WriteLog("Erreur execution template", err.Error())
-				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
-				return
-			}
 		}
 
 		// Ajoute un nouveau couple login:passwd dans la table Admin
 		if r.URL.Query()["form"][0] == "changeId" {
 			login := r.FormValue("loginAd")
 			password := r.FormValue("passwordAd")
-			DAO.RegisterAdminString(login, password)
-			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
-			return
+			if DAO.RegisterAdminString(login, password) {
+				data.Alert = "changement d'id admin effectué"
+			} else {
+				data.Alert = "Erreur lors du changement d'id (voir logs)"
+			}
 		}
 
 		// Changer la configuation de l'envoi de mail (mailConf.json)
@@ -507,26 +466,32 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			//Fichier de config
 			err := os.Remove(modele.PathRoot + "mailConf.json") // On le suppr pour être sûr
 			if err != nil {
-				fmt.Println("Pas de fichier mailConf.json")
+				logs.WriteLog("Changement MailConf", "Pas de fichier mail.Conf.json")
 			}
 			fConf, err := os.OpenFile(modele.PathRoot+"mailConf.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModeAppend) // On l'ouvre
 			if err != nil {
-				data.Log = []string{"Erreur pour récupérer le fichier de config de mail"}
+				data.Alert = "Erreur pour récupérer le fichier de config de mail"
 			} else {
 				// On écrit dedans sous forme d'un Json ce qui est utile
+				data.Alert = "mailConf.json a été mis à jour"
 				newConfString := "{\n  \"fromMail\" : \" " + mail + "\",\n  \"username\" : \"" + username + "\",\n  \"password\" : \"" + password + "\",\n  \"smtpHost\" : \"" + host + "\",\n  \"smtpPort\" : \"" + port + "\"\n}"
 				_, err := fConf.Write([]byte(newConfString))
 				if err != nil {
-					fmt.Println("ERREUR DE WRITE dans le fichier mailConf.json: ", err)
+					data.Alert = "Erreur écriture dans le fichier mailConf.json"
 				}
 			}
-
+			logs.WriteLog("Changement Mail config", data.Alert)
 			fConf.Close()
-
-			http.Redirect(w, r, "/pageAdmin", http.StatusFound)
-			return
 		}
 
+		data.ListeDefis = DAO.GetDefis()
+		data.DefiActuel = DAO.GetDefiActuel()
+		data.Etudiants = DAO.GetEtudiants()
+
+		t := template.Must(template.ParseFiles("./web/html/pageAdmin.html"))
+		if err := t.Execute(w, data); err != nil {
+			logs.WriteLog("Erreur execution template", err.Error())
+		}
 	}
 }
 

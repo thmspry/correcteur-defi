@@ -215,13 +215,11 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 				logs.WriteLog(login, "mot de passe incorrecte connexion admin")
 				page, err := template.ParseFiles("./web/html/connexionAdmin.html")
 				if err != nil {
-					fmt.Print("erreur chargement connexionAdmin.html")
 					logs.WriteLog("Erreur du chargement de la page connexionAdmin.html : ", err.Error())
 				} else {
 					data.Alert = "Une erreur login/mot de passe est survenue"
 					err = page.Execute(w, data)
 					if err != nil {
-						fmt.Println("erreur affichage connexionAdmin.html : ", err)
 						logs.WriteLog("Erreur du chargement de la page connexionAdmin.html : ", err.Error())
 					}
 				}

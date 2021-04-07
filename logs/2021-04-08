@@ -1,0 +1,17 @@
+0:5:8, Erreur TOKEN : Problème pour retrouver le cookie du token :  : http: named cookie not present
+0:5:21, Erreur TOKEN : Problème pour retrouver le cookie du token :  : http: named cookie not present
+0:5:22, Register étudiant : E197051L est enregistré
+0:5:22, E197051L : création du compte : E197051L:$2a$14$hpsMNAwVmzSyYAhnA.nlQOYkN7GVGLhYYstZfIG1Rrw9t/9JIExKO
+0:5:22, Erreur TOKEN : Problème pour retrouver le cookie du token :  : http: named cookie not present
+0:5:26, Erreur TOKEN : Problème pour retrouver le cookie du token :  : http: named cookie not present
+0:5:27, E197051L : Le couple login/password est correct
+0:5:27, E197051L : connexion étudiant
+0:5:27, DAO.GetResult : sql: no rows in result set
+0:25:27, E197051L : Déconnexion du serveur
+0:32:57, DAO SaveResultat : sql: no rows in result set
+0:33:15, DAO SaveResultat : sql: Scan error on column index 4, name "classement": converting NULL to int is unsupported
+0:35:3, DAO SaveResultat : sql: Scan error on column index 4, name "classement": converting NULL to int is unsupported
+0:36:36, DAO SaveResultat : sql: Scan error on column index 4, name "classement": converting NULL to int is unsupported
+0:37:13, DAO SaveResultat : sql: no rows in result set
+0:38:51, DAO SaveResultat : sql: no rows in result set
+0:41:5, DAO SaveResultat : sql: no rows in result set

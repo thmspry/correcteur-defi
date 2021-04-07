@@ -341,7 +341,7 @@ h2 {
 }
 
 .moi {
-    background-color: #00acc1;
+    background-color: rgba(44, 208, 229, 0.2);
 }
 /* Redefinition du framework */
 .tabs .tab a {
@@ -378,5 +378,6 @@ input[type=text]:not(.browser-default):focus:not([readonly]) {
 
 .scroll {
     max-height: 330px;
+    overflow-y: auto;
 }
 /* --- */
