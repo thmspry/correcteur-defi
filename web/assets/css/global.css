@@ -1,4 +1,4 @@
-h1 {
+/*h1 {
     font-size: 2em;
     font-weight: bold;
     padding: 0;
@@ -12,7 +12,7 @@ h2 {
 
 h3 {
     font-size: 20px;
-}
+}*/
 
 .scroll {
     max-height: 500px;
@@ -29,7 +29,7 @@ body::-webkit-scrollbar-thumb, .scroll::-webkit-scrollbar-thumb {
     width: 1px;
 }
 
-#MsgError {
+#alertMsg {
     display:none;
 }
 

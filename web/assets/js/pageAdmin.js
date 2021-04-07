@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
         if (data!=null) { // S'il y a un/des défi(s)
             // La date minimale qu'on peut choisir pour un date est la date de fin du dernier défi le plus récent
             let maxDate = data[data.length - 1].DateFin;
-            console.log("La max date est alors : "+ maxDate)
             let currentDate = new Date();
             let currentYear = currentDate.getFullYear();
             let nextYear = currentYear + 1;
@@ -128,7 +127,6 @@ function ChangeDateInput(event, divID) {
         .then(response => response.json())
         .then(data => {
             let defiSelect = data.find(el => el.Num == event.target.value);
-            console.log(defiSelect)
             let dateDParse = defiSelect.DateDebut.split('T')
             let dateFParse = defiSelect.DateFin.split('T')
             let datepicker = document.querySelectorAll(`div#${divID} input.datepicker`)

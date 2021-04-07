@@ -13,14 +13,16 @@ import (
 )
 
 type dataConnexion struct {
-	Alert    bool
-	AlertMsg string
+	Alert string
 }
 
 /*
 	Fonction appelé lorsque l'url parsée est : http://localhost:8192/login
 */
 func accueil(w http.ResponseWriter, r *http.Request) {
+	data := dataConnexion{
+		Alert: "",
+	}
 	fmt.Println("Méthode de accueil Etudiant :", r.Method)
 	// Verification s'il le client à un token enregistré
 	if tk, err := r.Cookie("token"); err == nil {
@@ -91,10 +93,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 					logs.WriteLog(login+" Erreur de chargement de la page accueil.html : ", err.Error())
 				} else {
 					// On passe des données à la vue pour faire afficher un message d'erreur
-					data := dataConnexion{
-						Alert:    true,
-						AlertMsg: "Une erreur login/mot de passe est survenue",
-					}
+					data.Alert = "Une erreur login/mot de passe est survenue"
 					err = page.Execute(w, data)
 					if err != nil {
 						logs.WriteLog(login+" Erreur d'éxecution de la page accueil.html : ", err.Error())
@@ -104,7 +103,6 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			// S'il l'argument de l'url est register
 		} else if r.URL.String() == "/login?register" {
 			// request provient du formulaire pour s'enregistrer
-			data := dataConnexion{}
 			// Si le login est déjà utilisé
 			if DAO.IsLoginUsed(r.FormValue("login")) {
 				// On redirige le client s'il y a eu une erreur d'inscription
@@ -114,8 +112,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 					logs.WriteLog("Erreur chargement accueil.html : ", err.Error())
 				} else {
 					loginExist := r.FormValue("login")
-					data.Alert = true
-					data.AlertMsg = "L'identifiant entré est déjà utilisé"
+					data.Alert = "L'identifiant entré est déjà utilisé"
 					fmt.Println("Ce login (", loginExist, ") existe déjà")
 					logs.WriteLog("Already Exist : ", "Ce login ("+loginExist+") existe déjà")
 					err = page.Execute(w, data)
@@ -125,7 +122,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				}
 			} else {
 				// Si le login n'est pas déjà utilisé
-				data.Alert = false
+				data.Alert = ""
 				etu := modele.Etudiant{
 					Login:    r.FormValue("login"),
 					Password: r.FormValue("password"),
@@ -152,6 +149,9 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 	Fonction appelé lorsque l'url parsée est : http://localhost:8192/loginAdmin
 */
 func connexionAdmin(w http.ResponseWriter, r *http.Request) {
+	data := dataConnexion{
+		Alert: "",
+	}
 	fmt.Println("methode de connexion Admin :", r.Method)
 	// Verification s'il le client à un token enregistré
 	if tk, err := r.Cookie("token"); err == nil {
@@ -180,9 +180,7 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 				fmt.Print("erreur chargement connexionAdmin.html : ", err)
 				logs.WriteLog("Erreur chargement connexionAdmin.html : ", err.Error())
 			} else {
-				data := dataConnexion{
-					Alert: false,
-				}
+				data.Alert = ""
 				err = page.Execute(w, data)
 				if err != nil {
 					fmt.Print("erreur affichage connexionAdmin.html : ", err)
@@ -220,10 +218,7 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 					fmt.Print("erreur chargement connexionAdmin.html")
 					logs.WriteLog("Erreur du chargement de la page connexionAdmin.html : ", err.Error())
 				} else {
-					data := dataConnexion{
-						Alert:    true,
-						AlertMsg: "Une erreur login/mot de passe est survenue",
-					}
+					data.Alert = "Une erreur login/mot de passe est survenue"
 					err = page.Execute(w, data)
 					if err != nil {
 						fmt.Println("erreur affichage connexionAdmin.html : ", err)

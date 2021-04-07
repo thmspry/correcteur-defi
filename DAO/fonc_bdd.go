@@ -546,6 +546,7 @@ func GetDefiActuel() modele.Defi {
 		}
 	}
 	return defiActuel
+
 }
 
 /*
