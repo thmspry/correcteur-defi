@@ -13,8 +13,8 @@ import (
 )
 
 type dataConnexion struct {
-	Error    bool
-	ErrorMsg string
+	Alert    bool
+	AlertMsg string
 }
 
 /*
@@ -92,8 +92,8 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				} else {
 					// On passe des données à la vue pour faire afficher un message d'erreur
 					data := dataConnexion{
-						Error:    true,
-						ErrorMsg: "Une erreur login/mot de passe est survenue",
+						Alert:    true,
+						AlertMsg: "Une erreur login/mot de passe est survenue",
 					}
 					err = page.Execute(w, data)
 					if err != nil {
@@ -114,8 +114,8 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 					logs.WriteLog("Erreur chargement accueil.html : ", err.Error())
 				} else {
 					loginExist := r.FormValue("login")
-					data.Error = true
-					data.ErrorMsg = "L'identifiant entré est déjà utilisé"
+					data.Alert = true
+					data.AlertMsg = "L'identifiant entré est déjà utilisé"
 					fmt.Println("Ce login (", loginExist, ") existe déjà")
 					logs.WriteLog("Already Exist : ", "Ce login ("+loginExist+") existe déjà")
 					err = page.Execute(w, data)
@@ -125,7 +125,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 				}
 			} else {
 				// Si le login n'est pas déjà utilisé
-				data.Error = false
+				data.Alert = false
 				etu := modele.Etudiant{
 					Login:    r.FormValue("login"),
 					Password: r.FormValue("password"),
@@ -181,7 +181,7 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 				logs.WriteLog("Erreur chargement connexionAdmin.html : ", err.Error())
 			} else {
 				data := dataConnexion{
-					Error: false,
+					Alert: false,
 				}
 				err = page.Execute(w, data)
 				if err != nil {
@@ -221,8 +221,8 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 					logs.WriteLog("Erreur du chargement de la page connexionAdmin.html : ", err.Error())
 				} else {
 					data := dataConnexion{
-						Error:    true,
-						ErrorMsg: "Une erreur login/mot de passe est survenue",
+						Alert:    true,
+						AlertMsg: "Une erreur login/mot de passe est survenue",
 					}
 					err = page.Execute(w, data)
 					if err != nil {

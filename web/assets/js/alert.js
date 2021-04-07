@@ -1,8 +1,8 @@
 "use strict";
 document.addEventListener('DOMContentLoaded', function() {
-    let msgError = document.querySelector('#MsgError')
+    let alertMsg = document.querySelector('#alertMsg')
     let options = {
-        html: msgError.textContent,
+        html: alertMsg.textContent,
         classes: 'rounded'
     }
     console.log(msgError.textContent)

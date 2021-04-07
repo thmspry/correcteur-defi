@@ -74,4 +74,8 @@ input[type=submit]:hover {
 .tabs .tab.disabled a, .tabs .tab.disabled a:hover {
     color: rgba(58, 186, 89, 0.4);
 }
+
+#MsgError {
+    display:none;
+}
 /* --- */

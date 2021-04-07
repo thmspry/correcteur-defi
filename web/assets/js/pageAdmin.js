@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
         var optionsDatePicker = {}
 
         if (data!=null) { // S'il y a un/des défi(s)
-            console.log(data)
             // La date minimale qu'on peut choisir pour un date est la date de fin du dernier défi le plus récent
             let maxDate = data[data.length - 1].DateFin;
             console.log("La max date est alors : "+ maxDate)
@@ -166,13 +165,14 @@ function checkJeuDeTestSent(event) {
  * @returns {Promise<void>} la promesse
  */
 async function init() {
-    const defiActuel = await fetch('/GetDefiActuel')
+    const ListeDefis = await fetch('/GetDefis')
         .then((response) => response.json())
         .then((data) => {
         return data
     });
     // waits until the request completes...
-    if (defiActuel.JeuDeTest) {
+    let para = document.querySelector('#TestDeposer');
+    if (ListeDefis[0].JeuDeTest) {
         para.innerHTML = "Vous avez déjà déposé un jeu de test pour ce défi."
     } else {
         para.innerHTML = "Vous n'avez pas encore déposé de jeu de test pour ce défi."
