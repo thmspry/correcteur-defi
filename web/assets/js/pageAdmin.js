@@ -87,81 +87,84 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
         .then(data => {
             const participants = data.Participants;
             const select = document.querySelector('#selectStatsDefi');
-            select.value = data.NbDefiActuel;
-            // Graphique informations générales sur les défis
-            google.charts.load('current', {'packages':['corechart']});
-            google.charts.setOnLoadCallback(afficherGraphiqueGeneral);
-            function afficherGraphiqueGeneral() {
-                let tab = [['defis', 'participations\n', 'Reussite\n']]
-                participants.forEach(item => {
-                    tab.push(['defi ' + item.Num, item.ParticipantsDefi, item.Reussite])
-                })
-                let donnees = google.visualization.arrayToDataTable(tab);
-                let options = {
-                    title: 'Evolution de la participation et du taux de reussite au cours des défis',
-                    curveType: 'function',
-                    legend: { position: 'bottom' },
-                    vAxis: {
-                        title: "Nombre d'étudiants",
-                        viewWindowMode:'explicit',
-                        viewWindow: {
-                            min: 0
-                        }
-                    },
-                    hAxis: {
-                        title: 'defis',
-                        minValue: 0,
-                        maxValue:100
-                    },
-                };
-                let graphiqueGeneral = new google.visualization.LineChart(document.getElementById('curve_chart'));
-                graphiqueGeneral.draw(donnees, options);
-            }
+            if (select !== undefined && !isNaN(select)) {
+                select.value = data.NbDefiActuel;
+                // Graphique informations générales sur les défis
+                google.charts.load('current', {'packages': ['corechart']});
+                google.charts.setOnLoadCallback(afficherGraphiqueGeneral);
 
-            google.charts.load('current', {'packages':['corechart']});
-            google.charts.setOnLoadCallback(afficherGraphiqueParticipation);
-            function afficherGraphiqueParticipation() {
-                const select = document.querySelector('#selectStatsDefi');
-                const nbDefi = parseInt(select.options[select.selectedIndex].value);
-                let participants = data.Participants.filter(elem => elem.Num === nbDefi);
-                participants = participants[0];
-                const nonParticipants = data.NbEtudiants - participants.ParticipantsDefi;
-                const donnees = google.visualization.arrayToDataTable([
-                    ['Defi', 'Taux de participation'],
-                    ['Participants', participants.ParticipantsDefi],
-                    ['Non Participants', nonParticipants],
-                ]);
+                function afficherGraphiqueGeneral() {
+                    let tab = [['defis', 'participations\n', 'Reussite\n']]
+                    participants.forEach(item => {
+                        tab.push(['defi ' + item.Num, item.ParticipantsDefi, item.Reussite])
+                    })
+                    let donnees = google.visualization.arrayToDataTable(tab);
+                    let options = {
+                        title: 'Evolution de la participation et du taux de reussite au cours des défis',
+                        curveType: 'function',
+                        legend: {position: 'bottom'},
+                        vAxis: {
+                            title: "Nombre d'étudiants",
+                            viewWindowMode: 'explicit',
+                            viewWindow: {
+                                min: 0
+                            }
+                        },
+                        hAxis: {
+                            title: 'defis',
+                            minValue: 0,
+                            maxValue: 100
+                        },
+                    };
+                    let graphiqueGeneral = new google.visualization.LineChart(document.getElementById('curve_chart'));
+                    graphiqueGeneral.draw(donnees, options);
+                }
 
-                const options = {
-                    title: 'Taux de participation defi n°' + nbDefi
-                };
-                const chart = new google.visualization.PieChart(document.getElementById('piechart'));
-                chart.draw(donnees, options);
-            }
+                google.charts.load('current', {'packages': ['corechart']});
+                google.charts.setOnLoadCallback(afficherGraphiqueParticipation);
 
-            // graphique  Nombre moyen de tentatives
-            google.charts.load('current', {packages: ['corechart', 'bar']});
-            google.charts.setOnLoadCallback(afficherGraphiqueTentatives);
-            function afficherGraphiqueTentatives() {
-                const select = document.querySelector('#selectStatsDefi');
-                const nbDefi = parseInt(select.options[select.selectedIndex].value);
-                let participants = data.Participants.filter(elem => elem.Num === nbDefi);
-                participants = participants[0];
-                const donnees = google.visualization.arrayToDataTable([
-                    ['defi', 'valeur'],
-                    ['defi', participants.MoyenneTentatives],
-                ]);
-                const options = {
-                    title: 'Nombre moyen de tentatives',
-                    chartArea: {width: '50%'},
-                    hAxis: {
+                function afficherGraphiqueParticipation() {
+                    const nbDefi = parseInt(select.options[select.selectedIndex].value);
+                    let participants = data.Participants.filter(elem => elem.Num === nbDefi);
+                    participants = participants[0];
+                    const nonParticipants = data.NbEtudiants - participants.ParticipantsDefi;
+                    const donnees = google.visualization.arrayToDataTable([
+                        ['Defi', 'Taux de participation'],
+                        ['Participants', participants.ParticipantsDefi],
+                        ['Non Participants', nonParticipants],
+                    ]);
+
+                    const options = {
+                        title: 'Taux de participation defi n°' + nbDefi
+                    };
+                    const chart = new google.visualization.PieChart(document.getElementById('piechart'));
+                    chart.draw(donnees, options);
+                }
+
+                // graphique  Nombre moyen de tentatives
+                google.charts.load('current', {packages: ['corechart', 'bar']});
+                google.charts.setOnLoadCallback(afficherGraphiqueTentatives);
+
+                function afficherGraphiqueTentatives() {
+                    const nbDefi = parseInt(select.options[select.selectedIndex].value);
+                    let participants = data.Participants.filter(elem => elem.Num === nbDefi);
+                    participants = participants[0];
+                    const donnees = google.visualization.arrayToDataTable([
+                        ['defi', 'valeur'],
+                        ['defi', participants.MoyenneTentatives],
+                    ]);
+                    const options = {
                         title: 'Nombre moyen de tentatives',
-                        minValue: 0,
-                        maxValue:100
-                    },
-                };
-                const chart = new google.visualization.BarChart(document.getElementById('chart_div'));
-                chart.draw(donnees, options);
+                        chartArea: {width: '50%'},
+                        hAxis: {
+                            title: 'Nombre moyen de tentatives',
+                            minValue: 0,
+                            maxValue: 100
+                        },
+                    };
+                    const chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+                    chart.draw(donnees, options);
+                }
             }
         })
         .catch(err => console.log(err))
