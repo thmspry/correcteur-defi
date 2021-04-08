@@ -141,33 +141,34 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Choisi l'étudiant correcteur et lui envoi un mail
-			if r.URL.Query()["Correcteur"] != nil {
+			if r.URL.Query()["Correcteur"] != nil && DAO.GetCorrecteur(num).Login == "" {
 				DAO.GenerateCorrecteur(num)
 				etudiant := DAO.GetCorrecteur(num)
-				etudiantMail := modele.EtudiantMail{Prenom: etudiant.Prenom, Nom: etudiant.Nom}
-				file, err := os.Open("mailConf.json")
-				if err != nil {
-					logs.WriteLog("Envoie de mail correcteur", "Erreur mailConf.json est introuvable")
-				}
-				byteValue, _ := ioutil.ReadAll(file)
-				var configSender SenderData
-				err = json.Unmarshal(byteValue, &configSender)
-				if err != nil {
-					logs.WriteLog("Envoie de mail correcteur", "Erreur unmarshal mailConf.json")
-				}
-				defer file.Close()
-				resultMail := sendMailCorrecteur(etudiantMail, num, configSender)
-				if resultMail.send == false {
-					data.Alert = "Erreur lors de l'envoi de mail du correcteur du défi " + strconv.Itoa(num) + " à l'adresse : " + etudiantMail.Mail()
-					logs.WriteLog("Envoi de mail correcteur", data.Alert)
+				if etudiant.Login == "" {
+					data.Alert = "Aucun correcteur n'a été trouvé"
+					logs.WriteLog("GetCorrecteur", data.Alert)
 				} else {
-					logs.WriteLog("Envoi de mail correcteur", "envoi de mail du correcteur du défi "+strconv.Itoa(num)+" à l'adresse : "+etudiantMail.Mail())
-				}
-				t := template.Must(template.ParseFiles("./web/html/pageAdmin.html"))
-				if err := t.Execute(w, data); err != nil {
-					logs.WriteLog("Erreur execution template", err.Error())
-					http.Redirect(w, r, "/pageAdmin?Defi=\"+strconv.Itoa(num)", http.StatusFound)
-					return
+					etudiantMail := modele.EtudiantMail{Prenom: etudiant.Prenom, Nom: etudiant.Nom}
+					file, err := os.Open("mailConf.json")
+					if err != nil {
+						logs.WriteLog("Envoie de mail correcteur", "Erreur mailConf.json est introuvable")
+					}
+					byteValue, _ := ioutil.ReadAll(file)
+					var configSender SenderData
+					err = json.Unmarshal(byteValue, &configSender)
+					if err != nil {
+						logs.WriteLog("Envoie de mail correcteur", "Erreur unmarshal mailConf.json")
+					}
+					defer file.Close()
+					resultMail := sendMailCorrecteur(etudiantMail, num, configSender)
+					if resultMail.send == false {
+						data.Alert = "Erreur lors de l'envoi de mail du correcteur du défi " + strconv.Itoa(num) + " à l'adresse : " + etudiantMail.Mail()
+						logs.WriteLog("Envoi de mail correcteur", data.Alert)
+					} else {
+						logs.WriteLog("Envoi de mail correcteur", "envoi de mail du correcteur du défi "+strconv.Itoa(num)+" à l'adresse : "+etudiantMail.Mail())
+					}
+					data.Correcteur = DAO.GetCorrecteur(num)
+
 				}
 			}
 			if r.URL.Query()["getIdentique"] != nil {

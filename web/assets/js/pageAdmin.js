@@ -281,7 +281,6 @@ function checkJeuDeTestSent(event) {
         .then(response => response.json())
         .then(data =>  {
             let defiSelect = data.find(el => el.Num == event.target.value);
-
             let para = document.querySelector('#TestDeposer');
             if (defiSelect.JeuDeTest) {
                 para.innerHTML = "Vous avez déjà déposé un jeu de test pour ce défi."
