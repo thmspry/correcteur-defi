@@ -71,10 +71,20 @@ func GetParticipantsDefis(w http.ResponseWriter, r *http.Request) {
 	defis := DAO.GetDefis()
 	participants := make([]modele.StatsDefi, 0)
 	for _, defi := range defis {
+		nbReussi := len(DAO.GetResultatsByEtat(defi.Num, 1))
+		moyenne := 0
+
+		if nbReussi != 0 {
+			for _, result := range DAO.GetResultatsByEtat(defi.Num, 1) {
+				moyenne += result.Tentative
+			}
+			moyenne = moyenne / len(DAO.GetResultatsByEtat(defi.Num, 1))
+		}
 		participants = append(participants, modele.StatsDefi{
-			Num:              defi.Num,
-			ParticipantsDefi: len(DAO.GetParticipants(defi.Num)),
-			Reussite:         len(DAO.GetResultatsByEtat(defi.Num, 1)),
+			Num:               defi.Num,
+			ParticipantsDefi:  len(DAO.GetParticipants(defi.Num)),
+			Reussite:          nbReussi,
+			MoyenneTentatives: moyenne,
 		})
 	}
 	json.NewEncoder(w).Encode(modele.StatsDefis{NbEtudiants: etudiantsNb, Participants: participants})

@@ -138,9 +138,10 @@ type CasTest struct {
 }
 
 type StatsDefi struct {
-	Num              int
-	ParticipantsDefi int
-	Reussite         int
+	Num               int
+	ParticipantsDefi  int
+	Reussite          int
+	MoyenneTentatives int
 }
 
 type StatsDefis struct {

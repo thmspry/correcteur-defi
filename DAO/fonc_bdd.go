@@ -732,7 +732,7 @@ func GetResultatsByEtat(numDefi int, etat int) []modele.Resultat {
 		logs.WriteLog("DAO GetResultatsByEtu", err.Error())
 	}
 	for row.Next() {
-		err = row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative, &res.Classement)
+		err = row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative)
 		if err != nil {
 			logs.WriteLog("DAO GetResultatsByEtu", err.Error())
 		}
