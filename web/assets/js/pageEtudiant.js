@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
             label.innerHTML = label.innerHTML.replace("Choisir un fichier", fileName); // On remplace l'ancien text par le nom du fichier
         });
     }
+    let el = document.querySelector(".tabs");
+    var instance = M.Tabs.init(el, null);
+
 });
 
 /*

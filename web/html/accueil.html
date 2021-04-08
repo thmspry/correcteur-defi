@@ -5,7 +5,9 @@
     <title>Accueil</title>
     <link rel="icon" type="image/png" href="./web/assets/images/logo.png" />
     <link rel="stylesheet" href="./web/assets/css/materialize.min.css">
+    <link rel="stylesheet" href="./web/assets/css/global.css">
     <link rel="stylesheet" href="./web/assets/css/login.css">
+
 </head>
 <body>
 <div class="main">
@@ -47,12 +49,10 @@
     <a class="button change-page" href="/loginAdmin">Connexion Admin</a>
 </div>
 
-
-
 <script src="./web/assets/js/materialize.min.js"></script>
 <script src="./web/assets/js/login.js"></script>
 {{if .Alert}}
-    <p id="alertMsg">{{.AlertMsg}}</p>
+    <p id="alertMsg">{{.Alert}}</p>
     <script src="./web/assets/js/alert.js"></script>
 {{end}}
 </body>

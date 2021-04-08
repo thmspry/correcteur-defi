@@ -4,6 +4,23 @@
     margin: 0;
 }
 
+h1 {
+    font-size: 2em;
+    font-weight: bold;
+    padding: 0;
+    margin: 0;
+}
+
+h2 {
+    font-size: 25px;
+    margin-left: 2.5%;
+}
+
+h3 {
+    font-size: 20px;
+}
+
+
 .main {
     width: 80%;
     margin: auto;
@@ -176,20 +193,6 @@
     border-bottom: #ec3939 3px solid;
     padding-bottom: 1px;
 
-}
-
-.etat-text {
-    padding: 7px;
-    border-radius: 5px;
-}
-.win {
-    color: #39911e;
-    background-color: rgba(57, 145, 30, 0.2);
-}
-
-.lose {
-    color: #ca2626;
-    background-color: rgba(202, 38, 38, 0.2);
 }
 
 #mail {
