@@ -18,7 +18,10 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
         });
     }
     let el = document.querySelector(".tabs");
-    var instance = M.Tabs.init(el, null);
+    let optionTabs = {
+        duration : 200,
+    }
+    var instance = M.Tabs.init(el, optionTabs);
 
 });
 

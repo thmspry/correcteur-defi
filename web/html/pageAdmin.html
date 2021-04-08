@@ -262,7 +262,6 @@
             </div>
             <p>Numéro du défi :</p>
             <select id="selectStatsDefi" name="defiSelectStats" required="required" onchange="ChangeDefisStats( event)">
-                <option value=""></option>
                 {{range .ListeDefis}}
                 <option value="{{.Num}}">{{.Num}}</option>
                 {{end}}
