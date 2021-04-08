@@ -349,20 +349,20 @@ func SaveResultat(login string, numDefi int, etat int, resultat []modele.Resulta
 	}
 
 	var res modele.Resultat
-
+	var err error
 	var classement = 0
 	if etat == 1 {
 		classement = len(GetResultatsByEtat(numDefi, 1)) + 1
 	}
 	row := db.QueryRow("SELECT * FROM Resultat WHERE login = $1 AND defi = $2", login, numDefi)
-	err := row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative, &res.Classement)
+	row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative, &res.Classement)
 
 	if login != res.Login {
 		//si err diff nil, cela veut dire qu'il n'a pas réussi à scan car il n'y a pas de ligne dans row
 		if etat == 1 {
 			stmt, _ := db.Prepare("INSERT INTO Resultat values(?,?,?,?,?)")
 			_, err = stmt.Exec(login, numDefi, etat, 1, classement)
-			err = stmt.Close()
+			stmt.Close()
 		} else {
 			stmt, err := db.Prepare("INSERT INTO Resultat(login, defi, etat, tentative) values(?,?,?,?)")
 			if err != nil {
@@ -372,7 +372,7 @@ func SaveResultat(login string, numDefi int, etat int, resultat []modele.Resulta
 			if err != nil {
 				fmt.Println(err.Error())
 			}
-			err = stmt.Close()
+			stmt.Close()
 
 		}
 		if err != nil {
@@ -462,15 +462,15 @@ func AddDefi(dateD time.Time, dateF time.Time) {
 	tDeb, err := dateD.MarshalText()
 	tFin, err := dateF.MarshalText()
 	if err != nil {
-		fmt.Println(err.Error())
+		logs.WriteLog("DAO.AddDefi Marshal dates", err.Error())
 	}
 	stmt, err := db.Prepare("INSERT INTO Defis(dateDebut,dateFin, jeuDeTest) values(?,?,?)")
 	if err != nil {
-		logs.WriteLog("DAO AddeDefi", err.Error())
+		logs.WriteLog("DAO.AddeDefi", err.Error())
 	} else {
 		_, err = stmt.Exec(string(tDeb), string(tFin), false)
 		if err != nil {
-			logs.WriteLog("DAO AddDefi", err.Error())
+			logs.WriteLog("DAO.AddDefi", err.Error())
 		}
 		stmt.Close()
 	}
@@ -487,7 +487,7 @@ func ModifyDefi(num int, dateD time.Time, dateF time.Time) {
 	tDeb, err := dateD.MarshalText()
 	tFin, err := dateF.MarshalText()
 	if err != nil {
-		fmt.Println(err.Error())
+		logs.WriteLog("DAO.ModifyDefi", err.Error())
 	}
 	stmt, err := db.Prepare("UPDATE Defis SET dateDebut = ?, dateFin = ? where numero = ?")
 	if err != nil {

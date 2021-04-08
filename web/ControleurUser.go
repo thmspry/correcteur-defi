@@ -26,8 +26,7 @@ type data_pageEtudiant struct { // Données transmises à la page Etudiant
 	ResTest      []modele.ResultatTest
 	MsgRes       string
 	Script       []string
-	Alert        bool
-	AlertMsg     string
+	Alert        string
 	NbTestReussi int
 	NbTestEchoue int
 	Classement   []modele.Resultat
@@ -56,8 +55,6 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 		DefiActuel:   DAO.GetDefiActuel(),
 		ResTest:      DAO.GetResultatTest(etu.Login),
 		ResultatDefi: DAO.GetResult(etu.Login, numDefiActuel),
-		Alert:        false,
-		AlertMsg:     "",
 		NbTestReussi: 0,
 		NbTestEchoue: 0,
 		Classement:   DAO.GetClassement(numDefiActuel),
@@ -99,8 +96,8 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			r.ParseMultipartForm(10 << 20) //sert à télécharger des fichiers et le stock sur le serveur
 
 			file, _, _ := r.FormFile("script_etu") // sert à obtenir le descripteur de fichier
-
-			script, _ := os.Create(modele.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(numDefiActuel)) // remplacer handler.Filename par le nom et on le place où on veut
+			path := modele.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(numDefiActuel)
+			script, _ := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
 
 			io.Copy(script, file) //on l'enregistre dans notre système de fichier
 			//os.Chmod(modele.PathScripts+"script_"+etu.Login+"_"+strconv.Itoa(numDefiActuel), 770) //change le chmode du fichier (marche pas sous windows)
@@ -108,15 +105,14 @@ func pageEtudiant(w http.ResponseWriter, r *http.Request) {
 			script.Close()
 			b, _ := ioutil.ReadFile(modele.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(numDefiActuel))
 			contenuscript := string(b)
-			value := strings.Contains(contenuscript, "!/bin/bash")
-			data.Alert = true
-			if value == true {
-				data.AlertMsg = "upload du script pour le défi " + strconv.Itoa(numDefiActuel)
-				logs.WriteLog(etu.Login, data.AlertMsg)
+			if strings.Contains(contenuscript, "#!/bin/bash") {
+				data.Alert = "upload du script pour le défi " + strconv.Itoa(numDefiActuel)
+				logs.WriteLog(etu.Login, data.Alert)
 				data.MsgRes, data.ResTest = testeur.Test(etu.Login)
 				DAO.SaveResultat(etu.Login, numDefiActuel, -1, nil, false)
 			} else {
-				data.AlertMsg = "le script n'a pas été upload car in ne contient pas !/bin/bash"
+				os.Remove(path)
+				data.Alert = "le script n'a pas été upload car il ne contient pas '!/bin/bash'"
 			}
 			data.Script = manipStockage.GetFileLineByLine(modele.PathScripts + "script_" + etu.Login + "_" + strconv.Itoa(data.DefiActuel.Num))
 			data.MsgRes, data.ResTest = testeur.Test(data.UserInfo.Login)

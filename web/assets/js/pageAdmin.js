@@ -19,13 +19,13 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
         // Initialisation du sélecteur de dates Materialiaze
         var elems = document.querySelectorAll('.datepicker');
         var optionsDatePicker = {}
+        let currentDate = new Date();
+        let currentYear = currentDate.getFullYear();
+        let nextYear = currentYear + 1;
 
         if (data!=null) { // S'il y a un/des défi(s)
             // La date minimale qu'on peut choisir pour un date est la date de fin du dernier défi le plus récent
             let maxDate = data[data.length - 1].DateFin;
-            let currentDate = new Date();
-            let currentYear = currentDate.getFullYear();
-            let nextYear = currentYear + 1;
             optionsDatePicker = {
                 format: "yyyy-mm-dd",
                 minDate: new Date(maxDate),
@@ -45,6 +45,13 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
 
         }
         var instancesDate = M.Datepicker.init(elems, optionsDatePicker);
+
+        var instancesDateModif = M.Datepicker.init(document.querySelectorAll('.datepickerModif'), {
+            format: "yyyy-mm-dd",
+            minDate: new Date(currentYear+ "-02-15"),
+            maxDate: new Date(nextYear+"-06-30"),
+            defaultDate: currentDate
+        })
         var timers = document.querySelectorAll('.timepicker')
         var instancesTime = M.Timepicker.init(timers, {
             twelveHour:false,
