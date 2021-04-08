@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/DAO"
+	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele"
 	"net/http"
 )
 
@@ -21,6 +22,7 @@ func InitWeb() {
 	http.HandleFunc("/pageAdmin", pageAdmin)                                          // Page admin : http://localhost:8192/pageAdmin
 	http.HandleFunc("/GetDefis", GetDefis)
 	http.HandleFunc("/GetDefiActuel", GetDefiActuel)
+	http.HandleFunc("/GetParticipantsDefis", GetParticipantsDefis)
 	http.HandleFunc("/", Redirection) // Redirection url par défaut : http://localhost:8192/
 
 	err := http.ListenAndServe(":8192", nil) // port utilisé
@@ -55,4 +57,25 @@ func GetDefiActuel(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(DAO.GetDefiActuel())
+}
+
+func GetParticipantsDefis(w http.ResponseWriter, r *http.Request) {
+	if token, err := r.Cookie("token"); err != nil || !DAO.TokenExiste(token.Value) {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+	w.Header().Set("Content-type", "application/json;charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+
+	etudiantsNb := len(DAO.GetEtudiants())
+	defis := DAO.GetDefis()
+	participants := make([]modele.StatsDefi, 0)
+	for _, defi := range defis {
+		participants = append(participants, modele.StatsDefi{
+			Num:              defi.Num,
+			ParticipantsDefi: len(DAO.GetParticipants(defi.Num)),
+			Reussite:         len(DAO.GetResultatsByEtat(defi.Num, 1)),
+		})
+	}
+	json.NewEncoder(w).Encode(modele.StatsDefis{NbEtudiants: etudiantsNb, Participants: participants})
 }

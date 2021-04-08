@@ -135,3 +135,14 @@ type CasTest struct {
 	Nom       string
 	Arguments []Retour
 }
+
+type StatsDefi struct {
+	Num              int
+	ParticipantsDefi int
+	Reussite         int
+}
+
+type StatsDefis struct {
+	NbEtudiants  int
+	Participants []StatsDefi
+}

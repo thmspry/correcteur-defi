@@ -75,6 +75,62 @@ document.addEventListener('DOMContentLoaded', function() { // Au chargement de l
     changeInputFile("#file-test");
     changeInputFile("#file-defi-modify");
 
+    // Chargement des graphiques
+    fetch("/GetParticipantsDefis")
+        .then(response => response.json())
+        .then(data => {
+            let participants = data.Participants;
+
+            google.charts.load('current', {'packages':['corechart']});
+            google.charts.setOnLoadCallback(drawChart1);
+            function drawChart1() {
+                let tab = [['defis', 'participations', 'Reussite']]
+                participants.forEach(item => {
+                    tab.push(['defi ' + item.Num, item.ParticipantsDefi, item.Reussite])
+                })
+                var data = google.visualization.arrayToDataTable(tab);
+
+                var options = {
+                    title: 'Evolution de la participation et du taux de reussite au cours des défis',
+                    curveType: 'function',
+                    legend: { position: 'bottom' },
+                    vAxis: {
+                        viewWindowMode:'explicit',
+                        viewWindow: {
+                            max: (data.NbEtudiants+1),
+                            min: 0
+                        }
+                    }
+                };
+
+                var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+                chart.draw(data, options);
+            }
+        })
+        .catch(err => console.log(err))
+
+
+
+
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+        const data = google.visualization.arrayToDataTable([
+            ['Participants', 'participation'],
+            ['participants', 0]
+        ]);
+        const options = {
+            title: 'Selectionner un défi'
+        };
+        const chart = new google.visualization.PieChart(document.getElementById('piechart'));
+        chart.draw(data, options);
+    }
+
+
+
+
 });
 
 // Stock dans le localstorage le dernier onglet sélectionné, pour se replacer dessus au rechargement de la page
@@ -139,6 +195,39 @@ function ChangeDateInput(event, divID) {
             timepicker[1].value = dateFParse[1].slice(0,5)
         })
         .catch(err => console.log(err))
+}
+
+/**
+* Function qui permet de modifier les graphiques des statistiques
+* @param event l'événement
+* @constructor
+*/
+function ChangeDefisStats(event) {
+    if(document.querySelector('#selectStatsDefi').options[document.querySelector('#selectStatsDefi').selectedIndex].value !== "") {
+        fetch("/GetParticipantsDefis")
+            .then(response => response.json())
+            .then(data => {
+                const select = document.querySelector('#selectStatsDefi');
+                const nbDefi = parseInt(select.options[select.selectedIndex].value);
+                let participants = data.Participants.filter(elem => elem.Num === nbDefi);
+                participants = participants[0];
+                const nonParticipants = data.NbEtudiants - participants.ParticipantsDefi;
+                const datas = google.visualization.arrayToDataTable([
+                    ['Defi', 'Taux de participation'],
+                    ['Participants', participants.ParticipantsDefi],
+                    ['Non Participants', nonParticipants],
+                ]);
+
+                const options = {
+                    title: 'Taux de participation defi n°' + nbDefi
+                };
+
+                const chart = new google.visualization.PieChart(document.getElementById('piechart'));
+
+                chart.draw(datas, options);
+            })
+            .catch(err => console.log(err))
+    }
 }
 
 /**
