@@ -261,8 +261,7 @@
                 <div class="col s12 center-align"><div id="curve_chart" style="width: 100%; min-height: 500px"></div></div>
             </div>
             <p>Numéro du défi :</p>
-            <select id="selectStatsDefi" name="defiSelectStats" required="required" onchange="ChangeDefisStats( event)">
-                <option value=""></option>
+            <select id="selectStatsDefi" name="defiSelectStats" required="required" onchange="ChangeDefisStats()">
                 {{range .ListeDefis}}
                 <option value="{{.Num}}">{{.Num}}</option>
                 {{end}}

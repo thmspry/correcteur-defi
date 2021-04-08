@@ -146,5 +146,6 @@ type StatsDefi struct {
 
 type StatsDefis struct {
 	NbEtudiants  int
+	NbDefiActuel int
 	Participants []StatsDefi
 }

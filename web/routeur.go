@@ -68,6 +68,7 @@ func GetParticipantsDefis(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	etudiantsNb := len(DAO.GetEtudiants())
+	nbDefiActuel := DAO.GetDefiActuel().Num
 	defis := DAO.GetDefis()
 	participants := make([]modele.StatsDefi, 0)
 	for _, defi := range defis {
@@ -87,5 +88,5 @@ func GetParticipantsDefis(w http.ResponseWriter, r *http.Request) {
 			MoyenneTentatives: moyenne,
 		})
 	}
-	json.NewEncoder(w).Encode(modele.StatsDefis{NbEtudiants: etudiantsNb, Participants: participants})
+	json.NewEncoder(w).Encode(modele.StatsDefis{NbEtudiants: etudiantsNb, NbDefiActuel: nbDefiActuel, Participants: participants})
 }
