@@ -141,33 +141,34 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Choisi l'étudiant correcteur et lui envoi un mail
-			if r.URL.Query()["Correcteur"] != nil {
+			if r.URL.Query()["Correcteur"] != nil && DAO.GetCorrecteur(num).Login == "" {
 				DAO.GenerateCorrecteur(num)
 				etudiant := DAO.GetCorrecteur(num)
-				etudiantMail := modele.EtudiantMail{Prenom: etudiant.Prenom, Nom: etudiant.Nom}
-				file, err := os.Open("mailConf.json")
-				if err != nil {
-					logs.WriteLog("Envoie de mail correcteur", "Erreur mailConf.json est introuvable")
-				}
-				byteValue, _ := ioutil.ReadAll(file)
-				var configSender SenderData
-				err = json.Unmarshal(byteValue, &configSender)
-				if err != nil {
-					logs.WriteLog("Envoie de mail correcteur", "Erreur unmarshal mailConf.json")
-				}
-				defer file.Close()
-				resultMail := sendMailCorrecteur(etudiantMail, num, configSender)
-				if resultMail.send == false {
-					data.Alert = "Erreur lors de l'envoi de mail du correcteur du défi " + strconv.Itoa(num) + " à l'adresse : " + etudiantMail.Mail()
-					logs.WriteLog("Envoi de mail correcteur", data.Alert)
+				if etudiant.Login == "" {
+					data.Alert = "Aucun correcteur n'a été trouvé"
+					logs.WriteLog("GetCorrecteur", data.Alert)
 				} else {
-					logs.WriteLog("Envoi de mail correcteur", "envoi de mail du correcteur du défi "+strconv.Itoa(num)+" à l'adresse : "+etudiantMail.Mail())
-				}
-				t := template.Must(template.ParseFiles("./web/html/pageAdmin.html"))
-				if err := t.Execute(w, data); err != nil {
-					logs.WriteLog("Erreur execution template", err.Error())
-					http.Redirect(w, r, "/pageAdmin?Defi=\"+strconv.Itoa(num)", http.StatusFound)
-					return
+					etudiantMail := modele.EtudiantMail{Prenom: etudiant.Prenom, Nom: etudiant.Nom}
+					file, err := os.Open("mailConf.json")
+					if err != nil {
+						logs.WriteLog("Envoie de mail correcteur", "Erreur mailConf.json est introuvable")
+					}
+					byteValue, _ := ioutil.ReadAll(file)
+					var configSender SenderData
+					err = json.Unmarshal(byteValue, &configSender)
+					if err != nil {
+						logs.WriteLog("Envoie de mail correcteur", "Erreur unmarshal mailConf.json")
+					}
+					defer file.Close()
+					resultMail := sendMailCorrecteur(etudiantMail, num, configSender)
+					if resultMail.send == false {
+						data.Alert = "Erreur lors de l'envoi de mail du correcteur du défi " + strconv.Itoa(num) + " à l'adresse : " + etudiantMail.Mail()
+						logs.WriteLog("Envoi de mail correcteur", data.Alert)
+					} else {
+						logs.WriteLog("Envoi de mail correcteur", "envoi de mail du correcteur du défi "+strconv.Itoa(num)+" à l'adresse : "+etudiantMail.Mail())
+					}
+					data.Correcteur = DAO.GetCorrecteur(num)
+
 				}
 			}
 			if r.URL.Query()["getIdentique"] != nil {
@@ -276,10 +277,9 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 
 		if r.URL.Query()["form"][0] == "modify-defi" {
 			numDefi, _ := strconv.Atoi(r.FormValue("defiSelectModif")) // Et le num du defi
-
-			if r.FormValue("date_debut") != defi_actuel.DateDebutString() && r.FormValue("date_fin") != defi_actuel.DateFinString() &&
-				r.FormValue("time_debut") != defi_actuel.TimeDebutString() && r.FormValue("time_fin") != defi_actuel.TimeFinString() {
-				fmt.Println("change date defi")
+			fmt.Println()
+			if r.FormValue("date_debut") != defi_actuel.DateDebutString() || r.FormValue("date_fin") != defi_actuel.DateFinString() ||
+				r.FormValue("time_debut") != defi_actuel.TimeDebutString() || r.FormValue("time_fin") != defi_actuel.TimeFinString() {
 
 				layout := "2006-01-02T15:04:05.000Z"
 				str := fmt.Sprintf("%sT%sZ", r.FormValue("date_debut"), r.FormValue("time_debut")+":00.000")
@@ -296,9 +296,17 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 					if t_fin.Sub(t_debut) < 0 { // t_fin est avant t_debut
 						data.Alert = "La date de fin doit être après la date de début"
 					} else {
-						logs.WriteLog("Admin", "modification de la date de rendu du défi "+strconv.Itoa(numDefi))
-						DAO.ModifyDefi(numDefi, t_debut, t_fin)
+						bool, err := verifDate(numDefi, t_debut, t_fin)
+						if bool {
+							logs.WriteLog("Admin", "modification de la date de rendu du défi "+strconv.Itoa(numDefi))
+							DAO.ModifyDefi(numDefi, t_debut, t_fin)
+						} else {
+							data.Alert = err
+							logs.WriteLog("Admin modification d'un défi", data.Alert)
+						}
 					}
+				} else {
+					logs.WriteLog("Admin modif defi", data.Alert)
 				}
 			}
 			if errorFile == nil {
@@ -323,23 +331,26 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				data.Alert = "La date de fin est mal formée"
 			}
-			fmt.Println("errormsg ", data.Alert)
 			if data.Alert == "" {
-				fmt.Println(t_debut, " et ", t_fin)
 				if t_fin.Sub(t_debut) < 0 { // t_fin est après t_debut
-					fmt.Println("if tfin sub t deb > 0")
 					data.Alert = "La date de fin doit être après la date de début"
 				} else { // Si tout est bon, on ajoute dans la bdd et dans les ressource le script de correction et le dossier de test
-					logs.WriteLog("Admin", "ajout d'un nouveau défi du "+t_debut.String()+" au "+t_fin.String())
-					DAO.AddDefi(t_debut, t_fin)
-					os.Mkdir(modele.PathJeuDeTests+"test_defi_"+strconv.Itoa(num_defi_actuel+1), os.ModePerm)
-					num_defi_actuel = num_defi_actuel + 1
-					// TODO vérifier que correction contient bien "#!bin/bash
-					path = modele.PathDefis + "correction_" + strconv.Itoa(num_defi_actuel)
-					script, _ := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
-					defer script.Close()
-					io.Copy(script, file)
-					os.Chmod(path, 770)
+					bool, err := verifDate(num_defi_actuel, t_debut, t_fin)
+					if bool {
+						logs.WriteLog("Admin", "ajout d'un nouveau défi du "+t_debut.String()+" au "+t_fin.String())
+						DAO.AddDefi(t_debut, t_fin)
+						num_defi_actuel++
+						os.Mkdir(modele.PathJeuDeTests+"test_defi_"+strconv.Itoa(num_defi_actuel), os.ModePerm)
+						// TODO vérifier que correction contient bien "#!bin/bash"
+						path = modele.PathDefis + "correction_" + strconv.Itoa(num_defi_actuel)
+						script, _ := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
+						io.Copy(script, file)
+						os.Chmod(path, 770)
+						script.Close()
+					} else {
+						data.Alert = err
+						logs.WriteLog("Admin ajout d'un défi", data.Alert)
+					}
 				}
 			}
 		}
@@ -497,6 +508,27 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 			logs.WriteLog("Erreur execution template", err.Error())
 		}
 	}
+}
+
+func verifDate(numDefi int, t_debut, t_fin time.Time) (bool, string) {
+	ListeDefis := DAO.GetDefis()
+	b := true
+	var err string
+	for _, defi := range ListeDefis {
+		if defi.Num != numDefi {
+			if t_debut.Sub(defi.DateDebut) > 0 && t_debut.Sub(defi.DateFin) < 0 {
+				b = false
+				err = "la date de début est pendant la période du défi " + strconv.Itoa(defi.Num)
+			} else if t_fin.Sub(defi.DateDebut) > 0 && t_debut.Sub(defi.DateFin) < 0 {
+				b = false
+				err = "la date de fin est pendant la période du défi " + strconv.Itoa(defi.Num)
+			} else if t_debut.Sub(defi.DateDebut) < 0 && t_fin.Sub(defi.DateFin) > 0 {
+				b = false
+				err = "Il y a le défi " + strconv.Itoa(defi.Num) + "entre la date de début et de fin"
+			}
+		}
+	}
+	return b, err
 }
 
 /*

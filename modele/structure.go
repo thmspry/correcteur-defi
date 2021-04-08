@@ -107,7 +107,7 @@ func (d Defi) TimeDebutString() string {
 @TimeFinString retourne l'heure de fin au format "HH-MM"
 */
 func (d Defi) TimeFinString() string {
-	e := strings.Split(strings.Split(d.DateDebut.String(), " ")[1], ":")
+	e := strings.Split(strings.Split(d.DateFin.String(), " ")[1], ":")
 	return strings.Join([]string{e[0], e[1]}, ":")
 }
 

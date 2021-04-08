@@ -202,7 +202,7 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 			if existe {
 				//Création du token
 				token := tokenGenerator()
-				temps := 5 * time.Minute // défini le temps d'attente
+				temps := 20 * time.Minute // défini le temps d'attente
 				expiration := time.Now().Add(temps)
 				cookie := http.Cookie{Name: "token", Value: token, Expires: expiration}
 				http.SetCookie(w, &cookie)
