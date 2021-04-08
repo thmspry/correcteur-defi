@@ -41,7 +41,7 @@ func accueil(w http.ResponseWriter, r *http.Request) {
 			logs.WriteLog("Erreur TOKEN", "Le token n'existe pas")
 		}
 	} else {
-		logs.WriteLog("Erreur TOKEN : Problème pour retrouver le cookie du token : ", err.Error())
+		logs.WriteLog("Aucun cookie trouvé", err.Error())
 	}
 	// Cas ou la requete client utilise la méthode GET
 	if r.Method == "GET" {
@@ -165,12 +165,9 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 				http.Redirect(w, r, "/pageAdmin", http.StatusFound)
 			}
 			return
-		} else {
-			logs.WriteLog("Erreur TOKEN", "Le token n'existe pas")
 		}
-	} else {
-		logs.WriteLog("Erreur TOKEN : Problème pour retrouver le cookie du token : ", err.Error())
 	}
+
 	// Cas ou la requete client utilise la méthode GET
 	if r.Method == "GET" {
 		// On charge le fichier html correspondant à la page de connexion admin

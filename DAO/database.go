@@ -81,12 +81,7 @@ func InitDAO() {
 	stmt.Exec()
 
 	stmt.Close()
-
-	admin := modele.Admin{
-		Login:    "admin",
-		Password: "admin",
-	}
-	RegisterAdmin(admin)
+	RegisterAdmin("admin", "admin")
 }
 
 /**
@@ -116,37 +111,37 @@ func Register(etu modele.Etudiant) bool {
 /**
 Enregistre un admin dans la table Administrateur
 */
-func RegisterAdmin(admin modele.Admin) bool {
+func RegisterAdmin(login, password string) bool {
 	m.Lock()
-	stmt, err := db.Prepare("INSERT INTO Administrateur values(?,?)")
+	fmt.Println("L'administrateur " + login + ":" + password + " a été enregistré dans la base de donnée")
+	var ad modele.Admin
+	passwordHashed, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	if err != nil {
-		logs.WriteLog("DAO register admin : ", err.Error())
+		logs.WriteLog("DAO register admin crypt", err.Error())
 	}
-	passwordHashed, err := bcrypt.GenerateFromPassword([]byte(admin.Password), 14)
-	_, err = stmt.Exec(admin.Login, passwordHashed)
-	if err != nil {
-		logs.WriteLog("DAO register admin : ", err.Error())
-		m.Unlock()
-		return false
-	}
-	fmt.Println("l'admin de login : " + admin.Login + " a été enregistré dans la bdd\n")
-	err = stmt.Close()
-	if err != nil {
-		logs.WriteLog("DAO register admin : ", err.Error())
+	row := db.QueryRow("SELECT * FROM Administrateur WHERE login = $1", login)
+	row.Scan(&ad.Login, &ad.Password)
+	if ad.Login == "" {
+		stmt, _ := db.Prepare("INSERT INTO Administrateur values(?,?)")
+		_, err := stmt.Exec(login, passwordHashed)
+		stmt.Close()
+		if err != nil {
+			logs.WriteLog("DAO register admin", err.Error())
+			m.Unlock()
+			return false
+		}
+	} else {
+		stmt, _ := db.Prepare("UPDATE Administrateur SET login = ?, password = ? WHERE login = ?")
+		_, err := stmt.Exec(login, passwordHashed, ad.Login)
+		stmt.Close()
+		if err != nil {
+			logs.WriteLog("DAO register admin", err.Error())
+			m.Unlock()
+			return false
+		}
 	}
 	m.Unlock()
 	return true
-}
-
-/**
-
- */
-func RegisterAdminString(login string, password string) bool {
-	admin := modele.Admin{
-		Login:    login,
-		Password: password,
-	}
-	return RegisterAdmin(admin)
 }
 
 /**
@@ -445,7 +440,7 @@ func GetEtudiants() []modele.Etudiant {
 func GetResult(login string, defi int) modele.Resultat {
 	var res modele.Resultat
 	row := db.QueryRow("SELECT * FROM Resultat WHERE login = $1 AND defi = $2", login, defi)
-	if err := row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative, &res.Classement); err != nil {
+	if err := row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative, &res.Classement); err != nil && res.Classement != 0 {
 		logs.WriteLog("DAO.GetResult", err.Error())
 
 	}
@@ -656,7 +651,7 @@ func GenerateCorrecteur(numDefi int) {
 	} else {
 		for row.Next() {
 			err = row.Scan(&etu.Login, &etu.Password, &etu.Nom, &etu.Prenom, &etu.Correcteur, &etu.ResDefiActuel)
-			if err != nil {
+			if err != nil && etu.ResDefiActuel == nil {
 				logs.WriteLog("DAO GenerateCorrecteur", err.Error())
 			}
 			t = append(t, etu)
@@ -691,7 +686,7 @@ func GenerateCorrecteur(numDefi int) {
 func GetCorrecteur(num int) modele.Etudiant {
 	var etu modele.Etudiant
 	row := db.QueryRow("SELECT e.* FROM Etudiant e, Defis d WHERE d.numero = $1 AND e.login = d.correcteur", num)
-	if err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Correcteur, &etu.ResDefiActuel); err != nil {
+	if err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Correcteur, &etu.ResDefiActuel); err != nil && etu.ResDefiActuel != nil {
 		logs.WriteLog("DAO.GetCorrecteur", err.Error())
 	}
 	return etu
@@ -729,12 +724,12 @@ func GetResultatsByEtat(numDefi int, etat int) []modele.Resultat {
 	resT := make([]modele.Resultat, 0)
 	row, err := db.Query("SELECT * FROM Resultat WHERE defi = ? AND etat = ?", numDefi, etat)
 	if err != nil {
-		logs.WriteLog("DAO GetResultatsByEtu", err.Error())
+		logs.WriteLog("DAO GetResultatsByEtat", err.Error())
 	}
 	for row.Next() {
-		err = row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative)
-		if err != nil {
-			logs.WriteLog("DAO GetResultatsByEtu", err.Error())
+		err = row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative, &res.Classement)
+		if err != nil && res.Classement != 0 {
+			logs.WriteLog("DAO GetResultatsByEtat", err.Error())
 		}
 		resT = append(resT, res)
 	}
@@ -801,14 +796,14 @@ func GetClassement(numDefi int) []modele.Resultat {
 	var res modele.Resultat
 	resT := make([]modele.Resultat, 0)
 
-	row, err := db.Query("SELECT * from Resultat WHERE defi = $1 ORDER BY Classement ASC", numDefi)
+	row, err := db.Query("SELECT * from Resultat WHERE defi = $1 AND etat = 1 OR etat = 0 ORDER BY Classement ASC", numDefi)
 	if err != nil {
 		logs.WriteLog("DAO.GetClassement", err.Error())
 	} else if row != nil {
 		for row.Next() {
 			err := row.Scan(&res.Login, &res.Defi, &res.Etat, &res.Tentative, &res.Classement)
-			if err != nil {
-				panic(err)
+			if err != nil && res.Classement != 0 {
+				logs.WriteLog("DAO.GetClassement", err.Error())
 			}
 			resT = append(resT, res)
 			res = modele.Resultat{}

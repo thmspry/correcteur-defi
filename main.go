@@ -6,7 +6,7 @@ import (
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/DAO"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele"
 	"gitlab.univ-nantes.fr/E192543L/projet-s3/modele/manipStockage"
-	"gitlab.univ-nantes.fr/E192543L/projet-s3/web"
+	web "gitlab.univ-nantes.fr/E192543L/projet-s3/modele/web"
 	"os"
 )
 
@@ -45,10 +45,6 @@ func reset() {
 		os.Remove("./DAO/database.db")
 	}
 	DAO.InitDAO()
-	if len(manipStockage.GetFiles("./logs")) > 0 {
-		os.RemoveAll("./logs")
-		os.Mkdir("./logs", 0755)
-	}
 	if len(manipStockage.GetFiles("./ressource/defis")) > 0 {
 		os.RemoveAll("./ressource/defis")
 		os.Mkdir("./ressource/defis", 0755)

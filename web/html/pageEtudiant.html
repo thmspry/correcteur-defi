@@ -115,7 +115,7 @@
         </div>
     </div>
 {{end}}
-{{if and (.DefiActuel.JeuDeTest) (and (not (eq .DefiActuel.Num 0)) (not (eq .ResultatDefi.Etat 1)))}}
+{{if and .DefiSent (and (.DefiActuel.JeuDeTest) (and (not (eq .DefiActuel.Num 0)) (not (eq .ResultatDefi.Etat 1))))}}
     <a href="/pageEtudiant?test" id="test-script">
         <img src="./web/assets/images/play-triangle.png">
         <p>Tester son script</p>

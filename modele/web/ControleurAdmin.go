@@ -461,11 +461,12 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query()["form"][0] == "changeId" {
 			login := r.FormValue("loginAd")
 			password := r.FormValue("passwordAd")
-			if DAO.RegisterAdminString(login, password) {
+			if DAO.RegisterAdmin(login, password) {
 				data.Alert = "changement d'id admin effectué"
 			} else {
 				data.Alert = "Erreur lors du changement d'id (voir logs)"
 			}
+			logs.WriteLog("Admin changement d'ID", data.Alert)
 		}
 
 		// Changer la configuation de l'envoi de mail (mailConf.json)

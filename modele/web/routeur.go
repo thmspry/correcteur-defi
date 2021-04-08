@@ -8,8 +8,6 @@ import (
 	"net/http"
 )
 
-var domain = "go-correcteur.com"
-
 /**
 Fonction pour lancer l'interface web
 */
