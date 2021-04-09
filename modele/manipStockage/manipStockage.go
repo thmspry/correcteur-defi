@@ -14,9 +14,11 @@ import (
 )
 
 /*
-Fonction qui delete tous les fichiers d'un répertoire
+@Clear Fonction qui delete tous les fichiers d'un répertoire
+@path chemin menant au répertoire
+@exception tableau contenant les noms des fichiers que la fonction ne doit pas supprimer
 */
-func Clear(path string, exception []string) bool {
+func Clear(path string, exception []string) {
 	dirRead, _ := os.Open(path)
 	dirFiles, _ := dirRead.Readdir(0)
 	var excp bool
@@ -38,16 +40,13 @@ func Clear(path string, exception []string) bool {
 			os.Remove(fullPath)
 		}
 	}
-	return true
 }
 
 /**
-Fonction qui retourne un tableau contenant tous les noms des fichiers du répertoire entré en paramètre
+@GetFiles return un tableau contenant tous les noms des fichiers du répertoire entré en paramètre
+@path chemin menant au répertoire
 */
 func GetFiles(path string) []string {
-
-	//out, _ := exec.Command("find", path, "-type", "f").CombinedOutput()
-	//return string(out)
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		log.Fatal(err)
@@ -63,6 +62,11 @@ func GetFiles(path string) []string {
 	return nil
 }
 
+/**
+@Contains
+@return true si fileName appartient au répertoire path
+		false sinon
+*/
 func Contains(path string, fileName string) bool {
 	for _, file := range GetFiles(path) {
 		if file == fileName {
@@ -73,10 +77,15 @@ func Contains(path string, fileName string) bool {
 }
 
 // https://golangcode.com/write-data-to-a-csv-file/
-func CreateCSV(file_name string, num int) {
+/**
+@CreateCSV créer un CSV contenant les résultats des étudiants pour un défi
+@fileName nom du fichier
+@num numéro du défi dont on veut avoir les résultats
+*/
+func CreateCSV(fileName string, num int) {
 	ResultatCSV := DAO.GetParticipants(num)
 
-	file, _ := os.Create(file_name)
+	file, _ := os.Create(fileName)
 	defer file.Close()
 
 	writer := csv.NewWriter(file)
@@ -98,8 +107,13 @@ func CreateCSV(file_name string, num int) {
 	}
 }
 
+/**
+@Contenu fonction utilisé par getConfig
+@path chemin vers le fichier/dossier
+@return le contenu de path si c'est un fichier,
+sinon retourne l'arborescence de path si c'est un dossier
+*/
 func Contenu(path string) string {
-	//retourne soit le contenu du fichier, soit l'arborescence
 	f, err := os.Open(path)
 	if err != nil {
 		logs.WriteLog("fonction contenu", "Erreur fichier "+path+" introuvable")
@@ -115,6 +129,11 @@ func Contenu(path string) string {
 	}
 }
 
+/**
+@GetTriche regroupe les étudiants ayant rendu un script similaire (minimun 2 étudiants par groupe)
+@numDefi numéro du défi concerné
+@return un tableau contenant les groupes, chaque groupe est un tableau contenant la liste des logins des étudiants ayant un script similaire
+*/
 func GetTriche(numDefi int) [][]string {
 	participants := DAO.GetParticipants(numDefi)
 
@@ -159,6 +178,11 @@ func GetTriche(numDefi int) [][]string {
 	return res
 }
 
+/**
+@GetFileLineByLine permet de récupérer chaque ligne du fichier sous la forme d'un tableau
+@path chemin vers le fichier
+@return un tableau contenant le contenu du fichier path
+*/
 func GetFileLineByLine(path string) []string {
 	f, err := os.Open(path)
 	tab := make([]string, 0)

@@ -17,7 +17,7 @@ type dataConnexion struct {
 }
 
 /*
-	Fonction appelé lorsque l'url parsée est : http://localhost:8192/login
+@accueil Traite toutes les requêtes effectuées sur la page d'accueil `/login`
 */
 func accueil(w http.ResponseWriter, r *http.Request) {
 	data := dataConnexion{
@@ -191,7 +191,6 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "POST" {
 
 		if r.URL.String() == "/loginAdmin?login" {
-
 			login := r.FormValue("login")
 			password := r.FormValue("password")
 			fmt.Println("Tentative de connexion admin avec :", login, " ", password)
@@ -209,7 +208,8 @@ func connexionAdmin(w http.ResponseWriter, r *http.Request) {
 				go DeleteToken(login, temps)
 				return
 			} else {
-				logs.WriteLog(login, "mot de passe incorrecte connexion admin")
+				data.Alert = "mot de passe incorrecte connexion admin"
+				logs.WriteLog(login, data.Alert)
 				page, err := template.ParseFiles("./web/html/connexionAdmin.html")
 				if err != nil {
 					logs.WriteLog("Erreur du chargement de la page connexionAdmin.html : ", err.Error())

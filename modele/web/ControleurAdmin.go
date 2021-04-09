@@ -341,7 +341,6 @@ func pageAdmin(w http.ResponseWriter, r *http.Request) {
 						DAO.AddDefi(t_debut, t_fin)
 						num_defi_actuel++
 						os.Mkdir(modele.PathJeuDeTests+"test_defi_"+strconv.Itoa(num_defi_actuel), os.ModePerm)
-						// TODO vérifier que correction contient bien "#!bin/bash"
 						path = modele.PathDefis + "correction_" + strconv.Itoa(num_defi_actuel)
 						script, _ := os.Create(path) // remplacer handler.Filename par le nom et on le place où on veut
 						io.Copy(script, file)

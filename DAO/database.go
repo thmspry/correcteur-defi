@@ -13,11 +13,11 @@ import (
 	"time"
 )
 
-var db, _ = sql.Open("sqlite3", "./DAO/database.db")
-var m sync.Mutex
+var db, _ = sql.Open("sqlite3", "./DAO/database.db") //dao
+var m sync.Mutex                                     //Mutex afin d'éviter les race condition
 
 /**
-Fonction qui initialise les tables vides
+@InitDAO permet d'initialiser les différentes tables de la database ainsi qu'un compte admin (admin:admin)
 */
 func InitDAO() {
 
@@ -85,7 +85,8 @@ func InitDAO() {
 }
 
 /**
-Enregistre un étudiant dans la table Etudiant
+@Register permet d'enregistrer un étudiant dans la tablea Etudiant
+@return true s'il n'y a pas eu d'erreur, sinon false
 */
 func Register(etu modele.Etudiant) bool {
 	m.Lock()
@@ -109,7 +110,9 @@ func Register(etu modele.Etudiant) bool {
 }
 
 /**
-Enregistre un admin dans la table Administrateur
+@RegisterAdmin permet d'enregistrer un couple login:password dans la table admin,
+sert aussi à modifier le login et/ou le password d'un admin déjà enregistré
+@return true s'il n'y a pas eu d'erreur, sinon false
 */
 func RegisterAdmin(login, password string) bool {
 	m.Lock()
@@ -145,7 +148,7 @@ func RegisterAdmin(login, password string) bool {
 }
 
 /**
-Vérifie que le couple login,password existe dans la table Etudiant
+@LoginCorrect Vérifie que le couple login,password existe dans la table Etudiant
 */
 func LoginCorrect(id string, password string) bool {
 	m.Lock()
@@ -174,7 +177,7 @@ func IsLoginUsed(id string) bool {
 }
 
 /**
-vérifie que le couple login,password existe dans la table Administrateur
+@LoginCorrectAdmin vérifie que le couple login,password existe dans la table Administrateur
 */
 func LoginCorrectAdmin(id string, password string) bool {
 	m.Lock()
@@ -190,11 +193,11 @@ func LoginCorrectAdmin(id string, password string) bool {
 }
 
 /**
-récupère les informations personnelles d'un étudiant
+@GetEtudiant récupère les informations personnelles d'un étudiant à l'aide du login
 */
-func GetEtudiant(id string) modele.Etudiant {
+func GetEtudiant(login string) modele.Etudiant {
 	var etu modele.Etudiant
-	row := db.QueryRow("SELECT * FROM Etudiant WHERE login = $1", id)
+	row := db.QueryRow("SELECT * FROM Etudiant WHERE login = $1", login)
 	err := row.Scan(&etu.Login, &etu.Password, &etu.Prenom, &etu.Nom, &etu.Correcteur, &etu.ResDefiActuel)
 	if err != nil && etu.ResDefiActuel != nil {
 		logs.WriteLog("DAO.GetEtudiant", err.Error())
@@ -203,15 +206,14 @@ func GetEtudiant(id string) modele.Etudiant {
 }
 
 /**
-récupère les informations d'un admin
+@GetAdmin récupère d'un admin dans la table Administrateur à l'aide du login
 */
-func GetAdmin(id string) modele.Admin {
+func GetAdmin(login string) modele.Admin {
 	var admin modele.Admin
-	row := db.QueryRow("SELECT * FROM Administrateur WHERE login = $1", id)
+	row := db.QueryRow("SELECT * FROM Administrateur WHERE login = $1", login)
 	err := row.Scan(&admin.Login, &admin.Password)
-
 	if err != nil {
-		logs.WriteLog("DAO GetAdmin "+id+" : ", err.Error())
+		logs.WriteLog("DAO GetAdmin "+login+" : ", err.Error())
 	}
 	return admin
 }
@@ -792,6 +794,10 @@ func GetEtudiantsMail() []modele.EtudiantMail {
 	return resT
 }
 
+/**
+@GetClassement récupère le classement de rapidité a trouvé la bonne solution au défi
+@numDefi numéro du défi
+*/
 func GetClassement(numDefi int) []modele.Resultat {
 	var res modele.Resultat
 	resT := make([]modele.Resultat, 0)

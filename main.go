@@ -12,14 +12,6 @@ import (
 
 //Main fonction du programme
 func main() {
-
-	// initialalise le routeur
-
-	/*
-		set GOOS=linux
-		set GOARCH=amd64
-	*/
-
 	mode := os.Args[1]
 	if mode == "init" {
 		fmt.Println("init")
@@ -31,10 +23,10 @@ func main() {
 		fmt.Println("start")
 		web.InitWeb()
 	} else if mode == "test" {
+		//permet d'exécuter des tests unitaires
 	} else {
 		web.InitWeb()
 	}
-
 }
 
 /**
@@ -74,6 +66,5 @@ func Init() {
 	os.Mkdir(path+"/defis", 0755)
 	os.Mkdir(path+"/script_etudiants", 0755)
 	os.Mkdir(path+"/jeu_de_test", 0755)
-	//TODO create mailConf.json
 	DAO.InitDAO()
 }

@@ -112,22 +112,25 @@ func (d Defi) TimeFinString() string {
 }
 
 /**
-@ParticipantDefi
+@ParticipantDefi concatene toutes les informations d'un participants à un défi (prénom, nom, état, tentative, etc..)
 */
 type ParticipantDefi struct {
 	Etudiant Etudiant
 	Resultat Resultat
 }
 
-// structure
 type ResultatTest struct {
-	Etat           int
-	CasTest        CasTest
-	Res_etu        []Retour
-	Res_correction []Retour
-	Error_message  string
+	Etat           int      // 1 : réussi, 0 : raté, -1 : erreur
+	CasTest        CasTest  // cas de test du jeu de test
+	Res_etu        []Retour // résultat obtenu par l'étudiant
+	Res_correction []Retour // résultat obtenu par la correction
+	Error_message  string   // "" si pas d'erreur, sinon message d'erreur obtenu lors du test
 }
-type Retour struct { // changer le Nom --> dossier/fichier
+
+/**
+@Retour structure qui représenter à la fois les fichiers et les dossiers
+*/
+type Retour struct {
 	Nom     string
 	Contenu string
 }
@@ -137,6 +140,7 @@ type CasTest struct {
 	Arguments []Retour
 }
 
+/* --- Statistiques ---*/
 type StatsDefi struct {
 	Num               int
 	ParticipantsDefi  int

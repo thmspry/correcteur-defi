@@ -9,7 +9,7 @@ import (
 )
 
 /**
-Fonction pour lancer l'interface web
+@InitWeb lance le serveur http  sur le port 8192
 */
 func InitWeb() {
 
@@ -33,6 +33,13 @@ func Redirection(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
+/* --- Routes (API REST) ---
+ * Pour accéder à ces routes il faut possède un token "admin" dans son navigateur
+ */
+
+/**
+@GetDefis renvoie un json contenant la liste des défis enregistrés dans la database
+*/
 func GetDefis(w http.ResponseWriter, r *http.Request) {
 	if token, err := r.Cookie("token"); err != nil || !DAO.TokenExiste(token.Value) {
 		http.Redirect(w, r, "/login", http.StatusFound)
@@ -45,6 +52,9 @@ func GetDefis(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(DAO.GetDefis())
 }
 
+/**
+@GetDefiActuel renvoie un json contenant le défi de la semaine
+*/
 func GetDefiActuel(w http.ResponseWriter, r *http.Request) {
 	if token, err := r.Cookie("token"); err != nil || !DAO.TokenExiste(token.Value) {
 		http.Redirect(w, r, "/login", http.StatusFound)
